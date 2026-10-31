@@ -70,8 +70,8 @@ def candidate():
  run('apply-check',['git','apply','--check','/packet/production-proposal.patch'],10)
  run('apply-once',['git','apply','/packet/production-proposal.patch'],10)
  RESULT['baseline_product_unchanged']=False
- run('scope',['git','add','--intent-to-add']+M['source_allowlist'][2:],10)
- _,out=run('paths',['git','diff','--name-only'],10)
+ run('scope',['git','add','--intent-to-add',M['source_new_test_path']],10)
+ _,out=run('paths',['git','diff','--no-renames','--name-only'],10)
  assert sorted(out.decode().splitlines())==sorted(M['source_allowlist']),'SOURCE_SCOPE'
 def attest_reports():
  reports=list(S.glob('**/test-reports/*.xml'))
@@ -85,109 +85,47 @@ def attest_reports():
  assert any(x['suite']==M['existing_scala_suites'][1] for x in facts),'EXISTING_COMMON_SUITE_NOT_RUN'
  RESULT['scala_reports']=facts
 try:
- assert not S.exists();shutil.copytree('/source',S)
+ assert LANE=='B' and not S.exists();shutil.copytree('/source',S)
  _,commit=run('source-commit',['git','rev-parse','HEAD'],10);assert commit.decode().strip()==M['source_commit']
- for source,target in [('VerifyFeatureFractionByNode.scala',M['source_allowlist'][2]),('test_feature_fraction_by_node.py',M['source_allowlist'][3])]:
-  dest=S/target;assert not dest.exists();dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(P/source,dest)
+ for path,expected in M['baseline_source_sha256'].items():
+  assert hashlib.sha256((S/path).read_bytes()).hexdigest()==expected,'BASELINE_SOURCE_HASH_'+path
+ assert (S/M['source_old_test_path']).is_file() and not (S/M['source_new_test_path']).exists()
  run('versions',['bash','-euc','java -version\npython3 -V\ngit --version'],20)
  _,forks=sbt('fork-settings',['show core / Test / fork','show lightgbm / Test / fork'],180)
  assert len(re.findall(rb'\[info\]\s+false\s*$',forks,re.M))>=2,'UNCONFIRMED_FORK_SETTINGS'
- if LANE=='A':
-  run('black-install',['python3','-m','pip','install','black[jupyter]==22.3.0'],180)
-  elapsed,_=sbt('root-baseline-calibration',['compile','Test / compile'])
-  projection(elapsed);candidate()
-  sbt('root-candidate-checks',['scalastyle','Test / scalastyle','compile','Test / compile'])
-  run('black-diff',['python3','-m','black','--diff','--color','--extend-exclude','docs/','.'],180)
-  run('black-check',['python3','-m','black','--check','-q','--extend-exclude','docs/','.'],180)
- elif LANE=='B':
-  sbt('public-datasets',['getDatasets'],240)
-  datasets=list(S.glob('**/datasets-2023-04-03.tgz'));assert len(datasets)==1
-  assert datasets[0].stat().st_size<=4*1024**3,'DATASET_ARCHIVE_CAP'
-  RESULT['dataset_archive']={'bytes':datasets[0].stat().st_size,'sha256':hash_file(datasets[0])}
-  elapsed,_=sbt('scala-baseline-calibration',['core/Test/compile','lightgbm/Test/compile'])
-  verify_native()
-  _,out=run('baseline-negative',['sbt','set ThisBuild / version := "0.0.1-i789-SNAPSHOT"',f'lightgbm/testOnly {M["scala_suite"]} -- -z "emits explicit featureFractionByNode"'],240,expected=1)
-  assert re.search(rb'Tests:\s*succeeded\s+0,\s*failed\s+3',out),'BASELINE_NOT_THREE_ASSERTION_FAILURES'
-  assert b'Compilation failed' not in out and b'ImportError' not in out,'INVALID_BASELINE'
-  assert out.count(b'EXPLICIT_NODE_FRACTION_MISSING')>=3,'BASELINE_NOT_EXPECTED_MAPPING_ASSERTIONS'
-  RESULT['baseline_negative_assertions']=3
-  RESULT['baseline_negative_excerpt']=out.decode(errors='replace')[-4000:]
-  projection(elapsed);candidate()
-  sbt('affected-core-suite',['core/testOnly '+M['existing_scala_suites'][0]],360)
-  sbt('complete-lightgbm-suites',['lightgbm/testOnly '+M['scala_suite']+' '+M['existing_scala_suites'][1]],1200)
-  attest_reports()
- else:
-  original=(S/'environment.yml').read_text();block='channels:\n  - conda-forge\n  - default\n';assert original.count(block)==1
-  validation=original.replace(block,'channels:\n  - conda-forge\n',1)
-  (R/'environment-validation.yml').write_text(validation)
-  RESULT['channel_difference']='conda-forge only; every declared dependency and pin retained'
-  run('full-environment',['/opt/bootstrap/micromamba','--no-rc','create','--root-prefix','/runtime/mamba','--name','synapseml','--file',str(R/'environment-validation.yml'),'--override-channels','--channel','conda-forge','--yes'],1200,cap=8*1024**2)
-  prefix=R/'mamba/envs/synapseml';assert (prefix/'bin/python').exists()
-  os.environ.update(CONDA_DEFAULT_ENV='synapseml',CONDA_PREFIX=str(prefix),PATH=str(prefix/'bin')+':'+os.environ['PATH'])
-  _,resolved=run('resolved-environment',['conda','list','--name','synapseml','--explicit'],60)
-  assert b'repo.anaconda.com' not in resolved,'DEFAULT_CHANNEL_NOT_ALLOWED'
-  run('python-versions',['python','-c','import sys; assert sys.version_info[:3] == (3,11,8); import pyspark; assert pyspark.__version__ == "3.5.0"; print(sys.version,pyspark.__version__)'],20)
-  run('pip-freeze',['python','-m','pip','list','--format=json'],60)
-  run('pip-check',['python','-m','pip','check'],60)
-  code = """import importlib.metadata as m,json
-items=[]
-for dist in m.distributions():
- if (dist.read_text('INSTALLER') or '').strip()!='pip':continue
- direct=json.loads(dist.read_text('direct_url.json') or '{}')
- items.append({'name':dist.metadata['Name'],'version':dist.version,'direct_url':direct.get('url')})
-print(json.dumps(items))
-"""
-  _,raw=run('resolved-pip-artifact-specs',['python','-c',code],60)
-  pip_specs=json.loads(raw);assert pip_specs,'NO_PIP_MANAGED_DISTRIBUTIONS'
-  requirements=[]
-  horovod='https://mmlspark.blob.core.windows.net/installers/horovod-0.28.1-cp311-cp311-linux_x86_64.whl'
-  for item in pip_specs:
-   assert re.fullmatch('[A-Za-z0-9][A-Za-z0-9_.-]*',item['name'])
-   assert re.fullmatch('[A-Za-z0-9.+!_-]+',item['version'])
-   if item['direct_url']:
-    assert item['direct_url']==horovod,'UNREVIEWED_DIRECT_PIP_SOURCE'
-    requirements.append(item['name']+' @ '+item['direct_url'])
-   else:requirements.append(item['name']+'=='+item['version'])
-  locked=R/'resolved-pip-artifacts.txt';locked.write_text('\n'.join(requirements)+'\n')
-  wheelhouse=R/'resolved-pip-artifacts';wheelhouse.mkdir()
-  run('hashable-pip-downloads',['python','-m','pip','download','--no-deps','--dest',str(wheelhouse),'-r',str(locked)],300,cap=8*1024**2)
-  artifacts=list(wheelhouse.iterdir());assert len(artifacts)==len(pip_specs),'INCOMPLETE_RESOLVED_PIP_ARTIFACTS'
-  RESULT['resolved_pip_distribution_specs']=pip_specs
-  RESULT['resolved_pip_downloaded_artifacts']=[{'file':path.name,'bytes':path.stat().st_size,'sha256':hash_file(path)} for path in artifacts]
-  RESULT['pip_artifact_evidence']='Post-resolution exact pip-managed versions/direct wheel source; downloaded or reused from the same container cache, not a pre-resolution lock.'
-  RESULT['installed_record_digests']={str(f.relative_to(prefix)):hashlib.sha256(f.read_bytes()).hexdigest() for f in prefix.glob('lib/python*/site-packages/*.dist-info/RECORD')}
-  sbt('public-datasets',['getDatasets'],240)
-  datasets=list(S.glob('**/datasets-2023-04-03.tgz'));assert len(datasets)==1
-  assert datasets[0].stat().st_size<=4*1024**3,'DATASET_ARCHIVE_CAP'
-  RESULT['dataset_archive']={'bytes':datasets[0].stat().st_size,'sha256':hash_file(datasets[0])}
-  _,envlist=run('confirmed-conda-env',['conda','env','list'],20)
-  assert any(line.startswith(b'synapseml ') for line in envlist.splitlines()),'CONDA_ENV_FORMAT'
-  elapsed,_=sbt('baseline-full-codegen-install',['codegen','core/installPipPackage','lightgbm/installPipPackage','publishM2'],1500)
-  verify_native()
-  pyfile=S/M['source_allowlist'][3]
-  _,out=run('python-baseline-negative',['python','-m','pytest',str(pyfile)+'::FeatureFractionByNodeTests::test_default_copy_clear_and_estimator_persistence','-q'],240,expected=1)
-  assert b'featureFractionByNode' in out and b'FAILED' in out and b'ERROR collecting' not in out and b'ImportError' not in out,'INVALID_PYTHON_BASELINE'
-  assert b'KeyError' in out or b'NoSuchElementException' in out,'BASELINE_NOT_MISSING_DEFAULT'
-  RESULT['python_baseline_negative_excerpt']=out.decode(errors='replace')[-4000:]
-  projection(elapsed);candidate()
-  sbt('candidate-full-codegen-packages',['codegen','core/installPipPackage','lightgbm/installPipPackage','publishM2'],1200)
-  jars=list(S.glob('lightgbm/target/scala-*/synapseml-lightgbm_*-0.0.2-i789-SNAPSHOT.jar'));assert len(jars)==1,'AMBIGUOUS_BUILT_JAR'
-  roots=list(S.glob('lightgbm/target/scala-*/generated/src/python'));assert len(roots)==1
-  os.environ.update(SYNAPSEML_EXPECTED_LIGHTGBM_JAR=str(jars[0]),SYNAPSEML_EXPECTED_GENERATED_ROOT=str(roots[0]))
-  _,provenance=run('generated-provenance',['python','/packet/provenance_check.py'],180)
-  RESULT['spark_resolution_excerpt']=provenance.decode(errors='replace')[-1024*1024:]
-  sbt('upstream-lightgbm-python-suite',['lightgbm/testPython'],1200)
-  reports=list(S.glob('target/python-test-results-*.xml'));assert reports,'NO_PYTHON_REPORT'
-  facts=[]
-  for path in reports:
-   root=ET.parse(path).getroot();suites=[root] if root.tag=='testsuite' else list(root)
-   for suite in suites:facts.append({k:int(suite.attrib.get(k,0)) for k in ['tests','failures','errors','skipped']})
-  assert sum(x['tests'] for x in facts)>0 and all(x['failures']==x['errors']==0 for x in facts),'INCOMPLETE_PYTHON_SUITE'
-  RESULT['python_reports']=facts
+ sbt('public-datasets',['getDatasets'],240)
+ datasets=list(S.glob('**/datasets-2023-04-03.tgz'));assert len(datasets)==1
+ assert datasets[0].stat().st_size<=4*1024**3,'DATASET_ARCHIVE_CAP'
+ RESULT['dataset_archive']={'bytes':datasets[0].stat().st_size,'sha256':hash_file(datasets[0])}
+ assert RESULT['dataset_archive']['sha256']=='f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb'
+ elapsed,_=sbt('scala-baseline-calibration',['core/Test/compile','lightgbm/Test/compile'])
+ verify_native()
+ _,out=run('baseline-ci-orphan',['sbt','set ThisBuild / version := "0.0.1-i789-SNAPSHOT"','core/testOnly '+M['coverage_suite']],240,expected=1)
+ assert re.search(rb'Tests:\s*succeeded\s+0,\s*failed\s+1',out),'BASELINE_NOT_ONE_GUARD_FAILURE'
+ assert b'1 test suite(s) are never run by CI.' in out and M['old_scala_suite'].encode() in out,'BASELINE_NOT_EXACT_ORPHAN'
+ assert b'Compilation failed' not in out and b'ImportError' not in out,'INVALID_BASELINE'
+ RESULT['baseline_ci_orphans']=1;RESULT['baseline_ci_orphan_excerpt']=out.decode(errors='replace')[-12000:]
+ projection(elapsed);candidate()
+ assert not (S/M['source_old_test_path']).exists() and (S/M['source_new_test_path']).is_file()
+ sbt('candidate-scala-checks',['lightgbm/Test/compile','lightgbm/Test/scalastyle'],600)
+ sbt('candidate-ci-coverage',['core/testOnly '+M['coverage_suite']],240)
+ sbt('affected-core-suite',['core/testOnly '+M['existing_scala_suites'][0]],360)
+ sbt('complete-lightgbm-suites',['lightgbm/testOnly '+M['scala_suite']+' '+M['existing_scala_suites'][1]],600)
+ attest_reports()
+ assert any(x['suite']==M['coverage_suite'] and x['tests']==1 and x['skipped']==0 for x in RESULT['scala_reports']),'CI_GUARD_NOT_RUN'
+ assert not any(x['suite']==M['old_scala_suite'] for x in RESULT['scala_reports']),'STALE_OLD_SUITE_REPORT'
+ assert sum(x['tests']-x['skipped'] for x in RESULT['scala_reports'])==104,'INCOMPLETE_AFFECTED_SCALA_TOTAL'
+ # The same actual pipeline selector is checked by the unmodified coverage guard.
+ pipeline=(S/'pipeline.yaml').read_text();block=re.search(r'(?ms)^      lightgbm1:\n(.*?)(?=^      \w+:)',pipeline).group(1)
+ assert 'PACKAGE: "lightgbm.split1"' in block and 'TEST_CLASSES:' not in block
+ assert M['scala_suite'].startswith('com.microsoft.azure.synapse.ml.lightgbm.split1.')
+ RESULT['ci_selector_proof']={'leg':'lightgbm1','resolved_test_spec':'com.microsoft.azure.synapse.ml.lightgbm.split1.**','suite':M['scala_suite'],'guard_passed':True,'full_ci_leg_executed':False}
+
  for path,expected in M['candidate_source_sha256'].items():
   assert hashlib.sha256((S/path).read_bytes()).hexdigest()==expected,'FINAL_SOURCE_MUTATION_'+path
- _,patch=run('final-patch',['git','diff','--binary'],20)
- RESULT.update(status='SUCCESS',lane_pass=True,patch_sha256=hashlib.sha256(patch).hexdigest())
+ _,patch=run('final-patch',['git','diff','--binary','--full-index','--no-renames'],20)
+ assert hashlib.sha256(patch).hexdigest()==M['patch_sha256'],'TESTED_PATCH_IDENTITY'
+ RESULT.update(status='SUCCESS',lane_pass=True,patch_sha256=hashlib.sha256(patch).hexdigest(),tested_patch_base64=__import__('base64').b64encode(patch).decode())
  print('TESTED_PATCH_BASE64 '+__import__('base64').b64encode(patch).decode(),flush=True)
 except BaseException as exc:
  RESULT.update(status='FAILED_OR_PARKED',error=str(exc));raise

@@ -135,7 +135,7 @@ def run_lane():
             'synapse789-validation:' + ident]
     OWN = command('container-create', args, 15).decode().strip()
     assert re.fullmatch('[a-f0-9]{64}', OWN)
-    command('container-run', ['docker', 'start', '--attach', OWN], 50 * 60, 16 * 1024**2)
+    command('container-run', ['docker', 'start', '--attach', OWN], M['target_seconds'], 16 * 1024**2)
     state = json.loads(command('container-state',
         ['docker', 'inspect', '--format', '{{json .State}}', OWN], 10, 8192, False))
     assert not state['Running'] and not state['OOMKilled'] and state['ExitCode'] == 0

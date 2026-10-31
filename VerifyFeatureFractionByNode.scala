@@ -1,9 +1,10 @@
 // Copyright (C) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in project root for information.
 
-package com.microsoft.azure.synapse.ml.lightgbm
+package com.microsoft.azure.synapse.ml.lightgbm.split1
 
 import com.microsoft.azure.synapse.ml.core.test.base.TestBase
+import com.microsoft.azure.synapse.ml.lightgbm._
 import com.microsoft.azure.synapse.ml.lightgbm.params.LightGBMParams
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.attribute.AttributeGroup

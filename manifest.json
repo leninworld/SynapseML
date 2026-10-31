@@ -1,7 +1,7 @@
 {
-  "source_commit": "e65143c6df061f6e763cc8f7c7d5a99eaecd3e7e",
-  "target_seconds": 3000,
-  "absolute_seconds": 3600,
+  "source_commit": "bbb4a0a4c773b44f0da1f21b5c445813de41caf4",
+  "target_seconds": 1500,
+  "absolute_seconds": 1800,
   "sbt": {
     "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
     "sha1": "4e3ca243fbac4e8c96eb38d783e2077f67081444"
@@ -17,50 +17,30 @@
     "python": "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e"
   },
   "source_allowlist": [
-    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala",
-    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala",
     "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala",
-    "lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py"
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/VerifyFeatureFractionByNode.scala"
   ],
-  "scala_suite": "com.microsoft.azure.synapse.ml.lightgbm.VerifyFeatureFractionByNode",
+  "scala_suite": "com.microsoft.azure.synapse.ml.lightgbm.split1.VerifyFeatureFractionByNode",
   "existing_scala_suites": [
     "com.microsoft.azure.synapse.ml.core.utils.VerifyParamsStringBuilder",
     "com.microsoft.azure.synapse.ml.lightgbm.split1.VerifyLightGBMCommon"
   ],
   "jobs": {
-    "A": {
-      "memory_gib": 8,
-      "admission_available_gib": 10,
-      "disk_free_gib": 32,
-      "network_gib": 10,
-      "remaining_factor": 1.5,
-      "remaining_extra_seconds": 300,
-      "candidate_memory_extra_gib": 0.5
-    },
     "B": {
       "memory_gib": 10,
       "admission_available_gib": 12,
       "disk_free_gib": 36,
       "network_gib": 10,
-      "remaining_factor": 2.0,
-      "remaining_extra_seconds": 1200,
-      "candidate_memory_extra_gib": 1.5
-    },
-    "C": {
-      "memory_gib": 12,
-      "admission_available_gib": 14,
-      "disk_free_gib": 64,
-      "network_gib": 18,
       "remaining_factor": 1.0,
       "remaining_extra_seconds": 600,
-      "candidate_memory_extra_gib": 3.0
+      "candidate_memory_extra_gib": 1.5
     }
   },
   "working_set_stop_fraction": 0.9375,
   "projection_multiplier": 1.1,
   "source_requires_jdk": 11,
   "source_requires_python": "3.11.8",
-  "attempt_policy": "ONEworkflow plus atmostONEsourceprovencorrection acrossalljobs; no perjobreset",
+  "attempt_policy": "New post-publication feedback scope; one execution plus atmostone source-proven correction; prior I4success/clock/consumedcorrection immutable",
   "public_cache_uploads": false,
   "private_cache_export": false,
   "phase_step_max_seconds": {
@@ -70,14 +50,16 @@
     "codegen": 1500
   },
   "baseline_source_sha256": {
-    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala": "402e4f04dc365259220130525435356716c007af8010642811d2217a0a6ca5ea",
-    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala": "f0bb182a8394cbb236abfe5faafa50dfc47d2febdd7d9e09331f5f1a97b63cf4"
+    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala": "c6fc092fa3f8cb7521fd8174c095b445818849b0cd69947072488b8182f8041b",
+    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala": "4a3ffd2571b6f02027f5bda4f03f5234023fbdc5dee797ce19599ef465458241",
+    "lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py": "aebd2b47d3ab5fcd988fb10ee93d3d24f201db127dab433edb6ace9d211051bb",
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala": "cc93ef659e9d71e191d6f3099e23340c4924f948acd266431cf7670e86343510"
   },
   "candidate_source_sha256": {
     "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala": "c6fc092fa3f8cb7521fd8174c095b445818849b0cd69947072488b8182f8041b",
     "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala": "4a3ffd2571b6f02027f5bda4f03f5234023fbdc5dee797ce19599ef465458241",
-    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala": "cc93ef659e9d71e191d6f3099e23340c4924f948acd266431cf7670e86343510",
-    "lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py": "aebd2b47d3ab5fcd988fb10ee93d3d24f201db127dab433edb6ace9d211051bb"
+    "lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py": "aebd2b47d3ab5fcd988fb10ee93d3d24f201db127dab433edb6ace9d211051bb",
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/VerifyFeatureFractionByNode.scala": "24685f52cc82e7ccd418948d9bc4c9444fcb1e49951e7e46c409b26e855c2d26"
   },
   "memory_projection_factor": 1.25,
   "public_dataset": {
@@ -87,8 +69,12 @@
     "hash": "measuredafterpublicdownload; no privatecacheexport"
   },
   "native_jar_sha256": "f2b1b13172699832594303ab4c04f3bc8fc2d24737e3e8c11d98d69a88c09272",
-  "patch_sha256": "a38c17b5c999fb1493c78ad94fee607b22ed308866fa73476f4e2bb5f6dc4d5b",
-  "revision": "I4 private proposal after actual1122 source-proof+R1-R6; final one correction NOTadmitted",
+  "patch_sha256": "7234080542cc767bf5f1d3ef25f6f13291b744b67b406f3e13547a3386d88d04",
+  "revision": "F1 user-requested PR2797 review5723677354 CI registration fix; exact runtime approval PENDING",
   "expected_new_scala_cases": 57,
-  "expected_combined_scala_run_cases": 96
+  "expected_combined_scala_run_cases": 96,
+  "old_scala_suite": "com.microsoft.azure.synapse.ml.lightgbm.VerifyFeatureFractionByNode",
+  "coverage_suite": "com.microsoft.azure.synapse.ml.core.test.pipeline.PipelineTestCoverageSuite",
+  "source_new_test_path": "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/VerifyFeatureFractionByNode.scala",
+  "source_old_test_path": "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala"
 }

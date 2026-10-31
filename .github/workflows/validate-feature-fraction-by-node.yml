@@ -1,4 +1,4 @@
-name: Validate feature fraction by node
+name: Validate feature fraction CI registration
 on:
   push:
     branches: [validate-feature-fraction-by-node-issue-789]
@@ -9,9 +9,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [A, B, C]
+        lane: [B]
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - name: Anchor the original job clock
         run: echo "VALIDATION_JOB_STARTED_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
@@ -21,8 +21,8 @@ jobs:
           persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          repository: microsoft/SynapseML
-          ref: e65143c6df061f6e763cc8f7c7d5a99eaecd3e7e
+          repository: leninworld/SynapseML
+          ref: bbb4a0a4c773b44f0da1f21b5c445813de41caf4
           path: source
           persist-credentials: false
       - name: Calibrate and complete this lane in Docker
