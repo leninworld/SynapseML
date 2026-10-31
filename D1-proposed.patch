@@ -1,0 +1,322 @@
+diff --git a/lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala b/lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala
+index 689d35b0e3..380df743f5 100644
+--- a/lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala
++++ b/lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala
+@@ -106,6 +106,7 @@ case class GeneralParams(parallelism: String,
+       .appendParamValueIfNotThere("neg_bagging_fraction", negBaggingFraction)
+       .appendParamValueIfNotThere("bagging_freq", baggingFreq)
+       .appendParamValueIfNotThere("feature_fraction", featureFraction)
++      .appendParamValueIfNotThere("feature_fraction_bynode", featureFractionByNode)
+       .appendParamValueIfNotThere("max_depth", maxDepth)
+       .appendParamValueIfNotThere("min_sum_hessian_in_leaf", minSumHessianInLeaf)
+       .appendParamValueIfNotThere("lambda_l1", lambdaL1)
+diff --git a/lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala b/lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala
+index 268a45430b..1b7be0fdf3 100644
+--- a/lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala
++++ b/lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala
+@@ -353,7 +353,7 @@ trait LightGBMFractionParams extends Wrappable {
+   def setFeatureFraction(value: Double): this.type = set(featureFraction, value)
+ 
+   val featureFractionByNode = new DoubleParam(this, "featureFractionByNode", "Feature fraction by node")
+-  setDefault(featureFraction->1)
++  setDefault(featureFractionByNode->1)
+   def getFeatureFractionByNode: Double = $(featureFractionByNode)
+   def setFeatureFractionByNode(value: Double): this.type = set(featureFractionByNode, value)
+ }
+diff --git a/lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py b/lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py
+new file mode 100644
+index 0000000000..2d78095431
+--- /dev/null
++++ b/lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py
+@@ -0,0 +1,114 @@
++# Copyright (C) Microsoft Corporation. All rights reserved.
++# Licensed under the MIT License. See LICENSE in project root for information.
++
++import os
++import re
++import tempfile
++import unittest
++from contextlib import ExitStack
++
++from pyspark.ml.linalg import Vectors
++from pyspark.sql import Row
++from synapse.ml.core.init_spark import init_spark
++from synapse.ml.lightgbm import (
++    LightGBMClassifier,
++    LightGBMClassificationModel,
++    LightGBMRegressor,
++    LightGBMRegressionModel,
++    LightGBMRanker,
++    LightGBMRankerModel,
++)
++
++spark = init_spark()
++
++
++class FeatureFractionByNodeTests(unittest.TestCase):
++    learners = (
++        (LightGBMClassifier, LightGBMClassificationModel),
++        (LightGBMRegressor, LightGBMRegressionModel),
++        (LightGBMRanker, LightGBMRankerModel),
++    )
++
++    @classmethod
++    def setUpClass(cls):
++        cls.data = spark.createDataFrame(
++            [
++                Row(
++                    label=float(index % 2),
++                    group=index // 6,
++                    features=Vectors.dense(
++                        float(index % 2),
++                        float(index % 3),
++                        float(index % 5),
++                        float(index),
++                    ),
++                )
++                for index in range(48)
++            ]
++        ).coalesce(1)
++
++    def test_default_copy_clear_and_estimator_persistence(self):
++        for learner, _ in self.learners:
++            with self.subTest(learner=learner.__name__):
++                stage = learner()
++                self.assertEqual(stage.getFeatureFractionByNode(), 1.0)
++                self.assertFalse(stage.isSet(stage.featureFractionByNode))
++                self.assertEqual(stage.copy().getFeatureFractionByNode(), 1.0)
++                with tempfile.TemporaryDirectory() as directory:
++                    path = os.path.join(directory, "unset")
++                    stage.save(path)
++                    restored = learner.load(path)
++                    self.assertEqual(restored.getFeatureFractionByNode(), 1.0)
++                    self.assertFalse(restored.isSet(restored.featureFractionByNode))
++                    stage.setFeatureFractionByNode(0.4)
++                    self.assertEqual(stage.copy().getFeatureFractionByNode(), 0.4)
++                    path = os.path.join(directory, "set")
++                    stage.save(path)
++                    self.assertEqual(learner.load(path).getFeatureFractionByNode(), 0.4)
++                stage.clear(stage.featureFractionByNode)
++                self.assertEqual(stage.getFeatureFractionByNode(), 1.0)
++
++    def test_generated_wrappers_train_with_native_parameter_and_persist(self):
++        for learner, model_type in self.learners:
++            for mode in ("bulk", "streaming"):
++                with self.subTest(learner=learner.__name__, mode=mode):
++                    stage = learner(
++                        numIterations=3,
++                        numLeaves=3,
++                        minDataInLeaf=1,
++                        minDataPerBin=1,
++                        numTasks=1,
++                        numThreads=1,
++                        seed=42,
++                        dataTransferMode=mode,
++                        featureFractionByNode=0.4,
++                    )
++                    if learner is LightGBMRanker:
++                        stage.setGroupCol("group")
++                    with ExitStack() as cleanup:
++                        model = stage.fit(self.data)
++                        cleanup.callback(
++                            model._java_obj.getLightGBMBooster().freeNativeMemory
++                        )
++                        self.assertAlmostEqual(self.effective_fraction(model), 0.4)
++                        expected = model.transform(self.data).collect()
++                        with tempfile.TemporaryDirectory() as directory:
++                            path = os.path.join(directory, "model")
++                            model.save(path)
++                            restored = model_type.load(path)
++                            cleanup.callback(
++                                restored._java_obj.getLightGBMBooster().freeNativeMemory
++                            )
++                            self.assertAlmostEqual(self.effective_fraction(restored), 0.4)
++                            self.assertEqual(
++                                restored.transform(self.data).collect(), expected
++                            )
++
++    def effective_fraction(self, model):
++        match = re.search(
++            r"^\[feature_fraction_bynode: ([^\]]+)\]$",
++            model.getNativeModel(),
++            re.MULTILINE,
++        )
++        self.assertIsNotNone(match, "Native model must expose effective node sampling")
++        return float(match.group(1))
+diff --git a/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala b/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala
+new file mode 100644
+index 0000000000..8d07c95619
+--- /dev/null
++++ b/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala
+@@ -0,0 +1,171 @@
++// Copyright (C) Microsoft Corporation. All rights reserved.
++// Licensed under the MIT License. See LICENSE in project root for information.
++
++package com.microsoft.azure.synapse.ml.lightgbm
++
++import com.microsoft.azure.synapse.ml.core.test.base.TestBase
++import com.microsoft.azure.synapse.ml.lightgbm.params.LightGBMParams
++import org.apache.spark.ml.Transformer
++import org.apache.spark.ml.attribute.AttributeGroup
++import org.apache.spark.ml.linalg.Vectors
++import org.apache.spark.ml.param.ParamMap
++import org.apache.spark.ml.util.MLWritable
++import org.apache.spark.sql.DataFrame
++
++class VerifyFeatureFractionByNode extends TestBase {
++  private val fraction = 0.4
++  private val overrideFraction = 0.7
++  private val nativeKey = "feature_fraction_bynode"
++  private val aliases = Seq("colsample_bynode", "sub_feature_bynode")
++  private val names = Seq("classifier", "regressor", "ranker")
++  private val modes = Seq("bulk", "streaming")
++  private var port = 29000
++
++  private def learner(name: String): LightGBMParams = {
++    port += 1
++    val stage: LightGBMParams = name match {
++      case "classifier" => new LightGBMClassifier()
++      case "regressor" => new LightGBMRegressor()
++      case "ranker" => new LightGBMRanker().setGroupCol("group")
++    }
++    stage.setNumIterations(3).setNumLeaves(3).setMinDataInLeaf(1).setMinDataPerBin(1)
++      .setNumTasks(1).setNumThreads(1).setDefaultListenPort(port).setSeed(42)
++  }
++
++  private def config(stage: LightGBMParams): String = {
++    val schema = new AttributeGroup("features", 4).toStructField()
++    stage match {
++      case classifier: LightGBMClassifier => classifier.getTrainParams(1, schema, 1).toString
++      case regressor: LightGBMRegressor => regressor.getTrainParams(1, schema, 1).toString
++      case ranker: LightGBMRanker => ranker.getTrainParams(1, schema, 1).toString
++    }
++  }
++
++  private def values(config: String): Seq[String] = {
++    config.split("\\s+").filter(_.startsWith(nativeKey + "=")).map(_.split("=", 2)(1)).toSeq
++  }
++
++  private def restore(name: String, stage: LightGBMParams, suffix: String): LightGBMParams = {
++    val path = tmpDir.resolve(s"$name-$suffix").toString
++    stage.write.save(path)
++    name match {
++      case "classifier" => LightGBMClassifier.load(path)
++      case "regressor" => LightGBMRegressor.load(path)
++      case "ranker" => LightGBMRanker.load(path)
++    }
++  }
++
++  names.foreach { name =>
++    test(s"$name defaults and clears featureFractionByNode without emitting it") {
++      val stage = learner(name)
++      assert(stage.getFeatureFractionByNode == 1.0)
++      assert(!stage.isSet(stage.featureFractionByNode))
++      assert(values(config(stage)).isEmpty)
++      val copied = stage.copy(ParamMap.empty).asInstanceOf[LightGBMParams]
++      val loaded = restore(name, stage, "unset")
++      Seq(copied, loaded).foreach { value =>
++        assert(value.getFeatureFractionByNode == 1.0)
++        assert(!value.isSet(value.featureFractionByNode))
++        assert(values(config(value)).isEmpty)
++      }
++      stage.setFeatureFractionByNode(fraction)
++      stage.clear(stage.featureFractionByNode)
++      assert(stage.getFeatureFractionByNode == 1.0)
++      assert(values(config(stage)).isEmpty)
++    }
++
++    test(s"$name emits explicit featureFractionByNode and preserves canonical overrides") {
++      val stage = learner(name).setFeatureFractionByNode(fraction)
++      assert(values(config(stage)) == Seq(fraction.toString), "EXPLICIT_NODE_FRACTION_MISSING")
++      Seq(stage.copy(ParamMap.empty).asInstanceOf[LightGBMParams], restore(name, stage, "set"))
++        .foreach { value =>
++          assert(value.getFeatureFractionByNode == fraction)
++          assert(value.isSet(value.featureFractionByNode))
++          assert(values(config(value)) == Seq(fraction.toString))
++        }
++      stage.setPassThroughArgs(s"$nativeKey=$overrideFraction")
++      assert(values(config(stage)) == Seq(overrideFraction.toString))
++    }
++
++    test(s"$name preserves alias-only passThroughArgs without injecting a canonical default") {
++      aliases.foreach { alias =>
++        val stage = learner(name).setPassThroughArgs(s"$alias=$overrideFraction")
++        assert(config(stage).contains(s"$alias=$overrideFraction"))
++        assert(values(config(stage)).isEmpty)
++      }
++    }
++  }
++
++  private lazy val trainingData: DataFrame = {
++    val rows = (0 until 48).map { index =>
++      val label = (index % 2).toDouble
++      (label, index / 6, Vectors.dense(label, (index % 3).toDouble, (index % 5).toDouble, index.toDouble))
++    }
++    spark.createDataFrame(rows).toDF("label", "group", "features").coalesce(1)
++  }
++
++  private def fit(stage: LightGBMParams): Transformer with LightGBMModelMethods = {
++    val model = stage match {
++      case classifier: LightGBMClassifier => classifier.fit(trainingData)
++      case regressor: LightGBMRegressor => regressor.fit(trainingData)
++      case ranker: LightGBMRanker => ranker.fit(trainingData)
++    }
++    model.asInstanceOf[Transformer with LightGBMModelMethods]
++  }
++
++  private def effectiveFraction(model: LightGBMModelMethods): Double = {
++    val pattern = "(?m)^\\[feature_fraction_bynode: ([^\\]]+)\\]$".r
++    val matched = pattern.findFirstMatchIn(model.getNativeModel())
++    assert(matched.isDefined, "Native model must record the effective feature_fraction_bynode")
++    matched.get.group(1).toDouble
++  }
++
++  for (name <- names; mode <- modes) {
++    val cases = Seq("typed", "canonical") ++ aliases ++ aliases.map(alias => s"typed-$alias")
++    cases.foreach { setting =>
++      test(s"$name $mode trains and persists native featureFractionByNode via $setting") {
++        val stage = learner(name).setDataTransferMode(mode)
++        val expected = if (setting.startsWith("typed-")) None else {
++          Some(if (setting == "typed") fraction else overrideFraction)
++        }
++        if (setting == "typed") {
++          stage.setFeatureFractionByNode(fraction)
++        } else if (setting == "canonical") {
++          stage.setFeatureFractionByNode(fraction).setPassThroughArgs(s"$nativeKey=$overrideFraction")
++        } else if (setting.startsWith("typed-")) {
++          val alias = setting.stripPrefix("typed-")
++          stage.setFeatureFractionByNode(fraction).setPassThroughArgs(s"$alias=$overrideFraction")
++          assert(values(config(stage)) == Seq(fraction.toString))
++          assert(config(stage).contains(s"$alias=$overrideFraction"))
++        } else {
++          stage.setPassThroughArgs(s"$setting=$overrideFraction")
++        }
++        val model = fit(stage)
++        try {
++          val observed = effectiveFraction(model)
++          assert(!observed.isNaN && observed > 0 && observed <= 1)
++          expected.foreach(value => assert(math.abs(observed - value) < 0.000001))
++          if (expected.isEmpty) {
++            info(s"$name $mode $setting native effective fraction: $observed")
++          }
++          assert(model.transform(trainingData).count() == trainingData.count())
++          val path = tmpDir.resolve(s"model-$name-$mode-$setting").toString
++          model.asInstanceOf[MLWritable].write.save(path)
++          val loaded = name match {
++            case "classifier" => LightGBMClassificationModel.load(path)
++            case "regressor" => LightGBMRegressionModel.load(path)
++            case "ranker" => LightGBMRankerModel.load(path)
++          }
++          try {
++            assert(math.abs(effectiveFraction(loaded) - observed) < 0.000001)
++            assert(loaded.transform(trainingData).collect().toSeq == model.transform(trainingData).collect().toSeq)
++          } finally {
++            loaded.getLightGBMBooster.freeNativeMemory()
++          }
++        } finally {
++          model.getLightGBMBooster.freeNativeMemory()
++        }
++      }
++    }
++  }
++}

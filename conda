@@ -1,0 +1,15 @@
+#!/usr/local/bin/python3
+"""Read-only compatibility surface for upstream CondaPlugin; never recreate an environment."""
+from pathlib import Path
+import json,os,subprocess,sys
+args=sys.argv[1:]
+exe='/opt/bootstrap/micromamba';prefix=Path('/runtime/mamba/envs/synapseml')
+if args==['env','list']:
+ data=json.loads(subprocess.check_output([exe,'--root-prefix','/runtime/mamba','env','list','--json'],timeout=15))
+ assert str(prefix) in data['envs'] and (prefix/'bin/python').is_file(),'FULL_ENVIRONMENT_NOT_PRESENT'
+ print('# conda environments:')
+ print('synapseml '+str(prefix))
+ sys.exit(0)
+if args[:2] in (['env','create'],['env','remove']) or args[:1]==['install']:
+ sys.exit('Refusing unreviewed environment creation, removal or installation; the complete pinned environment must already exist.')
+os.execv(exe,[exe,'--root-prefix','/runtime/mamba']+args)

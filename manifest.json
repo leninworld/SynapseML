@@ -1,0 +1,90 @@
+{
+  "source_commit": "e65143c6df061f6e763cc8f7c7d5a99eaecd3e7e",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "sha1": "4e3ca243fbac4e8c96eb38d783e2077f67081444"
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "sha256": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "bytes": 19028608,
+    "version": "2.10.0-0"
+  },
+  "input_images": {
+    "jdk": "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python": "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e"
+  },
+  "source_allowlist": [
+    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala",
+    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala",
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala",
+    "lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py"
+  ],
+  "scala_suite": "com.microsoft.azure.synapse.ml.lightgbm.VerifyFeatureFractionByNode",
+  "existing_scala_suites": [
+    "com.microsoft.azure.synapse.ml.core.utils.VerifyParamsStringBuilder",
+    "com.microsoft.azure.synapse.ml.lightgbm.split1.VerifyLightGBMCommon"
+  ],
+  "jobs": {
+    "A": {
+      "memory_gib": 8,
+      "admission_available_gib": 10,
+      "disk_free_gib": 32,
+      "network_gib": 10,
+      "remaining_factor": 1.5,
+      "remaining_extra_seconds": 300,
+      "candidate_memory_extra_gib": 0.5
+    },
+    "B": {
+      "memory_gib": 10,
+      "admission_available_gib": 12,
+      "disk_free_gib": 36,
+      "network_gib": 10,
+      "remaining_factor": 2.0,
+      "remaining_extra_seconds": 1200,
+      "candidate_memory_extra_gib": 1.5
+    },
+    "C": {
+      "memory_gib": 12,
+      "admission_available_gib": 14,
+      "disk_free_gib": 64,
+      "network_gib": 18,
+      "remaining_factor": 1.0,
+      "remaining_extra_seconds": 600,
+      "candidate_memory_extra_gib": 3.0
+    }
+  },
+  "working_set_stop_fraction": 0.9375,
+  "projection_multiplier": 1.1,
+  "source_requires_jdk": 11,
+  "source_requires_python": "3.11.8",
+  "attempt_policy": "ONEworkflow plus atmostONEsourceprovencorrection acrossalljobs; no perjobreset",
+  "public_cache_uploads": false,
+  "private_cache_export": false,
+  "phase_step_max_seconds": {
+    "setup": 1200,
+    "compile": 1200,
+    "test": 1200,
+    "codegen": 1500
+  },
+  "baseline_source_sha256": {
+    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala": "402e4f04dc365259220130525435356716c007af8010642811d2217a0a6ca5ea",
+    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala": "f0bb182a8394cbb236abfe5faafa50dfc47d2febdd7d9e09331f5f1a97b63cf4"
+  },
+  "candidate_source_sha256": {
+    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala": "c6fc092fa3f8cb7521fd8174c095b445818849b0cd69947072488b8182f8041b",
+    "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala": "4a3ffd2571b6f02027f5bda4f03f5234023fbdc5dee797ce19599ef465458241",
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala": "e9a163ca09eb8b8962f131d9d4ee1623bc26c3ec9333a97a89f53f1f1e00a90f",
+    "lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py": "a85ea5d7cdc8c601597bfedcb70ccbabb292a0080b9d402cc6e918670efe152d"
+  },
+  "memory_projection_factor": 1.25,
+  "public_dataset": {
+    "url": "https://mmlspark.blob.core.windows.net/installers/datasets-2023-04-03.tgz",
+    "source": "pinnedbuild.sbt93-109/getDatasets",
+    "acquire": "upstreamgetDatasetstask onceB/C;240scap/4GiBarchivepostcheck; fullnetwork+diskguardalways",
+    "hash": "measuredafterpublicdownload; no privatecacheexport"
+  },
+  "native_jar_sha256": "f2b1b13172699832594303ab4c04f3bc8fc2d24737e3e8c11d98d69a88c09272"
+}
