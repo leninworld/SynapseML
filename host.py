@@ -125,7 +125,7 @@ def run_lane():
             '--memory-swap', str(J['memory_gib']) + 'g', '--pids-limit', '1024',
             '--security-opt', 'no-new-privileges', '--cap-drop', 'ALL',
             '--cap-add', 'CHOWN', '--cap-add', 'DAC_OVERRIDE', '--cap-add', 'SETUID', '--cap-add', 'SETGID',
-            '--tmpfs', '/opt/bootstrap:rw,size=32m,mode=0755',
+            '--tmpfs', '/opt/bootstrap:' + ('rw,exec,nosuid,nodev' if LANE == 'C' else 'rw,noexec,nosuid,nodev') + ',size=32m,mode=0755',
             '--tmpfs', '/tmp:rw,size=64m,mode=1777',
             '--env', 'VALIDATION_DEADLINE_EPOCH=' + str(END),
             '--env', 'VALIDATION_LANE=' + LANE,
@@ -196,6 +196,6 @@ finally:
         (R / 'memory-samples.jsonl').write_text(sample_text)
         print('MEMORY_SAMPLES_JSONL_BEGIN\n' + sample_text + 'MEMORY_SAMPLES_JSONL_END', flush=True)
         for step in [x for x in LOGS if x['exit'] != 0][:1]:
-            print((R / (step['label'] + '.log')).read_text(errors='replace')[-16000:], flush=True)
+            print((R / (step['label'] + '.log')).read_text(errors='replace')[-1024*1024:], flush=True)
     print('SYNAPSE_HOST_RESULT=' + json.dumps(RESULT), flush=True)
 assert RESULT['lane_pass'] and RESULT['owned_stop_verified']

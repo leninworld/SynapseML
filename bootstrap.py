@@ -6,6 +6,12 @@ P=Path('/packet');R=Path('/runtime');M=json.loads((P/'manifest.json').read_text(
 END=float(os.environ['VALIDATION_DEADLINE_EPOCH'])
 assert time.time()<END
 lane=os.environ['VALIDATION_LANE'];assert lane in M['jobs']
+mounts=[line.split() for line in Path('/proc/mounts').read_text().splitlines()]
+entry=[fields for fields in mounts if fields[1]=='/opt/bootstrap'];assert len(entry)==1
+options=set(entry[0][3].split(','))
+assert {'nosuid','nodev'} <= options and ('noexec' not in options if lane=='C' else 'noexec' in options),'BOOTSTRAP_MOUNT_CONTRACT'
+assert Path('/opt/bootstrap').stat().st_uid==0 and Path('/opt/bootstrap').stat().st_mode & 0o022==0
+print(json.dumps({'bootstrap_mount_options':sorted(options),'lane':lane}),flush=True)
 allowed={'repo.maven.apache.org','github.com','release-assets.githubusercontent.com','objects.githubusercontent.com'}
 class Redirect(urllib.request.HTTPRedirectHandler):
  def redirect_request(self,req,fp,code,msg,headers,newurl):

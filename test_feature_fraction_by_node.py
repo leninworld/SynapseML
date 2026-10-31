@@ -59,7 +59,16 @@ class FeatureFractionByNodeTests(unittest.TestCase):
                     stage.save(path)
                     restored = learner.load(path)
                     self.assertEqual(restored.getFeatureFractionByNode(), 1.0)
+                    self.assertTrue(restored.isSet(restored.featureFractionByNode))
+                    self.assertEqual(
+                        restored.getFeatureFractionByNode(),
+                        restored.getFeatureFraction(),
+                    )
+                    self.assertTrue(restored.isSet(restored.featureFraction))
+                    restored.setFeatureFractionByNode(0.4)
+                    restored.clear(restored.featureFractionByNode)
                     self.assertFalse(restored.isSet(restored.featureFractionByNode))
+                    self.assertEqual(restored.getFeatureFractionByNode(), 1.0)
                     stage.setFeatureFractionByNode(0.4)
                     self.assertEqual(stage.copy().getFeatureFractionByNode(), 0.4)
                     path = os.path.join(directory, "set")
@@ -67,6 +76,7 @@ class FeatureFractionByNodeTests(unittest.TestCase):
                     self.assertEqual(learner.load(path).getFeatureFractionByNode(), 0.4)
                 stage.clear(stage.featureFractionByNode)
                 self.assertEqual(stage.getFeatureFractionByNode(), 1.0)
+                self.assertFalse(stage.isSet(stage.featureFractionByNode))
 
     def test_generated_wrappers_train_with_native_parameter_and_persist(self):
         for learner, model_type in self.learners:
@@ -99,7 +109,9 @@ class FeatureFractionByNodeTests(unittest.TestCase):
                             cleanup.callback(
                                 restored._java_obj.getLightGBMBooster().freeNativeMemory
                             )
-                            self.assertAlmostEqual(self.effective_fraction(restored), 0.4)
+                            self.assertAlmostEqual(
+                                self.effective_fraction(restored), 0.4
+                            )
                             self.assertEqual(
                                 restored.transform(self.data).collect(), expected
                             )

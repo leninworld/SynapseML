@@ -76,8 +76,8 @@
   "candidate_source_sha256": {
     "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/LightGBMParams.scala": "c6fc092fa3f8cb7521fd8174c095b445818849b0cd69947072488b8182f8041b",
     "lightgbm/src/main/scala/com/microsoft/azure/synapse/ml/lightgbm/params/BaseTrainParams.scala": "4a3ffd2571b6f02027f5bda4f03f5234023fbdc5dee797ce19599ef465458241",
-    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala": "e9a163ca09eb8b8962f131d9d4ee1623bc26c3ec9333a97a89f53f1f1e00a90f",
-    "lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py": "a85ea5d7cdc8c601597bfedcb70ccbabb292a0080b9d402cc6e918670efe152d"
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/VerifyFeatureFractionByNode.scala": "cc93ef659e9d71e191d6f3099e23340c4924f948acd266431cf7670e86343510",
+    "lightgbm/src/test/python/synapsemltest/lightgbm/test_feature_fraction_by_node.py": "aebd2b47d3ab5fcd988fb10ee93d3d24f201db127dab433edb6ace9d211051bb"
   },
   "memory_projection_factor": 1.25,
   "public_dataset": {
@@ -86,5 +86,9 @@
     "acquire": "upstreamgetDatasetstask onceB/C;240scap/4GiBarchivepostcheck; fullnetwork+diskguardalways",
     "hash": "measuredafterpublicdownload; no privatecacheexport"
   },
-  "native_jar_sha256": "f2b1b13172699832594303ab4c04f3bc8fc2d24737e3e8c11d98d69a88c09272"
+  "native_jar_sha256": "f2b1b13172699832594303ab4c04f3bc8fc2d24737e3e8c11d98d69a88c09272",
+  "patch_sha256": "a38c17b5c999fb1493c78ad94fee607b22ed308866fa73476f4e2bb5f6dc4d5b",
+  "revision": "I4 private proposal after actual1122 source-proof+R1-R6; final one correction NOTadmitted",
+  "expected_new_scala_cases": 57,
+  "expected_combined_scala_run_cases": 96
 }

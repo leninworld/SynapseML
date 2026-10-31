@@ -81,7 +81,8 @@ def attest_reports():
   facts.append({'path':str(path.relative_to(S)),'suite':root.attrib.get('name'),'tests':int(root.attrib.get('tests',0)),'failures':int(root.attrib.get('failures',0)),'errors':int(root.attrib.get('errors',0)),'skipped':int(root.attrib.get('skipped',0))})
  assert facts,'NO_SCALA_REPORTS'
  assert all(x['failures']==x['errors']==0 for x in facts),'FAILED_SCALA_REPORT'
- assert any(x['suite']==M['scala_suite'] and x['tests']>0 for x in facts),'NEW_SCALA_SUITE_NOT_RUN'
+ assert any(x['suite']==M['scala_suite'] and x['tests']==M['expected_new_scala_cases'] and x['skipped']==0 for x in facts),'NEW_SCALA_SUITE_INCOMPLETE'
+ assert any(x['suite']==M['existing_scala_suites'][1] for x in facts),'EXISTING_COMMON_SUITE_NOT_RUN'
  RESULT['scala_reports']=facts
 try:
  assert not S.exists();shutil.copytree('/source',S)
@@ -174,7 +175,7 @@ print(json.dumps(items))
   roots=list(S.glob('lightgbm/target/scala-*/generated/src/python'));assert len(roots)==1
   os.environ.update(SYNAPSEML_EXPECTED_LIGHTGBM_JAR=str(jars[0]),SYNAPSEML_EXPECTED_GENERATED_ROOT=str(roots[0]))
   _,provenance=run('generated-provenance',['python','/packet/provenance_check.py'],180)
-  RESULT['spark_resolution_excerpt']=provenance.decode(errors='replace')[-12000:]
+  RESULT['spark_resolution_excerpt']=provenance.decode(errors='replace')[-1024*1024:]
   sbt('upstream-lightgbm-python-suite',['lightgbm/testPython'],1200)
   reports=list(S.glob('target/python-test-results-*.xml'));assert reports,'NO_PYTHON_REPORT'
   facts=[]
@@ -192,9 +193,35 @@ except BaseException as exc:
  RESULT.update(status='FAILED_OR_PARKED',error=str(exc));raise
 finally:
  RESULT['steps']=LOGS
+ failures=[]
+ for path in list(S.glob('**/test-reports/*.xml')):
+  try:
+   report=ET.parse(path).getroot()
+   for case in report.iter('testcase'):
+    for failed in list(case.findall('failure'))+list(case.findall('error')):
+     failures.append({'report':str(path.relative_to(S)),'case':case.attrib.get('name'),'message':failed.attrib.get('message','')[:2000],'details':(failed.text or '')[:4000]})
+  except (ET.ParseError,OSError) as problem:failures.append({'report':str(path),'parse_error':str(problem)})
+ # Preserve a complete JSON entry for every failing case/suite within the bound.
+ RESULT['failure_record_count']=len(failures)
+ if any('parse_error' in item for item in failures):RESULT['failure_report_complete']=False
+ for limit in (4000,2000,1000,500,250,100,32):
+  bounded=[{key:(value[:limit] if key in ('message','details') else value)
+            for key,value in item.items()} for item in failures]
+  encoded=json.dumps(bounded)
+  if len(encoded.encode())<=65536:break
+ else:
+  # A labelled overflow is never represented as complete evidence.
+  RESULT['failure_report_complete']=False
+  encoded=json.dumps([{'report':path,'cases':sum(item.get('report')==path for item in failures)}
+                      for path in sorted({item.get('report','UNKNOWN') for item in failures})])
+ RESULT['failure_report_excerpt']=encoded
+ RESULT.setdefault('failure_report_complete',True)
+ RESULT['failure_details_character_limit']=limit
+ if any(step['label']=='black-check' and step['exit']!=0 for step in LOGS):
+  print('BLACK_DIFF_EVIDENCE\n'+(R/'black-diff.log').read_text(errors='replace')[-16000:],flush=True)
  (R/'result.json').write_text(json.dumps(RESULT,indent=2))
  # Failed-step excerpts come before success summaries; only synthetic/public execution logs.
  for step in LOGS:
   if step['exit'] != step['expected_exit']:
-   print('STEP_LOG '+step['label']+'\n'+(R/(step['label']+'.log')).read_text(errors='replace')[-12000:],flush=True)
+   print('STEP_LOG '+step['label']+'\n'+(R/(step['label']+'.log')).read_text(errors='replace')[-1024*1024:],flush=True)
  print('LANE_RESULT '+json.dumps(RESULT),flush=True)
