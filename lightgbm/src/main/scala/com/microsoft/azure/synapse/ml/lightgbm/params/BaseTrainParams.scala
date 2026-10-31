@@ -106,6 +106,7 @@ case class GeneralParams(parallelism: String,
       .appendParamValueIfNotThere("neg_bagging_fraction", negBaggingFraction)
       .appendParamValueIfNotThere("bagging_freq", baggingFreq)
       .appendParamValueIfNotThere("feature_fraction", featureFraction)
+      .appendParamValueIfNotThere("feature_fraction_bynode", featureFractionByNode)
       .appendParamValueIfNotThere("max_depth", maxDepth)
       .appendParamValueIfNotThere("min_sum_hessian_in_leaf", minSumHessianInLeaf)
       .appendParamValueIfNotThere("lambda_l1", lambdaL1)
