@@ -1,0 +1,527 @@
+{
+  "source_commit": "ef69a5daa1cfa2346389a54e87ff8d3366d28431",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "sha1": "4e3ca243fbac4e8c96eb38d783e2077f67081444"
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "sha256": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "bytes": 19028608,
+    "version": "2.10.0-0"
+  },
+  "input_images": {
+    "jdk": "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python": "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node": "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  },
+  "source_allowlist": [
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.scala",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.txt",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/train/VerifyTrainClassifier.scala",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/train/TrainClassifierColumnsSuite.scala",
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/TrainClassifierWeightsSuite.scala",
+    "core/src/test/python/synapsemltest/train/test_train_classifier_columns.py",
+    "docs/Quick Examples/estimators/core/_Train.md"
+  ],
+  "jobs": {
+    "A": {
+      "memory_gib": 8,
+      "admission_available_gib": 10,
+      "disk_free_gib": 32,
+      "network_gib": 10,
+      "remaining_factor": 1.5,
+      "remaining_extra_seconds": 300,
+      "candidate_memory_extra_gib": 0.5
+    },
+    "B": {
+      "memory_gib": 10,
+      "admission_available_gib": 12,
+      "disk_free_gib": 36,
+      "network_gib": 10,
+      "remaining_factor": 0,
+      "remaining_extra_seconds": 1315,
+      "candidate_memory_extra_gib": 1.5
+    },
+    "C": {
+      "memory_gib": 10,
+      "admission_available_gib": 12,
+      "disk_free_gib": 36,
+      "network_gib": 10,
+      "remaining_factor": 3,
+      "remaining_extra_seconds": 1405,
+      "candidate_memory_extra_gib": 1.5
+    },
+    "D": {
+      "memory_gib": 10,
+      "admission_available_gib": 12,
+      "disk_free_gib": 36,
+      "network_gib": 10,
+      "remaining_factor": 0,
+      "remaining_extra_seconds": 1045,
+      "candidate_memory_extra_gib": 1.5
+    },
+    "E": {
+      "memory_gib": 12,
+      "admission_available_gib": 14,
+      "disk_free_gib": 48,
+      "network_gib": 12,
+      "remaining_factor": 0,
+      "remaining_extra_seconds": 1562,
+      "candidate_memory_extra_gib": 3.0
+    },
+    "F": {
+      "memory_gib": 12,
+      "admission_available_gib": 14,
+      "disk_free_gib": 64,
+      "network_gib": 18,
+      "remaining_factor": 1.0,
+      "remaining_extra_seconds": 900,
+      "candidate_memory_extra_gib": 3.0
+    },
+    "G": {
+      "memory_gib": 12,
+      "admission_available_gib": 14,
+      "disk_free_gib": 32,
+      "network_gib": 8,
+      "remaining_factor": 1.5,
+      "remaining_extra_seconds": 1080,
+      "candidate_memory_extra_gib": 1.0
+    }
+  },
+  "working_set_stop_fraction": 0.9375,
+  "projection_multiplier": 1.1,
+  "source_requires_jdk": 11,
+  "source_requires_python": "3.11.8",
+  "attempt_policy": "ONEworkflow plus atmostONEsourceprovencorrection acrossalljobs; no perjobreset",
+  "public_cache_uploads": false,
+  "private_cache_export": false,
+  "phase_step_max_seconds": {
+    "setup": 1200,
+    "compile": 1200,
+    "test": 1800,
+    "codegen": 1500,
+    "website": 900
+  },
+  "baseline_source_sha256": {
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.scala": "0a8145476ea63331a05b58aad7c7a33208931099e2082b9ad00f5ce8bf21dfe6",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.txt": "77678fd59bc1d66017cc1b2fff0ab2b20bbcd80957bc31f720ebf49e08f2b686",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/train/VerifyTrainClassifier.scala": "a3738be1d8256b8fd0a1c323eda64f08d19820e8dd8000ef95f53b8c1d4ef100",
+    "docs/Quick Examples/estimators/core/_Train.md": "e115dee12e480b8681f36c5d84146ce14ffababb937e2674f2826fbd2e7e8beb"
+  },
+  "candidate_source_sha256": {
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.scala": "f9a5a607fc2198c7ea37074cc520bf0145ff5d8e981d9f062b786fc4126315e4",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.txt": "9735eae2d45f804c8d24e29af87636d347b72da515f2946b6ff5010f7418f7cb",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/train/VerifyTrainClassifier.scala": "d48564b46191509b691cfcf67fd9cf440807ea6802b15f6edf993cdb7d64f2b0",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/train/TrainClassifierColumnsSuite.scala": "27192266eca9693c22d151bda500a426a2e06ab5b85787b3b92e68df7914363c",
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/TrainClassifierWeightsSuite.scala": "31e534a44a8017acbac4d77e6b06452bcb3b3f07d02be8cf3e02e89b323cac8b",
+    "core/src/test/python/synapsemltest/train/test_train_classifier_columns.py": "656c80dc740888dd502e224ad2ee90adb8c471135341825d63ac4e314d0647fd",
+    "docs/Quick Examples/estimators/core/_Train.md": "58a4198b0e205365355d86415f251ea4c104f48820c165b3e955219df74cc3d0"
+  },
+  "memory_projection_factor": 1.25,
+  "public_dataset": {
+    "url": "https://mmlspark.blob.core.windows.net/installers/datasets-2023-04-03.tgz",
+    "source": "pinnedbuild.sbt93-109/getDatasets",
+    "acquire": "upstreamgetDatasetstask onceB/C;240scap/4GiBarchivepostcheck; fullnetwork+diskguardalways",
+    "hash": "measuredafterpublicdownload; no privatecacheexport",
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "native_jar_sha256": "f2b1b13172699832594303ab4c04f3bc8fc2d24737e3e8c11d98d69a88c09272",
+  "patch_sha256": "a63a4c95b02a805a288b0e5569394bef88f4729548d1d7e5c9f2d38f7eb02bdb",
+  "revision": "I4 two record corrections following actualClaude14; unapproved/unrun",
+  "new_source_paths": [
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/train/TrainClassifierColumnsSuite.scala",
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/TrainClassifierWeightsSuite.scala",
+    "core/src/test/python/synapsemltest/train/test_train_classifier_columns.py"
+  ],
+  "mandatory_substring_benchmark_changes": [],
+  "job_allocation_delta": "Master fixture producer+consumer colocated in C in separate actual JVMs, reusing baseline core compilation; B still runs complete original suite. No cross-job data dependency/double producer. Exact review required.",
+  "full_finish_evidence": "Current whole public CI job times and retained full cold Docker timings; new case time remains guarded actual calibration, not a claimed measured pass.",
+  "canonical_diff_command": [
+    "git",
+    "-c",
+    "core.abbrev=40",
+    "-c",
+    "core.quotePath=true",
+    "-c",
+    "diff.noprefix=false",
+    "-c",
+    "diff.mnemonicPrefix=false",
+    "-c",
+    "color.ui=never",
+    "diff",
+    "--no-ext-diff",
+    "--no-textconv",
+    "--binary",
+    "--full-index",
+    "--no-renames",
+    "--diff-algorithm=myers",
+    "--no-indent-heuristic",
+    "--unified=3",
+    "--src-prefix=a/",
+    "--dst-prefix=b/",
+    "--"
+  ],
+  "dataset_headers": [
+    {
+      "file": "CarEvaluation.csv",
+      "label": "Col7",
+      "headers": [
+        "Col1",
+        "Col2",
+        "Col3",
+        "Col4",
+        "Col5",
+        "Col6",
+        "Col7"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Multiclass/Train/CarEvaluation.csv",
+      "file_sha256": "f9d867db9e650e71ea6e3e83e1a77441b87f3a26a6be2c5794e197aa7a98ff9d",
+      "file_bytes": 51901
+    },
+    {
+      "file": "BreastTissue.csv",
+      "label": "Class",
+      "headers": [
+        "Class",
+        "I0",
+        "PA500",
+        "HFS",
+        "DA",
+        "Area",
+        "A/DA",
+        "Max IP",
+        "DR",
+        "P"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Multiclass/Train/BreastTissue.csv",
+      "file_sha256": "4d26ab4f8318269aeed7f7c62cd47ec54b4124f3a21d91625df299c74e136565",
+      "file_bytes": 11334
+    },
+    {
+      "file": "abalone.csv",
+      "label": "Rings",
+      "headers": [
+        "Sex",
+        "Length",
+        "Diameter",
+        "Height",
+        "Whole weight",
+        "Shucked weight",
+        "Viscera weight",
+        "Shell weight",
+        "Rings"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Multiclass/Train/abalone.csv",
+      "file_sha256": "6fda3c4b0c0cff9bd5f7a46434509179069ed620c8fc7090d872a08d2c1a729a",
+      "file_bytes": 191962
+    },
+    {
+      "file": "breast-cancer-wisconsin.csv",
+      "label": "Class",
+      "headers": [
+        "Sample code number",
+        "Clump Thickness",
+        "Uniformity of Cell Size",
+        "Uniformity of Cell Shape",
+        "Marginal Adhesion",
+        "Single Epithelial Cell Size",
+        "Bare Nuclei",
+        "Bland Chromatin",
+        "Normal Nucleoli",
+        "Mitoses",
+        "Class"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/breast-cancer-wisconsin.csv",
+      "file_sha256": "c56c7d7059a81ac3005cfb5fe61cec84e506e0ba139bfe007f803eda94ff65ca",
+      "file_bytes": 20061
+    },
+    {
+      "file": "TelescopeData.csv",
+      "label": " Class",
+      "headers": [
+        "fLength",
+        " fWidth",
+        " fSize",
+        " fConc",
+        " fConcl",
+        " fAsym",
+        " fM3Long",
+        " fM3Trans",
+        " fAlpha",
+        " fDist",
+        " Class"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/TelescopeData.csv",
+      "file_sha256": "1d3d92f08c3104090ee752d8458441852cf626c16c6b6b81fd430b7079fba984",
+      "file_bytes": 1477476
+    },
+    {
+      "file": "task.train.csv",
+      "label": "TaskFailed10",
+      "headers": [
+        "TaskNm",
+        "PriorityCnt",
+        "TimeOutCnt",
+        "QueueName",
+        "IsControl10",
+        "IsDAAMachine10",
+        "RanAsSystem10",
+        "IsUx",
+        "IsClient",
+        "TaskFailed10"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/task.train.csv",
+      "file_sha256": "2b4252a15dc322e6e4d24d697761407821616a65f07169a21621e32c7cd457e2",
+      "file_bytes": 651856
+    },
+    {
+      "file": "fertility_Diagnosis.train.csv",
+      "label": "Diagnosis",
+      "headers": [
+        "Season",
+        "NormAge",
+        "ChildishDiseases",
+        "AccidentOrTrauma",
+        "SurgicalIntervention",
+        "HighFevers",
+        "FrequencyOfAlcoholConsumption",
+        "SmokingHabit",
+        "NumberOfSittingHours",
+        "Diagnosis"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/fertility_Diagnosis.train.csv",
+      "file_sha256": "f107887b43146d65c9b79d5cc48c9b281d79bbfeaf219483df87679ddcc799bb",
+      "file_bytes": 3096
+    },
+    {
+      "file": "transfusion.csv",
+      "label": "Donated",
+      "headers": [
+        "Recency",
+        "Frequency",
+        "Monetary",
+        "Time",
+        "Donated"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/transfusion.csv",
+      "file_sha256": "349713be2f8d70e94c9d47a23c830d286bb0615b869a39c4c02b1486d061b443",
+      "file_bytes": 10523
+    },
+    {
+      "file": "data_banknote_authentication.csv",
+      "label": "class",
+      "headers": [
+        "att1",
+        "att2",
+        "att3",
+        "att4",
+        "class"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/data_banknote_authentication.csv",
+      "file_sha256": "5dc0268becf0188b12b92079cd888ed27d6e42ab15afea12db13a5c568749215",
+      "file_bytes": 45055
+    },
+    {
+      "file": "breast-cancer.train.csv",
+      "label": "Label",
+      "headers": [
+        "Label",
+        "Clump Thickness",
+        "Uniformity of Cell Size",
+        "Uniformity of Cell Shape",
+        "Marginal Adhesion",
+        "Single Epithelial Cell Size",
+        "Bare Nuclei",
+        "Bland Chromatin",
+        "Normal Nucleoli",
+        "Mitoses"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/breast-cancer.train.csv",
+      "file_sha256": "809bc35eddc7f50f99ad95d0947c24fadda2fc060eb36f32de8079f7496c0cf1",
+      "file_bytes": 14656
+    },
+    {
+      "file": "random.forest.train.csv",
+      "label": "#Malignant",
+      "headers": [
+        "#Malignant",
+        "ClumpThickness",
+        "UniformityOfCellSize",
+        "UniformityOfCellShape",
+        "MarginalAdhesion",
+        "SingleEpithelialCellSize",
+        "BareNuclei",
+        "BlandChromatin",
+        "NormalNucleoli",
+        "Mitoses"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/random.forest.train.csv",
+      "file_sha256": "93c6771fcb0d2a89b764a720ec8f590241669d872ca90da6bca75b4b59e601eb",
+      "file_bytes": 14327
+    },
+    {
+      "file": "bank.train.csv",
+      "label": "y",
+      "headers": [
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "balance",
+        "housing",
+        "loan",
+        "contact",
+        "day",
+        "month",
+        "duration",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "y"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/bank.train.csv",
+      "file_sha256": "09de0bb208744ae3f9856b3cdf80c47bc249e651fb3f42d21aff19f927e61f5a",
+      "file_bytes": 371020
+    },
+    {
+      "file": "PimaIndian.csv",
+      "label": "Diabetes mellitus",
+      "headers": [
+        "Number of times pregnant",
+        "Plasma glucose concentration a 2 hours in an oral glucose tolerance test",
+        "Diastolic blood pressure (mm Hg)",
+        "Triceps skin fold thickness (mm)",
+        "2-Hour serum insulin (mu U/ml)",
+        "Body mass index (weight in kg/(height in m)^2)",
+        "Diabetes pedigree function",
+        "Age (years)",
+        "Diabetes mellitus"
+      ],
+      "restored_by_exact_membership": [],
+      "path": "datasets-2023-04-03/Binary/Train/PimaIndian.csv",
+      "file_sha256": "50e80cbaeb562376e6c52b483c645cc19d04344973b74b3cbfc0ca6d807a7a85",
+      "file_bytes": 23577
+    }
+  ],
+  "python_case_inventory": {
+    "python-baseline-inherited-label": [
+      "core/src/test/python/synapsemltest/train/baseline_inherited_label_probe.py::TrainClassifierColumnsSpec::test_inherits_python_configured_and_default_learner_labels"
+    ],
+    "complete-handwritten-python": [
+      "core/src/test/python/synapsemltest/train/test_train_classifier_columns.py::TrainClassifierColumnsSpec::test_inherits_python_configured_and_default_learner_labels",
+      "core/src/test/python/synapsemltest/train/test_train_classifier_columns.py::TrainClassifierColumnsSpec::test_ignored_cols_copy_clear_and_estimator_persistence",
+      "core/src/test/python/synapsemltest/train/test_train_classifier_columns.py::TrainClassifierColumnsSpec::test_fitted_persistence_and_class_balancer_end_to_end",
+      "core/src/test/python/synapsemltest/train/test_train_classifier_columns.py::TrainClassifierColumnsSpec::test_explicit_wrapper_label_wins_and_invalid_wrapper_does_not_fall_back",
+      "core/src/test/python/synapsemltest/train/test_train_classifier_columns.py::TrainClassifierColumnsSpec::test_invalid_ignore_and_output_column_contracts",
+      "core/src/test/python/synapsemltest/featurize/test_featurize.py::FeaturizeSpec::test_keep_preserves_missing_numeric_rows_in_pipeline"
+    ],
+    "complete-generated-python": [
+      "core/target/scala-2.12/generated/test/python/synapsemltest/train/test_verify_train_classifier.py::VerifyTrainClassifier::test_TrainClassifier_constructor_0",
+      "core/target/scala-2.12/generated/test/python/synapsemltest/train/test_verify_train_classifier.py::VerifyTrainClassifier::test_TrainClassifier_constructor_1",
+      "core/target/scala-2.12/generated/test/python/synapsemltest/train/test_verify_train_classifier.py::VerifyTrainClassifier::test_TrainClassifier_constructor_2"
+    ],
+    "complete-website-page": [
+      "_Train.md::line 21",
+      "_Train.md::line 135",
+      "_Train.md::line 241"
+    ]
+  },
+  "website_inputs": {
+    "package.json": "9052bb2030b565db0202eaa2b2e2cd667bacbdf8cc0553d587e95ae687530f33",
+    "package-lock.json": "879587e02ff8b9fa75762d2bdda28944f77b9a770430559f21bf45883c499ab9",
+    "docusaurus.config.js": "df129376b138f88bcd215e5f17bad463892194d003264f65b94c685453baa133"
+  },
+  "website_pricing": {
+    "old_build_log": "co_create/20261020/synapseml-934-1050-c1/934-I6-website-build.log",
+    "old_client_compile_seconds": 134.4,
+    "new_lock_records": 1284,
+    "registry_hosts": [
+      "registry.npmjs.org"
+    ],
+    "native_install_scripts": 1,
+    "node_amd64_compressed_bytes": 81046868,
+    "new_actual_peak": "not measured; whole capped pristine baseline before candidate projection",
+    "node_heap_mib": 6144,
+    "scope": "whole npm tests + baseline/candidate full SSR build + owned loopback npm start; no private/browser/cloud service",
+    "test_order_difference": "Candidate npm test runs after baseline generated build/ and .docusaurus/. Upstream tests before build; no test selection is narrowed and no artifact glob exclusion is added."
+  },
+  "website_sample": {
+    "source": "docs/Quick Examples/estimators/core/_Train.md",
+    "source_sha256": "58a4198b0e205365355d86415f251ea4c104f48820c165b3e955219df74cc3d0",
+    "transformed_sha256": "c04494800d78e779369b6c1c075d2903dd2d314a607b2f1d7312d009f4e6fdfc",
+    "frozen_codeblock_fence_lines": [
+      21,
+      135,
+      241
+    ],
+    "expected_tests": 3,
+    "helper_source_sha256": "a73238ff3d40b676c457bc4eaaca0144180184928091dbfbaffb50045eb9a248",
+    "plugin_source_version": "0.18.0",
+    "no_private_or_provider_calls": true,
+    "block_line_index_file": "transformed /runtime/website-sample/_Train.md; node IDs index preceding inserted helper fence, not candidate source fence",
+    "block_identity_mapping": [
+      {
+        "transformed_sample_helper_fence_line": 21,
+        "transformed_sample_example_fence_line": 58,
+        "candidate_source_fence_line": 22,
+        "source_code_body_sha256": "f84ef92e4e61c7cfd3a05080b76faab41d92cbb3b29482a1477304984ad596f0",
+        "transformed_code_body_sha256": "f84ef92e4e61c7cfd3a05080b76faab41d92cbb3b29482a1477304984ad596f0",
+        "body_hash_encoding": "UTF-8, body between fence newlines excluding final fence newline",
+        "role": "existing classifier"
+      },
+      {
+        "transformed_sample_helper_fence_line": 135,
+        "transformed_sample_example_fence_line": 172,
+        "candidate_source_fence_line": 100,
+        "source_code_body_sha256": "bdecfe040b7200633a39027847d456419dc4c1400723108f5e2bfe63501ca2ee",
+        "transformed_code_body_sha256": "bdecfe040b7200633a39027847d456419dc4c1400723108f5e2bfe63501ca2ee",
+        "body_hash_encoding": "UTF-8, body between fence newlines excluding final fence newline",
+        "role": "new weighted classifier"
+      },
+      {
+        "transformed_sample_helper_fence_line": 241,
+        "transformed_sample_example_fence_line": 278,
+        "candidate_source_fence_line": 170,
+        "source_code_body_sha256": "7365f6c3363d77c898dc98f93dc802acbf6aa3e0d0f6b56de664d74805265a04",
+        "transformed_code_body_sha256": "7365f6c3363d77c898dc98f93dc802acbf6aa3e0d0f6b56de664d74805265a04",
+        "body_hash_encoding": "UTF-8, body between fence newlines excluding final fence newline",
+        "role": "existing regressor"
+      }
+    ],
+    "helper_transform_inserted_text": "<!--\n```python\nimport pyspark\nimport os\nimport json\nimport subprocess\nfrom IPython.display import display\nfrom pyspark.sql.functions import *\n\nos.environ[\"PYSPARK_PYTHON\"] = \"python\"\nos.environ[\"PYSPARK_DRIVER_PYTHON\"] = \"jupyter\"\nos.environ[\"PYSPARK_DRIVER_PYTHON_OPTS\"] = \"notebook\"\n\nspark = (pyspark.sql.SparkSession.builder.appName(\"MyApp\")\n        .config(\"spark.jars.packages\", \"com.microsoft.azure:synapseml_2.12:0.0.2-i555-SNAPSHOT\")\n        .config(\"spark.jars.repositories\", \"https://mmlspark.blob.core.windows.net/maven\")\n        .getOrCreate())\n\ndef getSecret(secretName):\n        get_secret_cmd = 'az keyvault secret show --vault-name mmlspark-build-keys --name {}'.format(secretName)\n        value = json.loads(os.popen(get_secret_cmd).read())[\"value\"]\n        return value\n\ndef getAccessToken():\n        result = subprocess.run(\n            [\"az\", \"account\", \"get-access-token\", \"--resource\", \"https://cognitiveservices.azure.com/\"],\n            check=True,\n            capture_output=True,\n            text=True,\n        )\n        return json.loads(result.stdout)[\"accessToken\"]\n\nimport synapse.ml\n```\n-->\n\n<!--pytest-codeblocks:cont-->",
+    "io_scope": "Original three example bodies byte-identical in transformed sample. Inserted Spark setup may resolve public branch-built Maven dependencies under existing provenance/network rules. getSecret/getAccessToken are definitions only, never called by these examples; no storage/data reads or provider calls. No project code imported/executed for this static literal-text proof."
+  },
+  "preexisting_ignored_tests": {
+    "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize": [
+      "Featurizing with categorical columns that have missings - using one hot encoding"
+    ]
+  },
+  "website_docgen": {
+    "scope": "unchanged WebsiteChannel with every docs file and notebook; excludes only unrelated Fabric/Azure publication channels",
+    "nbconvert": "7.16.6",
+    "baseline_and_candidate": true,
+    "candidate_generation_seconds_reserved": 600,
+    "extra_native_pandoc": "not installed: WebsiteChannel uses MarkdownExporter markdown template, no pandoc invocation; FabricChannel owns pypandoc.convert_text",
+    "input_count_before_publication": 114,
+    "notebooks_before_publication": 56,
+    "source_bytes_before_publication": 1176635
+  }
+}

@@ -1,0 +1,817 @@
+diff --git a/core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.scala b/core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.scala
+index 1212acc05f496e72e180953c451605a36e9bf69a..b52e368f2a3c0f432751b425723e682cfff29fdd 100644
+--- a/core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.scala
++++ b/core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.scala
+@@ -85,6 +85,70 @@ class TrainClassifier(override val uid: String) extends AutoTrainer[TrainedClass
+   /** @group setParam */
+   def setLabels(value: Array[String]): this.type = set(labels, value)
+ 
++  /** Optional columns to exclude when automatically selecting features.
++   * Cannot be combined with inputCols. The label and learner's weight column
++   * are already excluded automatically.
++   *
++   * @group param
++   */
++  val ignoredCols = new StringArrayParam(this, "ignoredCols", "Columns to exclude from automatic feature selection")
++
++  /** @group getParam */
++  def getIgnoredCols: Array[String] = $(ignoredCols)
++
++  /** @group setParam */
++  def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
++
++  private def learnerColumn(name: String): Option[String] = {
++    val learner = getModel
++    if (learner.hasParam(name)) {
++      val param = learner.getParam(name).asInstanceOf[Param[Any]]
++      if (learner.isDefined(param)) {
++        learner.getOrDefault(param) match {
++          case value: String if value.nonEmpty => Some(value)
++          case _ => None
++        }
++      } else {
++        None
++      }
++    } else {
++      None
++    }
++  }
++
++  private def resolveLabelColumn(dataset: Dataset[_]): String = {
++    val (column, source) = if (isDefined(labelCol)) {
++      (getLabelCol, "TrainClassifier labelCol")
++    } else {
++      val inherited = learnerColumn("labelCol").getOrElse {
++        throw new IllegalArgumentException("Set TrainClassifier labelCol or use a learner with a defined labelCol")
++      }
++      val origin = if (getModel.isSet(getModel.getParam("labelCol"))) "configured" else "default"
++      (inherited, s"learner $origin labelCol")
++    }
++    require(Option(column).exists(_.nonEmpty), s"$source must not be empty")
++    require(dataset.columns.contains(column), s"$source '$column' does not exist in the training data")
++    column
++  }
++
++  private def selectFeatureColumns(dataset: Dataset[_], label: String, weight: Option[String]): Array[String] = {
++    require(!(isDefined(inputCols) && isDefined(ignoredCols)), "inputCols and ignoredCols cannot both be set")
++    val columns = if (isDefined(inputCols)) {
++      getInputCols
++    } else {
++      val ignored = get(ignoredCols).getOrElse(Array.empty[String])
++      require(Option(ignored).isDefined, "ignoredCols must not be null")
++      ignored.foreach { column =>
++        require(Option(column).exists(_.nonEmpty), "ignoredCols entries must not be empty")
++        require(dataset.columns.contains(column), s"ignoredCols column '$column' does not exist in the training data")
++      }
++      val excluded = ignored.toSet ++ weight.toSet + label
++      dataset.columns.filterNot(excluded.contains)
++    }
++    require(columns.nonEmpty, "TrainClassifier requires at least one feature column")
++    columns
++  }
++
+   /** Optional parameter, specifies the name of the features column passed to the learner.
+    * Must have a unique name different from the input columns.
+    * By default, set to <uid>_features.
+@@ -102,6 +166,11 @@ class TrainClassifier(override val uid: String) extends AutoTrainer[TrainedClass
+   //scalastyle:off cyclomatic.complexity
+   override def fit(dataset: Dataset[_]): TrainedClassifierModel = {
+     logFit({
++      require(!dataset.columns.contains(getFeaturesCol),
++        s"featuresCol '${getFeaturesCol}' is an output column and must not already exist in the training data")
++      val resolvedLabelCol = resolveLabelColumn(dataset)
++      val resolvedWeightCol = learnerColumn("weightCol")
++      val featureColumns = selectFeatureColumns(dataset, resolvedLabelCol, resolvedWeightCol)
+       val labelValues =
+         if (isDefined(labels)) {
+           Some(getLabels)
+@@ -110,20 +179,32 @@ class TrainClassifier(override val uid: String) extends AutoTrainer[TrainedClass
+         }
+ 
+       // Convert label column to categorical on train, remove rows with missing labels
+-      val (convertedLabelDataset, levels) = convertLabel(dataset, getLabelCol, labelValues)
++      val (convertedLabelDataset, levels) = convertLabel(dataset, resolvedLabelCol, labelValues)
+ 
+       val (oneHotEncodeCategoricals, modifyInputLayer, numFeatures) = getFeaturizeParams
+ 
++      val usesOneVsRest = getModel.isInstanceOf[LogisticRegression] && levels.exists(_.length > 2)
++      val oneVsRestWeightCol = if (usesOneVsRest && resolvedWeightCol.contains(resolvedLabelCol)) {
++        Some(Iterator.continually(Identifiable.randomUID("trainClassifierWeight"))
++          .find(name => !dataset.columns.contains(name) && name != getFeaturesCol).get)
++      } else {
++        resolvedWeightCol
++      }
++
+       var classifier: Estimator[_ <: PipelineStage] = getModel match {
+         case logisticRegressionClassifier: LogisticRegression =>
+           if (levels.isDefined && levels.get.length > 2) {
+-            new OneVsRest()
+-              .setClassifier(
+-                logisticRegressionClassifier
+-                  .setLabelCol(getLabelCol)
+-                  .setFeaturesCol(getFeaturesCol))
+-              .setLabelCol(getLabelCol)
++            val learner = if (oneVsRestWeightCol != resolvedWeightCol) {
++              logisticRegressionClassifier.copy(ParamMap.empty).setWeightCol(oneVsRestWeightCol.get)
++            } else {
++              logisticRegressionClassifier
++            }
++            val oneVsRest = new OneVsRest()
++              .setClassifier(learner.setLabelCol(resolvedLabelCol).setFeaturesCol(getFeaturesCol))
++              .setLabelCol(resolvedLabelCol)
+               .setFeaturesCol(getFeaturesCol)
++            oneVsRestWeightCol.foreach(oneVsRest.setWeightCol)
++            oneVsRest
+           } else {
+             logisticRegressionClassifier
+           }
+@@ -141,7 +222,7 @@ class TrainClassifier(override val uid: String) extends AutoTrainer[TrainedClass
+       classifier = classifier match {
+         case predictor: Predictor[_, _, _] =>
+           predictor
+-            .setLabelCol(getLabelCol)
++            .setLabelCol(resolvedLabelCol)
+             .setFeaturesCol(getFeaturesCol).asInstanceOf[Estimator[_ <: PipelineStage]]
+         case default@defaultType if defaultType.isInstanceOf[Estimator[_ <: PipelineStage]] =>
+           // assume label col and features col already set
+@@ -155,13 +236,6 @@ class TrainClassifier(override val uid: String) extends AutoTrainer[TrainedClass
+           numFeatures
+         }
+ 
+-      val nonFeatureColumns = getLabelCol
+-      val featureColumns = if (isDefined(inputCols)) {
+-        getInputCols
+-      } else {
+-        convertedLabelDataset.columns.filterNot(nonFeatureColumns.contains)
+-      }
+-
+       val featurizer = new Featurize()
+         .setOutputCol(getFeaturesCol)
+         .setInputCols(featureColumns)
+@@ -187,7 +261,12 @@ class TrainClassifier(override val uid: String) extends AutoTrainer[TrainedClass
+       }
+ 
+       // Train the learner
+-      val fitModel = classifier.fit(processedData)
++      val fitData = if (usesOneVsRest && oneVsRestWeightCol != resolvedWeightCol) {
++        processedData.withColumn(oneVsRestWeightCol.get, processedData(resolvedLabelCol))
++      } else {
++        processedData
++      }
++      val fitModel = classifier.fit(fitData)
+ 
+       if (processedData.storageLevel.useMemory) {
+         processedData.unpersist()
+@@ -196,7 +275,7 @@ class TrainClassifier(override val uid: String) extends AutoTrainer[TrainedClass
+       // Note: The fit shouldn't do anything here
+       val pipelineModel = new Pipeline().setStages(Array(featurizedModel, fitModel)).fit(convertedLabelDataset)
+       val model = new TrainedClassifierModel()
+-        .setLabelCol(getLabelCol)
++        .setLabelCol(resolvedLabelCol)
+         .setModel(pipelineModel)
+         .setFeaturesCol(getFeaturesCol)
+ 
+diff --git a/core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.txt b/core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.txt
+index 1ef26de3f8c95a8e237940022122e49d5d828af9..1933df94c13a92fb7b6c1ffdf3f873ba5e860e4f 100644
+--- a/core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.txt
++++ b/core/src/main/scala/com/microsoft/azure/synapse/ml/train/TrainClassifier.txt
+@@ -29,3 +29,76 @@ Assume user knows indexing, apply label values. Currently only string type suppo
+ reindex - true
+ labels - true (Specified)
+ Validate labels matches column type, try to recast to label type, reindex label column
++
++
++Label and feature selection
++---------------------------
++Set labelCol on TrainClassifier to override the learner's label column.
++Otherwise, TrainClassifier inherits the learner's configured labelCol or its
++own declared default (for example, "label" for LogisticRegression). The resolved
++column must exist in the training data; an invalid wrapper label never falls
++back to the learner.
++
++By default, all training columns except the resolved label and the learner's
++nonempty weightCol are featurized. The weight remains in the training data for
++the learner. Use ignoredCols to additionally exclude identifiers, diagnostics,
++or other columns that should not be features. Its entries must name existing
++columns; repeated entries and redundant label/weight entries are harmless.
++There must be at least one remaining feature.
++
++Use inputCols instead to explicitly select the feature columns. inputCols and
++ignoredCols cannot both be set, including when ignoredCols is an empty list.
++Explicit inputCols is respected even when it intentionally includes a weight
++column. Clear one parameter before switching selection modes. ignoredCols has
++no default and is optional.
++
++featuresCol is the OUTPUT vector column name, not an input selector. It must
++not already exist in the input data. For example, use inputCols=["age"] to
++select an existing age column, and featuresCol="assembledFeatures" to name the
++new output vector. Featurize similarly uses inputCols and outputCol; it does
++not require a feature-column dictionary.
++
++Weighted PySpark example (with generated branch-built wrappers)::
++
++    from pyspark.ml.classification import LogisticRegression
++    from synapse.ml.stages import ClassBalancer
++    from synapse.ml.train import TrainClassifier
++
++    data = spark.createDataFrame(
++        [(0.0, -2.0, "a"), (0.0, 0.0, "b"), (1.0, 1.0, "c")],
++        ["outcome", "x", "tracking"],
++    )
++    weighted = ClassBalancer().setInputCol("outcome").fit(data).transform(data)
++    learner = LogisticRegression(
++        labelCol="outcome", weightCol="weight", maxIter=8, regParam=0.2
++    )
++    model = TrainClassifier().setModel(learner).setIgnoredCols(["tracking"]).fit(weighted)
++    predictions = model.transform(weighted.drop("outcome", "weight", "tracking"))
++
++Scoring uses the fitted feature pipeline, so automatically excluded or ignored
++training-only columns need not be present. Explicitly selected features remain
++required. A configured missing or invalid weight column still produces the
++underlying learner's error. For multiclass LogisticRegression, TrainClassifier
++uses OneVsRest and forwards its weight column.
++
++Compatibility when refitting
++----------------------------
++The automatic feature selection changes fitted results when previous training
++included weights as features. Column exclusions now use exact names, so a
++feature that is only a substring of the label name is retained. Inheriting the
++learner's default label is also supported when the wrapper label is unset.
++These changes take effect on new fits, including refits of loaded estimators.
++Old saved fitted models keep their original feature pipeline and may still
++require the weight column at scoring; loading does not migrate them.
++
++If labelCol and weightCol are the same column, the learner continues to receive
++the converted label as its weight (including reindexLabel's conversion when
++enabled). The automatic OneVsRest path uses a temporary copy only in its fit
++data to avoid duplicate column names; its persisted weightCol names that copy.
++The copy is not a feature and is not required for scoring. No label/weight
++column-distinctness restriction is introduced.
++
++TrainRegressor and AutoTrainer do not gain ignoredCols or these label-resolution
++changes. Other training-only learner columns such as validationIndicatorCol or
++initScoreCol are not automatically discovered; use ignoredCols or explicit
++inputCols when they should not be features.
+diff --git a/core/src/test/python/synapsemltest/train/test_train_classifier_columns.py b/core/src/test/python/synapsemltest/train/test_train_classifier_columns.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..c3880e5aa54ecbffcc9f550f562068426271f939
+--- /dev/null
++++ b/core/src/test/python/synapsemltest/train/test_train_classifier_columns.py
+@@ -0,0 +1,102 @@
++# Copyright (C) Microsoft Corporation. All rights reserved.
++# Licensed under the MIT License. See LICENSE in project root for information.
++
++import os
++import tempfile
++import unittest
++
++from pyspark.ml.classification import LogisticRegression
++
++from synapse.ml.core.init_spark import init_spark
++from synapse.ml.stages import ClassBalancer
++from synapse.ml.train import TrainClassifier, TrainedClassifierModel
++
++spark = init_spark()
++# Persistence fixtures below contain only models generated by this test.
++spark.conf.set("spark.synapseml.legacy.allowUnsafeJavaDeserialization", "true")
++
++
++class TrainClassifierColumnsSpec(unittest.TestCase):
++    def data(self, label="target"):
++        return spark.createDataFrame(
++            [
++                (0.0, -2.0, 1.0, 1.0),
++                (0.0, -1.0, 2.0, 1.0),
++                (0.0, 0.0, 3.0, 1.0),
++                (1.0, -1.0, 1.0, 8.0),
++                (1.0, 1.0, 2.0, 1.0),
++                (1.0, 2.0, 3.0, 1.0),
++            ],
++            [label, "x", "extra", "weight"],
++        )
++
++    def trainer(self):
++        learner = LogisticRegression(
++            labelCol="target", weightCol="weight", maxIter=8, regParam=0.2
++        )
++        return TrainClassifier().setModel(learner).setReindexLabel(False)
++
++    def test_inherits_python_configured_and_default_learner_labels(self):
++        configured = self.trainer()
++        self.assertFalse(configured.isDefined(configured.labelCol))
++        data = self.data()
++        model = configured.fit(data)
++        self.assertEqual(model.getLabelCol(), "target")
++        self.assertFalse(configured.isDefined(configured.labelCol))
++        self.assertEqual(model.transform(data.drop("target", "weight")).count(), 6)
++        default_data = self.data("label").drop("weight")
++        default = TrainClassifier().setModel(LogisticRegression(maxIter=8))
++        self.assertEqual(default.fit(default_data).getLabelCol(), "label")
++
++    def test_ignored_cols_copy_clear_and_estimator_persistence(self):
++        stage = self.trainer()
++        self.assertFalse(stage.isDefined(stage.ignoredCols))
++        self.assertFalse(stage.hasDefault(stage.ignoredCols))
++        stage.setIgnoredCols(["extra", "extra", "target", "weight"])
++        copied = stage.copy({})
++        self.assertEqual(copied.getIgnoredCols(), stage.getIgnoredCols())
++        with tempfile.TemporaryDirectory() as directory:
++            path = os.path.join(directory, "estimator")
++            copied.write().save(path)
++            loaded = TrainClassifier.load(path)
++            self.assertEqual(loaded.getIgnoredCols(), stage.getIgnoredCols())
++            model = loaded.fit(self.data())
++            self.assertEqual(
++                model.transform(self.data().drop("target", "weight", "extra")).count(),
++                6,
++            )
++        copied.clear(copied.ignoredCols)
++        self.assertFalse(copied.isDefined(copied.ignoredCols))
++
++    def test_fitted_persistence_and_class_balancer_end_to_end(self):
++        data = self.data().drop("weight").where("target = 0 OR x = -1")
++        balanced = ClassBalancer().setInputCol("target").fit(data).transform(data)
++        stage = self.trainer().setIgnoredCols(["extra"])
++        model = stage.fit(balanced)
++        scoring = balanced.drop("target", "weight", "extra")
++        with tempfile.TemporaryDirectory() as directory:
++            path = os.path.join(directory, "model")
++            model.write().save(path)
++            loaded = TrainedClassifierModel.load(path)
++            self.assertEqual(loaded.transform(scoring).count(), balanced.count())
++
++    def test_explicit_wrapper_label_wins_and_invalid_wrapper_does_not_fall_back(self):
++        stage = self.trainer().setLabelCol("target")
++        self.assertEqual(stage.fit(self.data()).getLabelCol(), "target")
++        with self.assertRaisesRegex(Exception, "TrainClassifier labelCol"):
++            self.trainer().setLabelCol("missing").fit(self.data())
++
++    def test_invalid_ignore_and_output_column_contracts(self):
++        for stage, message in [
++            (self.trainer().setInputCols(["x"]).setIgnoredCols([]), "cannot both"),
++            (self.trainer().setIgnoredCols(["missing"]), "ignoredCols"),
++            (self.trainer().setIgnoredCols([""]), "ignoredCols"),
++            (self.trainer().setIgnoredCols(["x", "extra"]), "at least one feature"),
++            (self.trainer().setFeaturesCol("x"), "output column"),
++        ]:
++            with self.assertRaisesRegex(Exception, message):
++                stage.fit(self.data())
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/core/src/test/scala/com/microsoft/azure/synapse/ml/train/TrainClassifierColumnsSuite.scala b/core/src/test/scala/com/microsoft/azure/synapse/ml/train/TrainClassifierColumnsSuite.scala
+new file mode 100644
+index 0000000000000000000000000000000000000000..72be536666751f8a7ac2777a1262dbde88aa3415
+--- /dev/null
++++ b/core/src/test/scala/com/microsoft/azure/synapse/ml/train/TrainClassifierColumnsSuite.scala
+@@ -0,0 +1,275 @@
++// Copyright (C) Microsoft Corporation. All rights reserved.
++// Licensed under the MIT License. See LICENSE in project root for information.
++
++package com.microsoft.azure.synapse.ml.train
++
++import com.microsoft.azure.synapse.ml.core.test.base.TestBase
++import com.microsoft.azure.synapse.ml.stages.ClassBalancer
++import org.apache.spark.ml.{Pipeline, PipelineModel}
++import org.apache.spark.ml.classification.{LogisticRegression, LogisticRegressionModel, OneVsRest, OneVsRestModel}
++import org.apache.spark.ml.linalg.Vector
++import org.apache.spark.ml.param.ParamMap
++import org.apache.spark.sql.DataFrame
++import org.apache.spark.sql.functions.col
++
++import java.nio.file.Files
++
++private object TrainClassifierColumnsSuite {
++  val Iterations = 8
++  val Regularization = 0.2
++  val HeavyWeight = 9.0
++  val CoefficientTolerance = 1e-8
++  val WeightEffectTolerance = 1e-5
++
++}
++
++class TrainClassifierColumnsSuite extends TestBase {
++  import TrainClassifierColumnsSuite._
++
++  private def binary: DataFrame = spark.createDataFrame(Seq(
++    (0.0, -2.0, 1.0, 1.0), (0.0, -1.0, 2.0, 1.0), (0.0, 0.0, 3.0, 1.0),
++    (1.0, -1.0, 1.0, HeavyWeight), (1.0, 1.0, 2.0, 1.0), (1.0, 2.0, 3.0, 1.0)))
++    .toDF("Label", "x", "abel", "weight")
++
++  private def lr: LogisticRegression = new LogisticRegression().setMaxIter(Iterations).setRegParam(Regularization)
++
++  private def trainer: TrainClassifier = new TrainClassifier()
++    .setModel(lr.setLabelCol("Label").setWeightCol("weight"))
++    .setReindexLabel(false)
++
++  private def vectors(model: TrainedClassifierModel, data: DataFrame): Array[Vector] = {
++    model.getModel.stages.head.asInstanceOf[PipelineModel].transform(data)
++      .select(model.getFeaturesCol).collect().map(_.getAs[Vector](0))
++  }
++
++  private def coefficients(model: TrainedClassifierModel): Array[Double] =
++    model.getLastStage.asInstanceOf[LogisticRegressionModel].coefficients.toArray
++
++  private def assertClose(left: Array[Double], right: Array[Double]): Unit = {
++    assert(left.length == right.length)
++    assert(left.zip(right).forall { case (a, b) => math.abs(a - b) < CoefficientTolerance })
++  }
++
++  test("inherits configured learner label without setting the wrapper parameter") {
++    val stage = trainer
++    assert(!stage.isDefined(stage.labelCol))
++    val model = stage.fit(binary)
++    assert(!stage.isDefined(stage.labelCol))
++    assert(model.getLabelCol == "Label")
++    assert(vectors(model, binary.drop("Label", "weight")).forall(_.size == 2))
++    assert(model.transform(binary.drop("Label", "weight")).count() == binary.count())
++  }
++
++  test("inherits the learner default label") {
++    val data = binary.withColumnRenamed("Label", "label").drop("weight")
++    val model = new TrainClassifier().setModel(lr).fit(data)
++    assert(model.getLabelCol == "label")
++    assert(model.transform(data.drop("label")).count() == data.count())
++  }
++
++  test("explicit wrapper label overrides the learner") {
++    val stage = new TrainClassifier().setModel(lr.setLabelCol("missing")).setLabelCol("Label")
++    assert(stage.fit(binary.drop("weight")).getLabelCol == "Label")
++  }
++
++  Seq("", "missing").foreach { value =>
++    test(s"invalid explicit wrapper label '$value' never falls back") {
++      val error = intercept[IllegalArgumentException] { trainer.setLabelCol(value).fit(binary) }
++      assert(error.getMessage.contains("TrainClassifier labelCol"))
++    }
++  }
++
++  test("absent learner default label fails clearly") {
++    val error = intercept[IllegalArgumentException] { new TrainClassifier().setModel(lr).fit(binary) }
++    assert(error.getMessage.contains("learner default labelCol 'label'"))
++  }
++
++  test("missing configured learner label identifies its source") {
++    val error = intercept[IllegalArgumentException] {
++      new TrainClassifier().setModel(lr.setLabelCol("missing")).fit(binary)
++    }
++    assert(error.getMessage.contains("learner configured labelCol 'missing'"))
++  }
++
++  test("an empty learner weight column excludes no non-label columns") {
++    val model = new TrainClassifier().setModel(lr.setLabelCol("Label").setWeightCol(""))
++      .setReindexLabel(false).fit(binary)
++    assert(vectors(model, binary.drop("Label")).forall(_.size == 3))
++    assert(model.transform(binary.drop("Label")).count() == binary.count())
++  }
++
++  test("learner without a label parameter requires an explicit wrapper label") {
++    val error = intercept[IllegalArgumentException] {
++      new TrainClassifier().setModel(new Pipeline()).fit(binary)
++    }
++    assert(error.getMessage.contains("defined labelCol"))
++  }
++
++  test("automatic features exclude weights but retain exact substring column names") {
++    val model = trainer.fit(binary)
++    val actual = vectors(model, binary.drop("Label", "weight"))
++    assert(actual.forall(_.size == 2))
++    assert(actual.head.toArray.toSet == Set(-2.0, 1.0))
++    val processed = model.getModel.stages.head.asInstanceOf[PipelineModel].transform(binary)
++    val reference = lr.setLabelCol("Label").setWeightCol("weight")
++      .setFeaturesCol(model.getFeaturesCol).fit(processed)
++    assertClose(coefficients(model), reference.coefficients.toArray)
++    val unweighted = lr.setLabelCol("Label").setFeaturesCol(model.getFeaturesCol).fit(processed)
++    assert(coefficients(model).zip(unweighted.coefficients.toArray).exists {
++      case (a, b) => math.abs(a - b) > WeightEffectTolerance
++    })
++  }
++
++  test("explicit inputCols preserves an intentional weight feature") {
++    val model = trainer.setInputCols(Array("x", "weight")).fit(binary)
++    assert(vectors(model, binary).forall(_.size == 2))
++    intercept[Exception] { model.transform(binary.drop("weight")).collect() }
++  }
++
++  test("ignoredCols removes arbitrary columns with idempotent duplicates and redundant exclusions") {
++    val stage = trainer.setIgnoredCols(Array("abel", "abel", "Label", "weight"))
++    assert(!stage.hasDefault(stage.ignoredCols))
++    val model = stage.fit(binary)
++    assert(vectors(model, binary.drop("Label", "weight", "abel")).forall(_.size == 1))
++    assert(model.transform(binary.drop("Label", "weight", "abel")).count() == binary.count())
++  }
++
++  test("unset and explicitly empty ignoredCols select the same automatic features") {
++    val stage = trainer
++    assert(!stage.isDefined(stage.ignoredCols))
++    val implicitModel = stage.fit(binary)
++    val explicitModel = trainer.setIgnoredCols(Array.empty[String]).fit(binary)
++    assertClose(coefficients(implicitModel), coefficients(explicitModel))
++  }
++
++  Seq(Array.empty[String], Array("abel")).foreach { ignored =>
++    test(s"inputCols conflicts with defined ignoredCols of length ${ignored.length}") {
++      val error = intercept[IllegalArgumentException] {
++        trainer.setInputCols(Array("x")).setIgnoredCols(ignored).fit(binary)
++      }
++      assert(error.getMessage.contains("cannot both be set"))
++    }
++  }
++
++  Seq(Array(""), Array("missing")).foreach { ignored =>
++    test(s"invalid ignoredCols ${ignored.mkString("[", ",", "]")}") {
++      val error = intercept[IllegalArgumentException] { trainer.setIgnoredCols(ignored).fit(binary) }
++      assert(error.getMessage.contains("ignoredCols"))
++    }
++  }
++
++  test("excluding all features fails clearly") {
++    val error = intercept[IllegalArgumentException] {
++      trainer.setIgnoredCols(Array("x", "abel")).fit(binary)
++    }
++    assert(error.getMessage.contains("at least one feature"))
++  }
++
++  test("featuresCol names a unique output rather than an existing input") {
++    val error = intercept[IllegalArgumentException] { trainer.setFeaturesCol("x").fit(binary) }
++    assert(error.getMessage.contains("output column"))
++  }
++
++  test("copy and estimator persistence preserve optional ignores and inherited labels") {
++    val stage = trainer.setIgnoredCols(Array("abel"))
++    val copied = stage.copy(ParamMap.empty).asInstanceOf[TrainClassifier]
++    val path = Files.createTempDirectory("classifier-estimator").resolve("stage").toString
++    copied.write.save(path)
++    val loaded = TrainClassifier.load(path)
++    assert(!loaded.isDefined(loaded.labelCol))
++    assert(loaded.getIgnoredCols.sameElements(Array("abel")))
++    assert(loaded.fit(binary).transform(binary.drop("Label", "weight", "abel")).count() == binary.count())
++  }
++
++  test("fitted model persistence preserves scoring without training-only columns") {
++    val model = trainer.setIgnoredCols(Array("abel")).fit(binary)
++    val path = Files.createTempDirectory("classifier-model").resolve("model").toString
++    model.write.save(path)
++    val loaded = TrainedClassifierModel.load(path)
++    assertClose(coefficients(model), coefficients(loaded))
++    assert(loaded.transform(binary.drop("Label", "weight", "abel")).count() == binary.count())
++  }
++
++  test("legacy fitted-featurizer equivalent keeps its original weight feature") {
++    val legacy = trainer.setInputCols(Array("x", "weight")).fit(binary)
++    val path = Files.createTempDirectory("classifier-legacy").resolve("model").toString
++    legacy.write.save(path)
++    val loaded = TrainedClassifierModel.load(path)
++    assertClose(coefficients(legacy), coefficients(loaded))
++    assert(loaded.transform(binary).count() == binary.count())
++    intercept[Exception] { loaded.transform(binary.drop("weight")).collect() }
++  }
++
++  Seq(false, true).foreach { reindex =>
++    test(s"label equal to binary weight follows the existing learner contract with reindex=$reindex") {
++      val data = binary.drop("weight")
++      val stage = new TrainClassifier().setLabelCol("Label").setReindexLabel(reindex)
++        .setModel(lr.setLabelCol("Label").setWeightCol("Label"))
++      val model = stage.fit(data)
++      val converted = stage.convertLabel(data, "Label", None)._1
++      val processed = model.getModel.stages.head.asInstanceOf[PipelineModel].transform(converted)
++      val reference = lr.setLabelCol("Label").setWeightCol("Label")
++        .setFeaturesCol(model.getFeaturesCol).fit(processed)
++      assertClose(coefficients(model), reference.coefficients.toArray)
++    }
++  }
++
++  private def multiclass: DataFrame = spark.createDataFrame(Seq(
++    ("a", -2.0, 1.0), ("a", -1.0, 2.0), ("a", 0.0, 1.0),
++    ("b", -1.0, HeavyWeight), ("b", 1.0, 1.0), ("c", 0.0, 1.0), ("c", 2.0, 3.0)))
++    .toDF("target", "x", "weight")
++
++  test("weighted automatic OneVsRest agrees with a manual weighted reference and uses weights") {
++    val stage = new TrainClassifier().setModel(lr.setLabelCol("target").setWeightCol("weight"))
++    val model = stage.fit(multiclass)
++    val converted = stage.convertLabel(multiclass, "target", None)._1
++    val processed = model.getModel.stages.head.asInstanceOf[PipelineModel].transform(converted)
++    val reference = new OneVsRest().setClassifier(lr.setLabelCol("target").setWeightCol("weight"))
++      .setLabelCol("target").setFeaturesCol(model.getFeaturesCol).setWeightCol("weight").fit(processed)
++    val unweighted = new OneVsRest().setClassifier(lr.setLabelCol("target"))
++      .setLabelCol("target").setFeaturesCol(model.getFeaturesCol).fit(processed)
++    val actual = model.getLastStage.asInstanceOf[OneVsRestModel]
++    actual.models.zip(reference.models).foreach { case (a, b) =>
++      assertClose(a.asInstanceOf[LogisticRegressionModel].coefficients.toArray,
++        b.asInstanceOf[LogisticRegressionModel].coefficients.toArray)
++    }
++    assert(actual.models.zip(unweighted.models).exists { case (a, b) =>
++      a.asInstanceOf[LogisticRegressionModel].coefficients.toArray
++        .zip(b.asInstanceOf[LogisticRegressionModel].coefficients.toArray)
++        .exists { case (x, y) => math.abs(x - y) > WeightEffectTolerance }
++    })
++    assert(model.transform(multiclass.drop("target", "weight")).count() == multiclass.count())
++  }
++
++  test("same label and multiclass weight uses a fit-only alias without changing the learner parameter") {
++    val learner = lr.setLabelCol("target").setWeightCol("target")
++    val stage = new TrainClassifier().setModel(learner)
++    val model = stage.fit(multiclass.drop("weight"))
++    assert(learner.getWeightCol == "target")
++    val actual = model.getLastStage.asInstanceOf[OneVsRestModel]
++    assert(actual.getWeightCol != "target")
++    val converted = stage.convertLabel(multiclass.drop("weight"), "target", None)._1
++    val processed = model.getModel.stages.head.asInstanceOf[PipelineModel].transform(converted)
++      .withColumn("referenceWeight", col("target"))
++    val reference = new OneVsRest().setClassifier(lr.setWeightCol("referenceWeight"))
++      .setLabelCol("target").setFeaturesCol(model.getFeaturesCol).setWeightCol("referenceWeight").fit(processed)
++    actual.models.zip(reference.models).foreach { case (a, b) =>
++      assertClose(a.asInstanceOf[LogisticRegressionModel].coefficients.toArray,
++        b.asInstanceOf[LogisticRegressionModel].coefficients.toArray)
++    }
++    assert(model.transform(multiclass.drop("target", "weight")).count() == multiclass.count())
++  }
++
++  test("ClassBalancer weights reach the learner and are not scoring features") {
++    val data = binary.drop("weight").filter(col("Label") === 0.0 || col("x") === -1.0)
++    val weighted = new ClassBalancer().setInputCol("Label").fit(data).transform(data)
++    val model = trainer.fit(weighted)
++    assert(model.transform(weighted.drop("Label", "weight")).count() == weighted.count())
++    assert(vectors(model, weighted.drop("Label", "weight")).forall(_.size == 2))
++  }
++
++  test("missing and negative weights remain visible learner errors") {
++    intercept[Exception] { trainer.fit(binary.drop("weight")) }
++    intercept[Exception] { trainer.fit(binary.withColumn("weight", -col("weight"))) }
++  }
++}
+diff --git a/core/src/test/scala/com/microsoft/azure/synapse/ml/train/VerifyTrainClassifier.scala b/core/src/test/scala/com/microsoft/azure/synapse/ml/train/VerifyTrainClassifier.scala
+index 3c33f91c618a901613a5fb462240f9d08b3f0048..558572777371f57d9d1a65d8339b11813c1274bf 100644
+--- a/core/src/test/scala/com/microsoft/azure/synapse/ml/train/VerifyTrainClassifier.scala
++++ b/core/src/test/scala/com/microsoft/azure/synapse/ml/train/VerifyTrainClassifier.scala
+@@ -292,8 +292,13 @@ class VerifyTrainClassifier extends Benchmarks with EstimatorFuzzing[TrainClassi
+   }
+ 
+   override def testObjects(): Seq[TestObject[TrainClassifier]] =
+-    List(new TestObject(new TrainClassifier().setModel(
+-      new LogisticRegression()).setLabelCol(mockLabelCol), createMockDataset))
++    List(
++      new TestObject(new TrainClassifier().setModel(
++        new LogisticRegression()).setLabelCol(mockLabelCol), createMockDataset),
++      new TestObject(new TrainClassifier().setModel(
++        new LogisticRegression().setLabelCol(mockLabelCol)), createMockDataset),
++      new TestObject(new TrainClassifier().setModel(
++        new LogisticRegression().setLabelCol(mockLabelCol)).setIgnoredCols(Array("col4")), createMockDataset))
+ 
+   override def reader: MLReadable[_] = TrainClassifier
+ 
+diff --git a/docs/Quick Examples/estimators/core/_Train.md b/docs/Quick Examples/estimators/core/_Train.md
+index 46853e323ab7fa0735d0e4bb0023f1614f5d928f..a6aa2638c31e51f21407ba1cb6b7d3e558938119 100644
+--- a/docs/Quick Examples/estimators/core/_Train.md	
++++ b/docs/Quick Examples/estimators/core/_Train.md	
+@@ -78,6 +78,73 @@ tc.fit(df).transform(df).show()
+ </TabItem>
+ </Tabs>
+ 
++### Weighted classification and automatic feature selection
++
++`TrainClassifier` inherits a learner's configured label column (or its declared
++label default) when its own `labelCol` is unset. Automatic features exclude that
++label and the learner's nonempty weight column. Use `ignoredCols` to exclude
++other training-only columns, or use `inputCols` to select features explicitly;
++these two parameters cannot both be set. `featuresCol` names a new output vector
++column and must not already exist in the input data.
++
++<Tabs
++  defaultValue="py"
++  values={[
++    {label: 'Python', value: 'py'},
++    {label: 'Scala', value: 'scala'},
++  ]}>
++<TabItem value="py">
++
++<!--pytest-codeblocks:cont-->
++
++```python
++from pyspark.ml.classification import LogisticRegression
++from synapse.ml.stages import ClassBalancer
++from synapse.ml.train import TrainClassifier
++
++weighted_data = spark.createDataFrame(
++    [(0.0, -2.0, "a"), (0.0, 0.0, "b"), (1.0, 1.0, "c")],
++    ["outcome", "x", "tracking"],
++)
++weighted = ClassBalancer().setInputCol("outcome").fit(weighted_data).transform(weighted_data)
++learner = LogisticRegression(
++    labelCol="outcome", weightCol="weight", maxIter=8, regParam=0.2
++)
++classifier = TrainClassifier().setModel(learner).setIgnoredCols(["tracking"])
++weighted_model = classifier.fit(weighted)
++scoring = weighted.drop("outcome", "weight", "tracking")
++assert weighted_model.transform(scoring).count() == weighted_data.count()
++```
++
++</TabItem>
++<TabItem value="scala">
++
++```scala
++import com.microsoft.azure.synapse.ml.stages.ClassBalancer
++import com.microsoft.azure.synapse.ml.train.TrainClassifier
++import org.apache.spark.ml.classification.LogisticRegression
++
++val weightedData = spark.createDataFrame(Seq(
++  (0.0, -2.0, "a"), (0.0, 0.0, "b"), (1.0, 1.0, "c")))
++  .toDF("outcome", "x", "tracking")
++val weighted = new ClassBalancer().setInputCol("outcome").fit(weightedData).transform(weightedData)
++val learner = new LogisticRegression().setLabelCol("outcome").setWeightCol("weight")
++  .setMaxIter(8).setRegParam(0.2)
++val classifier = new TrainClassifier().setModel(learner).setIgnoredCols(Array("tracking"))
++val weightedModel = classifier.fit(weighted)
++val scoring = weighted.drop("outcome", "weight", "tracking")
++assert(weightedModel.transform(scoring).count() == weightedData.count())
++```
++
++</TabItem>
++</Tabs>
++
++Refitting now removes accidental weight features and keeps feature names that
++are only substrings of the label name. Old saved fitted models keep their
++original feature pipeline and may still need the weight column when scoring.
++Other learner-specific columns, such as validation indicators, need an explicit
++ignore or input-column selection. `TrainRegressor` is unchanged.
++
+ <DocTable className="TrainClassifier"
+ py="synapse.ml.train.html#module-synapse.ml.train.TrainClassifier"
+ scala="com/microsoft/azure/synapse/ml/train/TrainClassifier.html"
+diff --git a/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/TrainClassifierWeightsSuite.scala b/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/TrainClassifierWeightsSuite.scala
+new file mode 100644
+index 0000000000000000000000000000000000000000..721a747004f331c42dd654ddb4a3aed8f0e0172b
+--- /dev/null
++++ b/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/TrainClassifierWeightsSuite.scala
+@@ -0,0 +1,70 @@
++// Copyright (C) Microsoft Corporation. All rights reserved.
++// Licensed under the MIT License. See LICENSE in project root for information.
++
++package com.microsoft.azure.synapse.ml.lightgbm.split1
++
++import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassificationModel, LightGBMClassifier}
++import com.microsoft.azure.synapse.ml.stages.ClassBalancer
++import com.microsoft.azure.synapse.ml.train.TrainClassifier
++import org.apache.spark.ml.PipelineModel
++import org.apache.spark.ml.linalg.Vector
++import org.apache.spark.sql.DataFrame
++
++private object TrainClassifierWeightsSuite {
++  val RowCount = 30
++  val HeavyWeight = 8.0
++  val ExtraFeatureModulus = 5
++  val Iterations = 5
++  val ProbabilityTolerance = 1e-8
++  val WeightEffectTolerance = 1e-6
++
++}
++
++class TrainClassifierWeightsSuite extends LightGBMTestUtils {
++  import TrainClassifierWeightsSuite._
++
++  private def data: DataFrame = spark.createDataFrame((0 until RowCount).map { index =>
++    (if (index % 3 == 0) 1.0 else 0.0, index.toDouble, (index % ExtraFeatureModulus).toDouble,
++      if (index % 3 == 0) HeavyWeight else 1.0)
++  }).toDF("Label", "x", "abel", "weight").coalesce(1)
++
++  private def learner(mode: String): LightGBMClassifier = new LightGBMClassifier()
++    .setObjective("binary").setLabelCol("Label").setNumIterations(Iterations).setNumLeaves(3)
++    .setMinDataInLeaf(1).setNumThreads(1).setNumTasks(1)
++    .setDefaultListenPort(getAndIncrementPort()).setDataTransferMode(mode)
++
++  private def probabilities(model: LightGBMClassificationModel, input: DataFrame): Array[Double] = {
++    model.transform(input).orderBy("x").select(model.getProbabilityCol).collect()
++      .map(_.getAs[Vector](0)(1))
++  }
++
++  Seq("streaming", "bulk").foreach { mode =>
++    Seq(false, true).foreach { balanced =>
++      test(s"TrainClassifier preserves native $mode weights with ClassBalancer=$balanced") {
++        val input = if (balanced) {
++          val original = data.drop("weight")
++          new ClassBalancer().setInputCol("Label").fit(original).transform(original).coalesce(1)
++        } else {
++          data
++        }
++        val base = learner(mode).setWeightCol("weight")
++        val trained = new TrainClassifier().setModel(base).setReindexLabel(false).fit(input)
++        val featurizer = trained.getModel.stages.head.asInstanceOf[PipelineModel]
++        val processed = featurizer.transform(input)
++        assert(processed.select(trained.getFeaturesCol).first().getAs[Vector](0).size == 2)
++        assert(processed.columns.contains("weight"))
++        val native = trained.getLastStage.asInstanceOf[LightGBMClassificationModel]
++        val reference = learner(mode).setWeightCol("weight")
++          .setFeaturesCol(trained.getFeaturesCol).fit(processed)
++        val unweighted = learner(mode).setFeaturesCol(trained.getFeaturesCol).fit(processed)
++        val actual = probabilities(native, processed)
++        val expected = probabilities(reference, processed)
++        assert(actual.zip(expected).forall { case (a, b) => math.abs(a - b) < ProbabilityTolerance })
++        assert(actual.zip(probabilities(unweighted, processed)).exists {
++          case (a, b) => math.abs(a - b) > WeightEffectTolerance
++        })
++        assert(trained.transform(input.drop("Label", "weight")).count() == input.count())
++      }
++    }
++  }
++}
