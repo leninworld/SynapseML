@@ -1,0 +1,23 @@
+{
+  "Q8": {
+    "official_workflow": ".github/workflows/website-deploy.yml50-52",
+    "node_major": 24,
+    "engines": ">=24.0"
+  },
+  "Q9": {
+    "upstream_commit": "facebook/docusaurus@5c997479e0be415bc70e516c4e774c5fe3620e0f",
+    "source": "packages/docusaurus-plugin-content-docs/src/versions/version.ts167-195,240-245; options.ts29; slug.ts35-58",
+    "site": "baseUrl/SynapseML/,trailingSlashtrue,no routeBasePath/versions overrides;versions.json first1.1.3 means currentdocs next",
+    "route": "/SynapseML/docs/next/Explore Algorithms/Responsible AI/PDP and ICE Explainers/",
+    "html": "build/docs/next/Explore Algorithms/Responsible AI/PDP and ICE Explainers/index.html"
+  },
+  "Q10": {
+    "cli": "tools/docgen/docgen/__main__.py20-29 accepts--manifest",
+    "official": ".github/workflows/website-deploy.yml46-48 python __main__.py with defaultmanifest; qualification selectsunchangedWebsiteChannelonly, excludingFabric/Azurepublication; absoluteinput/output",
+    "no_pandoc_call": "WebsiteChannel23-56 importsno pandoccall; laterFabricChannel usespypandoc; no binary installationneeded"
+  },
+  "Q11": {
+    "tracked_website_docs": 0,
+    "source": "channels.py25-56 rglob all, notebookoutputstem/frontmatter, directshutil.copyforotherfiles; runtimealso unionstrackedexistingfiles"
+  }
+}

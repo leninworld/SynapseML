@@ -1,0 +1,14 @@
+{
+  "state": "AUTHORING_COMPLETE_FIXTURES_NOT_EXECUTED",
+  "paths": {
+    "TAR/directory/comparison/size": "inside.py early ownedTARfixture, beforedownloads",
+    "ZIPselection": "wheel_metadata.select_metadata EXACTsamefunction; positivevendor+zero/two/wrongrootfixtures beforepipwheel; evidencepersisted BEFOREassert",
+    "wheelMETADATAheaderdecode": "Same stdlibemail.message_from_bytes callable in production and positiveZIPfixture, assertsName/Version; root+headercorrespondence reviewed with exactsource",
+    "lock_writer": "controller_checks.make_wheel_lock EXACTsamefunction; valid+duplicate-normalized+badSHA+missingversionfixtures",
+    "git_status_scope": "controller_checks.validate_status EXACTsamefunction; allowed/empty/outside/rename/malformedfixtures",
+    "page_route_identity": "controller_checks.inspect_page EXACTsamefunction; encodedcurrentroutepositive/wrongversion/missingcontent/missingcanonicalnegativefixtures",
+    "postgen_invariants": "controller_checks.verify_projection EXACTsamefunction; positiveexistingtracked+missing/extra/badcopy/badfrontmatterfixtures; collision and symlink negatives included"
+  },
+  "prior_attempt": "Q1run41987036489 remainsclosedfailed; no counters/deadlines reset",
+  "execution": "NOAUTHORITY; one complete fresh substantive Q2 review with actualsource/fixturecoverage/fullworkflowbudget required"
+}

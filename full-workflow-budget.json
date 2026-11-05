@@ -1,0 +1,34 @@
+{
+  "state": "CLAUDE_Q2_APPROVED_B1_SUBJECT_TO_PREPUSH",
+  "origin": "Original Q1 actual job started_at (includes elapsedfailedQ1 and all interstage authoring/review time)",
+  "origin_epoch": 1793863483.0,
+  "absolute_deadline_epoch": 1793892283.0,
+  "absolute_deadline_utc": "2026-11-05T15:24:43+00:00",
+  "total_workflow_seconds": 28800,
+  "prior_Q1_run": 41987036489,
+  "prior_Q1_failed_preserved": true,
+  "stage_planned_caps_seconds": {
+    "Q2": {
+      "target": 2100,
+      "absolute": 2700
+    },
+    "S-build": {
+      "target": 1200,
+      "absolute": 1800
+    },
+    "S-full": {
+      "target": 2100,
+      "absolute": 2700
+    },
+    "W": {
+      "target": 1800,
+      "absolute": 2400
+    }
+  },
+  "fidelity": "All56cells20code/fullAdult/GBT100depth7 unchanged; corebasebuild+Testcompile/codegen, realDoubleTypepipelinecontrols, nbclient/preamble/generatedpackage checks, bothBlackgates, allrealhelperoracles, fullWebsiteChannel/test/SSR/render/images mandatory. No Sbuild/Sfull/Wexecutionapproval; actualschema/Q2costs and realdata Sparkcalibration must support subsequentadmission before expensive fullrun.",
+  "no_extension": "B1unexecutedproposal corrected byactualQ2review beforetakingeffect; originstilloriginalQ1jobstart. Bindingoncepublished, no reanchor/extend afterfailure/expiry. Allper-stagecoldsetup andgaps included.",
+  "workflow_absolute_deadline_epoch": 1793892283.0,
+  "push_required_remaining_seconds": 20400,
+  "latest_push_epoch": 1793871883.0,
+  "breakdown": "ActualelapsedQ1+authoring/review included;160minstageabsolutes+threeplanninggapallowances<=60mineach; onlywholedeadlinebinding; no stageexecutiongrant exceptconditionedQ2.8h is a ceiling, not expectedruntime or permission to waste time."
+}
