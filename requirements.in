@@ -1,0 +1,18 @@
+numpy @ https://files.pythonhosted.org/packages/3a/d0/edc009c27b406c4f9cbc79274d6e46d634d139075492ad055e3d68445925/numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=666dbfb6ec68962c033a450943ded891bed2d54e6755e35e5835d63f4f6931d5
+pandas @ https://files.pythonhosted.org/packages/d0/28/88b81881c056376254618fad622a5e94b5126db8c61157ea1910cd1c040a/pandas-2.0.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=d9cd88488cceb7635aebb84809d087468eb33551097d600c6dad13602029c2df
+pyarrow @ https://files.pythonhosted.org/packages/81/53/385279a985567a8a909bf9365cd15fc87c26ebe7db60a7220e4eeb407c87/pyarrow-10.0.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=abb57334f2c57979a49b7be2792c31c23430ca02d24becd0b511cbe7b6b08649
+matplotlib @ https://files.pythonhosted.org/packages/80/3b/e363612ac1a514abfb5505aa209dd5b724b3232a6de98710d7759559706a/matplotlib-3.8.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=cc4ccdc64e3039fc303defd119658148f2349239871db72cd74e2eeaa9b80b71
+pyspark @ https://files.pythonhosted.org/packages/92/11/5c0f24537fa68624cb6271d2a8a8982e81bd05f5cb51e9d2d2a89baa0e1a/pyspark-3.5.0.tar.gz#sha256=d41a9b76bd2aca370a6100d075c029e22ba44c5940927877e9435a3a9c566558
+nbconvert @ https://files.pythonhosted.org/packages/cc/9a/cd673b2f773a12c992f41309ef81b99da1690426bd2f96957a7ade0d3ed7/nbconvert-7.16.6-py3-none-any.whl#sha256=1375a7b67e0c2883678c48e506dc320febb57685e5ee67faa51b18a90f3a712b
+nbclient @ https://files.pythonhosted.org/packages/34/6d/e7fa07f03a4a7b221d94b4d586edb754a9b0dc3c9e2c93353e9fa4e0d117/nbclient-0.10.2-py3-none-any.whl#sha256=4ffee11e788b4a27fabeb7955547e4318a5298f34342a4bfd01f2e1faaeadc3d
+black[jupyter] @ https://files.pythonhosted.org/packages/2e/ef/a38a2189959246543e60859fb65bd3143129f6d18dfc7bcdd79217f81ca2/black-22.3.0-py3-none-any.whl#sha256=bc58025940a896d7e5356952228b68f793cf5fcb342be703c3a2669a1488cb72
+ipykernel
+matplotlib-inline
+nbformat
+pypandoc
+markdownify
+markdown
+traitlets
+beautifulsoup4
+requests
+pyyaml

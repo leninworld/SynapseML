@@ -1,0 +1,39 @@
+name: Qualify PDP and ICE tutorial baseline
+on:
+  push:
+    branches: [validate-pdp-ice-tutorial-baseline]
+concurrency: {group: pdp-ice-q, cancel-in-progress: false}
+permissions:
+  contents: read
+jobs:
+  qualification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Anchor the only original qualification clock
+        run: echo "VALIDATION_JOB_STARTED_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: microsoft/SynapseML
+          ref: d3f3af6bd3e4b7d191f51c9eb29f9aeffe788193
+          path: source
+          persist-credentials: false
+      - name: Complete exact qualification in hosted Docker
+        env:
+          VALIDATION_LANE: Q
+        run: python3 packet/host.py
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: pdp-ice-qualification-evidence
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            runtime/*.log
+            runtime/*.json
+            runtime/*.jsonl
+            runtime/resolved-wheel-lock.txt
