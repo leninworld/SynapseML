@@ -1,0 +1,978 @@
+diff --git a/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/RankingTuning.scala b/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/RankingTuning.scala
+index 5587f4a4b3..cda32f0cb9 100644
+--- a/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/RankingTuning.scala
++++ b/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/RankingTuning.scala
+@@ -138,11 +138,11 @@ private[automl] object RankingTuning {
+     Plan(runs, group, label, k)
+   }
+ 
+-  private def fitModel(ranker: Ranker[_, _, _], data: Dataset[_]): RankerModel[_, _] = {
++  private def fitModel(ranker: Ranker[_, _, _], data: Dataset[_]): (Estimator[_], RankerModel[_, _]) = {
+     val fresh = ranker.copy(ParamMap.empty).asInstanceOf[Estimator[_]]
+     // A previously fitted estimator may carry bin boundaries from unrelated training rows.
+     if (fresh.hasParam("referenceDataset")) fresh.clear(fresh.getParam("referenceDataset"))
+-    fresh.fit(data).asInstanceOf[RankerModel[_, _]]
++    (fresh, fresh.fit(data).asInstanceOf[RankerModel[_, _]])
+   }
+ 
+   private def evaluateFold(plan: Plan, training: DataFrame, validation: DataFrame,
+@@ -156,7 +156,7 @@ private[automl] object RankingTuning {
+         override def call(): (Int, Double) = {
+           context.setJobGroup(jobGroups(index), "Ranking hyperparameter evaluation", interruptOnCancel = true)
+           try {
+-            val model = fitModel(ranker, training)
++            val (_, model) = fitModel(ranker, training)
+             val score = ndcg(model.transform(validation), plan.group, plan.label, model.getPredictionCol,
+               plan.cutoff, checkLabels = false, frame => { pending.add(frame); () })
+             (index, score)
+@@ -266,8 +266,9 @@ private[automl] object RankingTuning {
+         scores.zipWithIndex.foreach { case (score, index) => totals(index) += score }
+       }
+       val best = totals.indices.maxBy(totals(_))
+-      val model = fitModel(plan.runs(best), dataset)
++      val (estimator, model) = fitModel(plan.runs(best), dataset)
+       new TuneHyperparametersModel(tuner.uid).setBestModel(model).setBestMetric(totals(best) / tuner.getNumFolds)
++        .setBestModelParamsInfo(BestModelParamsInfo.render(estimator, model))
+     } {
+       try {
+         releaseCompleted(pending)
+diff --git a/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/TuneHyperparameters.scala b/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/TuneHyperparameters.scala
+index 5cc187a549..c221d3a3d5 100644
+--- a/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/TuneHyperparameters.scala
++++ b/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/TuneHyperparameters.scala
+@@ -215,8 +215,18 @@ class TuneHyperparameters(override val uid: String) extends Estimator[TuneHyperp
+ 
+       val (bestMetric, bestIndex) = metrics.zipWithIndex.maxBy(_._1)(operator)
+       // Compute best model fit on dataset
+-      val bestModel = getModels(bestIndex % numModels).fit(dataset, paramsPerRun(bestIndex)).asInstanceOf[Model[_]]
+-      new TuneHyperparametersModel(uid).setBestModel(bestModel).setBestMetric(bestMetric)
++      val selected = getModels(bestIndex % numModels)
++      val winning = paramsPerRun(bestIndex)
++      val (bestModel, info): (Model[_], Option[String]) = if (FitDispatch.usesInheritedParamMapFit(selected)) {
++        val finalEstimator = selected.copy(winning)
++        val fitted = finalEstimator.fit(dataset).asInstanceOf[Model[_]]
++        (fitted, Some(BestModelParamsInfo.render(finalEstimator, fitted)))
++      } else {
++        (selected.fit(dataset, winning).asInstanceOf[Model[_]], None)
++      }
++      val result = new TuneHyperparametersModel(uid).setBestModel(bestModel).setBestMetric(bestMetric)
++      info.foreach(result.setBestModelParamsInfo)
++      result
+     }, dataset.columns.length)
+   }
+   //scalastyle:on method.length
+@@ -255,7 +265,19 @@ class TuneHyperparametersModel(val uid: String)
+ 
+   override def transformSchema(schema: StructType): StructType = getBestModel.transformSchema(schema)
+ 
+-  def getBestModelInfo: String = EvaluationUtils.modelParamsToString(getBestModel)
++  val bestModelParamsInfo = new Param[String](this, "bestModelParamsInfo",
++    "Informational training-parameter snapshot written by fit; manually setting it changes the reported provenance.")
++
++  def getBestModelParamsInfo: String = $(bestModelParamsInfo)
++
++  def setBestModelParamsInfo(value: String): this.type = set(bestModelParamsInfo, value)
++
++  /** Reports the final estimator configuration when standard ParamMap fit dispatch was used.
++    * Custom fit overrides and models saved without a snapshot retain their legacy reporting.
++    * Models saved with the new field may not be readable by earlier releases.
++    */
++  def getBestModelInfo: String = get(bestModelParamsInfo)
++    .getOrElse(EvaluationUtils.modelParamsToString(getBestModel))
+ 
+ }
+ 
+diff --git a/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyRankingTuning.scala b/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyRankingTuning.scala
+index 80d63734e8..ae85b91b05 100644
+--- a/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyRankingTuning.scala
++++ b/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyRankingTuning.scala
+@@ -399,4 +399,23 @@ class VerifyRankingTuning extends TestBase {
+     }
+   }
+ 
++
++  test("ranking model info retains final training parameters while omitting binary reference data") {
++    val model = learner
++    model.set(model.referenceDataset, Array[Byte](7, 8, 9))
++    val best = tuner(model).fit(data)
++    val info = best.getBestModelInfo
++    val path = tmpDir.resolve("ranking-info").toString
++    best.write.save(path)
++    val loaded = TuneHyperparametersModel.load(path)
++
++    assert(info.contains("direction: 1.0"))
++    assert(info.contains("trainDelayMs: 0"))
++    assert(info.contains("referenceDataset: <binary omitted>"))
++    assert(!info.startsWith("model:"))
++    assert(!info.contains("[B@"))
++    assert(model.getOrDefault(model.referenceDataset).sameElements(Array[Byte](7, 8, 9)))
++    assert(loaded.getBestModelInfo === info)
++    assert(best.copy(ParamMap.empty).getBestModelInfo === info)
++  }
+ }
+diff --git a/docs/Quick Examples/estimators/core/_AutoML.md b/docs/Quick Examples/estimators/core/_AutoML.md
+index 62a0dabccd..d6d55b074f 100644
+--- a/docs/Quick Examples/estimators/core/_AutoML.md	
++++ b/docs/Quick Examples/estimators/core/_AutoML.md	
+@@ -258,8 +258,64 @@ Distinct query groups are sorted by a seeded hash and dealt round-robin into
+ folds. This keeps groups intact and folds non-empty and balanced, but the
+ assignment window runs in one partition over the distinct query groups. Plan
+ for that group-cardinality limit. Classification and regression tuning keep
+-their existing behavior. `getBestModelInfo()` remains unsupported for rankers.
+-This example does not cover additional data formats or external tuning libraries.
++their existing behavior. This example does not cover additional data formats or external tuning libraries.
++
++#### Inspect the selected training parameters
++
++Newly fitted tuning models retain a textual snapshot of the final estimator's training configuration.
++`getBestModelInfo()` includes separately labelled trainer and estimator sections, with the owning class and UID.
++It reports training-only settings such as LightGBM's `numLeaves` even when the fitted prediction model does not
++expose them as mutable parameters. Fields are sorted and scalar values use JSON encoding; complex objects and
++binary training buffers are represented by placeholders rather than embedded in the report.
++Where legacy fitted-model details are renderable, a `model:` section retains their original formatting;
++a non-fatal formatting failure is represented by `<unrenderable>` instead of failing training.
++The JSON encoding and other placeholder rules apply to the new trainer and estimator sections.
++
++The snapshot is copied and saved with the tuning model. `getBestModelParamsInfo()` reads that informational
++field directly; manually changing the field also changes the reported provenance.
++For classification and regression, the snapshot is recorded only when the selected estimator inherits Spark's
++standard `fit(dataset, paramMap)` implementation. Custom overrides retain their original fit dispatch and
++legacy reporting. Models saved without a snapshot also retain their legacy reporting, including the unsupported
++model-type error for legacy ranker models. Newly fitted ranker models support the report.
++Models saved with the new field may not be readable by earlier releases.
++
++The following synthetic example selects a non-default leaf limit and reads it through the Python API:
++
++<!--pytest-codeblocks:cont-->
++```python
++from pyspark.sql import SparkSession
++from synapse.ml.automl import TuneHyperparameters
++from synapse.ml.automl.HyperparamBuilder import (
++    DiscreteHyperParam,
++    HyperparamBuilder,
++    RandomSpace,
++)
++from synapse.ml.lightgbm import LightGBMClassifier
++from synapse.ml.train import TrainClassifier
++
++info_spark = SparkSession.builder.getOrCreate()
++info_data = info_spark.range(64).selectExpr(
++    "cast(id % 8 - 4 as double) as x", "cast(id % 8 >= 4 as double) as label"
++)
++info_learner = LightGBMClassifier(
++    numIterations=2, minDataInLeaf=1, numTasks=1, numThreads=1, verbosity=-1
++)
++info_trainer = TrainClassifier(model=info_learner, labelCol="label", inputCols=["x"])
++info_space = HyperparamBuilder().addHyperparam(
++    info_learner, info_learner.numLeaves, DiscreteHyperParam([7])
++)
++info_best = TuneHyperparameters(
++    models=[info_trainer],
++    evaluationMetric="accuracy",
++    numFolds=2,
++    numRuns=1,
++    parallelism=1,
++    paramSpace=RandomSpace(info_space.build()).space(),
++    seed=7,
++).fit(info_data)
++assert "numLeaves: 7" in info_best.getBestModelInfo()
++```
++
+ 
+ <DocTable className="TuneHyperparameters"
+ py="synapse.ml.automl.html#module-synapse.ml.automl.TuneHyperparameters"
+diff --git a/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/BestModelParamsInfo.scala b/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/BestModelParamsInfo.scala
+new file mode 100644
+index 0000000000..44944486fe
+--- /dev/null
++++ b/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/BestModelParamsInfo.scala
+@@ -0,0 +1,84 @@
++// Copyright (C) Microsoft Corporation. All rights reserved.
++// Licensed under the MIT License. See LICENSE in project root for information.
++
++package com.microsoft.azure.synapse.ml.automl
++
++import com.microsoft.azure.synapse.ml.core.serialize.ComplexParam
++import com.microsoft.azure.synapse.ml.param.ByteArrayParam
++import com.microsoft.azure.synapse.ml.train.{AutoTrainer, TrainedClassifierModel, TrainedRegressorModel}
++import org.apache.spark.ml.{Estimator, Transformer}
++import org.apache.spark.ml.param.{ParamMap, ParamPair, Params}
++import org.apache.spark.sql.Dataset
++
++import scala.util.control.NonFatal
++
++/** Preserve custom two-argument fit implementations instead of bypassing their dispatch. */
++private[automl] object FitDispatch {
++  def usesInheritedParamMapFit(estimator: Estimator[_]): Boolean = {
++    try {
++      val methods = estimator.getClass.getMethods.filter { method =>
++        method.getName == "fit" && method.getParameterCount == 2 &&
++          method.getParameterTypes()(0) == classOf[Dataset[_]] &&
++          method.getParameterTypes()(1) == classOf[ParamMap]
++      }
++      methods.nonEmpty && methods.forall(_.getDeclaringClass == classOf[Estimator[_]])
++    } catch {
++      case NonFatal(_) => false
++    }
++  }
++}
++
++/** A textual snapshot, never a serialized estimator, dataset, or native training buffer. */
++private[automl] object BestModelParamsInfo {
++  def render(estimator: Estimator[_], model: Transformer): String = {
++    val sections = estimator match {
++      case trainer: AutoTrainer[_] =>
++        Seq(section("trainer", trainer), section("estimator", trainer.getModel))
++      case _ => Seq(section("estimator", estimator))
++    }
++    val fitted = try {
++      legacy(model).map("model: " + _).toSeq
++    } catch {
++      case NonFatal(_) => Seq("model: <unrenderable>")
++    }
++    (fitted ++ sections).mkString("; ")
++  }
++
++  private def section(name: String, owner: Params): String = {
++    val values = owner.extractParamMap().filter(owner).toSeq.sortBy(_.param.name).map { pair =>
++      s"${pair.param.name}: ${renderValue(pair)}"
++    }.mkString(", ")
++    s"$name ${owner.getClass.getSimpleName}(${owner.uid}): $values"
++  }
++
++  private def placeholder(value: Any): String = {
++    Option(value).fold("<null>")(v => s"<${v.getClass.getSimpleName}>")
++  }
++
++  private def renderValue[T](pair: ParamPair[T]): String = {
++    pair.param match {
++      case _: ByteArrayParam => "<binary omitted>"
++      case _: ComplexParam[_] => placeholder(pair.value)
++      case _ =>
++        pair.value match {
++          case _: Array[Byte] => "<binary omitted>"
++          case _: Params => placeholder(pair.value)
++          case _ =>
++            try {
++              pair.param.jsonEncode(pair.value)
++            } catch {
++              case NonFatal(_) => "<unrenderable>"
++            }
++        }
++    }
++  }
++
++  private def legacy(model: Transformer): Option[String] = {
++    model match {
++      case _: TrainedClassifierModel | _: TrainedRegressorModel =>
++        Some(EvaluationUtils.modelParamsToString(model))
++      case best: BestModel => legacy(best.getBestModel)
++      case _ => None
++    }
++  }
++}
+diff --git a/core/src/test/java/com/microsoft/azure/synapse/ml/automl/TestableJavaOverridingModelInfoClassifier.java b/core/src/test/java/com/microsoft/azure/synapse/ml/automl/TestableJavaOverridingModelInfoClassifier.java
+new file mode 100644
+index 0000000000..3a3e0acc1f
+--- /dev/null
++++ b/core/src/test/java/com/microsoft/azure/synapse/ml/automl/TestableJavaOverridingModelInfoClassifier.java
+@@ -0,0 +1,23 @@
++// Copyright (C) Microsoft Corporation. All rights reserved.
++// Licensed under the MIT License. See LICENSE in project root for information.
++
++package com.microsoft.azure.synapse.ml.automl;
++
++import java.util.UUID;
++import org.apache.spark.ml.param.ParamMap;
++import org.apache.spark.sql.Dataset;
++
++public class TestableJavaOverridingModelInfoClassifier extends TestableModelInfoClassifier {
++    public TestableJavaOverridingModelInfoClassifier(String uid) {
++        super(uid);
++    }
++
++    public TestableJavaOverridingModelInfoClassifier() {
++        this("javaModelInfo_" + UUID.randomUUID().toString());
++    }
++
++    @Override
++    public TestableModelInfoClassificationModel fit(Dataset<?> dataset, ParamMap params) {
++        return super.fit(dataset, params);
++    }
++}
+diff --git a/core/src/test/python/synapsemltest/automl/__init__.py b/core/src/test/python/synapsemltest/automl/__init__.py
+new file mode 100644
+index 0000000000..f780f4fea7
+--- /dev/null
++++ b/core/src/test/python/synapsemltest/automl/__init__.py
+@@ -0,0 +1,2 @@
++# Copyright (C) Microsoft Corporation. All rights reserved.
++# Licensed under the MIT License. See LICENSE in project root for information.
+diff --git a/core/src/test/python/synapsemltest/automl/test_model_info.py b/core/src/test/python/synapsemltest/automl/test_model_info.py
+new file mode 100644
+index 0000000000..66d1cbd8e1
+--- /dev/null
++++ b/core/src/test/python/synapsemltest/automl/test_model_info.py
+@@ -0,0 +1,62 @@
++# Copyright (C) Microsoft Corporation. All rights reserved.
++# Licensed under the MIT License. See LICENSE in project root for information.
++
++import tempfile
++import unittest
++from pathlib import Path
++
++
++class TuningModelInfoTests(unittest.TestCase):
++    def test_generated_model_info_getter_copy_and_persistence(self):
++        from synapse.ml.core.init_spark import init_spark
++
++        spark = init_spark()
++        from pyspark.ml.classification import LogisticRegression
++        from pyspark.ml.linalg import Vectors
++        from synapse.ml.automl import TuneHyperparameters
++        from synapse.ml.automl.HyperparamBuilder import (
++            DiscreteHyperParam,
++            HyperparamBuilder,
++            RandomSpace,
++        )
++        from synapse.ml.automl.TuneHyperparametersModel import TuneHyperparametersModel
++
++        data = spark.createDataFrame(
++            [
++                (float(value > 0), Vectors.dense(float(value)))
++                for value in range(-16, 17)
++                if value
++            ],
++            ["label", "features"],
++        ).coalesce(1)
++        learner = LogisticRegression()
++        search = (
++            HyperparamBuilder()
++            .addHyperparam(learner, learner.maxIter, DiscreteHyperParam([4]))
++            .build()
++        )
++        best = TuneHyperparameters(
++            models=[learner],
++            paramSpace=RandomSpace(search).space(),
++            evaluationMetric="accuracy",
++            numFolds=2,
++            numRuns=1,
++            parallelism=1,
++            seed=7,
++        ).fit(data)
++        info = best.getBestModelInfo()
++
++        self.assertIn("maxIter: 4", info)
++        self.assertEqual(best.getBestModelParamsInfo(), info)
++        self.assertEqual(best.copy({}).getBestModelInfo(), info)
++        with tempfile.TemporaryDirectory(prefix="model-info-") as root:
++            path = str(Path(root) / "model")
++            best.write().save(path)
++            loaded = TuneHyperparametersModel.load(path)
++            self.assertEqual(loaded.getBestModelInfo(), info)
++            self.assertEqual(loaded.getBestModelParamsInfo(), info)
++            self.assertEqual(loaded.transform(data).count(), data.count())
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/ModelInfoFixtures.scala b/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/ModelInfoFixtures.scala
+new file mode 100644
+index 0000000000..4096216556
+--- /dev/null
++++ b/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/ModelInfoFixtures.scala
+@@ -0,0 +1,142 @@
++// Copyright (C) Microsoft Corporation. All rights reserved.
++// Licensed under the MIT License. See LICENSE in project root for information.
++
++package com.microsoft.azure.synapse.ml.automl
++
++import com.microsoft.azure.synapse.ml.param.ByteArrayParam
++import com.microsoft.azure.synapse.ml.train.{TrainClassifier, TrainedClassifierModel}
++import org.apache.spark.ml.Estimator
++import org.apache.spark.ml.classification.{ProbabilisticClassificationModel, ProbabilisticClassifier}
++import org.apache.spark.ml.regression.{RegressionModel, Regressor}
++import org.apache.spark.ml.linalg.{Vector, Vectors}
++import org.apache.spark.ml.param.{IntParam, Param, ParamMap}
++import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
++import org.apache.spark.sql.Dataset
++
++import java.util.concurrent.ConcurrentHashMap
++import java.util.concurrent.atomic.AtomicInteger
++
++/** The fit record is independent of the reporting helper and remains on the driver. */
++private[automl] object ModelInfoFitRecord {
++  val applied = new ConcurrentHashMap[String, Int]()
++  val overriddenFits = new AtomicInteger()
++}
++
++class TestableModelInfoClassifier(override val uid: String)
++  extends ProbabilisticClassifier[Vector, TestableModelInfoClassifier, TestableModelInfoClassificationModel]
++    with DefaultParamsWritable {
++  def this() = this(Identifiable.randomUID("modelInfoClassifier"))
++
++  val knob = new IntParam(this, "knob", "A training-only setting absent from the fitted model")
++  val buffer = new ByteArrayParam(this, "buffer", "Synthetic training buffer")
++  val note = new Param[String](this, "note", "Synthetic scalar rendering control")
++  val unrenderable = new Param[String](this, "unrenderable", "Synthetic encoder-failure control") {
++    override def jsonEncode(value: String): String = throw new IllegalArgumentException("synthetic encoder failure")
++  }
++  val quality = new IntParam(this, "quality", "A second independently sampled training setting")
++  val legacyFormattingFailure = new IntParam(this, "legacyFormattingFailure", "Synthetic fitted-format control")
++  setDefault(knob -> 0, quality -> 1, legacyFormattingFailure -> 0)
++
++  override protected def train(dataset: Dataset[_]): TestableModelInfoClassificationModel = {
++    ModelInfoFitRecord.applied.put(uid, $(knob))
++    val fitted = new TestableModelInfoClassificationModel(uid).setOrientation($(knob) * $(quality))
++    if ($(legacyFormattingFailure) != 0) {
++      fitted.set(fitted.legacyDisplay, new ModelInfoOpaqueValue())
++    }
++    fitted
++  }
++
++  override def copy(extra: ParamMap): TestableModelInfoClassifier = defaultCopy(extra)
++}
++
++object TestableModelInfoClassifier extends DefaultParamsReadable[TestableModelInfoClassifier]
++
++class ModelInfoOpaqueValue extends Serializable {
++  override def toString: String = throw new IllegalArgumentException("synthetic fitted formatting failure")
++}
++
++class TestableModelInfoClassificationModel(override val uid: String)
++  extends ProbabilisticClassificationModel[Vector, TestableModelInfoClassificationModel] with DefaultParamsWritable {
++  def this() = this(Identifiable.randomUID("modelInfoClassificationModel"))
++
++  val legacyDisplay = new Param[ModelInfoOpaqueValue](this, "legacyDisplay", "Synthetic legacy-format control")
++  val orientation = new IntParam(this, "orientation", "Prediction behavior produced by training")
++  def getOrientation: Int = $(orientation)
++  def setOrientation(value: Int): this.type = set(orientation, value)
++
++  override val numClasses: Int = 2
++  override val numFeatures: Int = 1
++
++  override def predictRaw(features: Vector): Vector = {
++    val positive = features(0) * getOrientation > 0.0
++    if (positive) Vectors.dense(0.0, 1.0) else Vectors.dense(1.0, 0.0)
++  }
++
++  override protected def raw2probabilityInPlace(rawPrediction: Vector): Vector = rawPrediction
++
++  override def copy(extra: ParamMap): TestableModelInfoClassificationModel = defaultCopy(extra)
++}
++
++object TestableModelInfoClassificationModel extends DefaultParamsReadable[TestableModelInfoClassificationModel]
++
++class TestableOverridingModelInfoClassifier(uid: String) extends TestableModelInfoClassifier(uid) {
++  def this() = this(Identifiable.randomUID("overridingModelInfoClassifier"))
++
++  override def fit(dataset: Dataset[_], params: ParamMap): TestableModelInfoClassificationModel = {
++    ModelInfoFitRecord.overriddenFits.incrementAndGet()
++    val model = super.fit(dataset, params)
++    model.setOrientation(-model.getOrientation)
++  }
++}
++
++class TestableModelInfoRegressor(override val uid: String)
++  extends Regressor[Vector, TestableModelInfoRegressor, TestableModelInfoRegressionModel] with DefaultParamsWritable {
++  def this() = this(Identifiable.randomUID("modelInfoRegressor"))
++  val knob = new IntParam(this, "knob", "Training-only prediction direction")
++  setDefault(knob -> 0)
++
++  override protected def train(dataset: Dataset[_]): TestableModelInfoRegressionModel = {
++    ModelInfoFitRecord.applied.put(uid, $(knob))
++    new TestableModelInfoRegressionModel(uid).setOrientation($(knob))
++  }
++
++  override def copy(extra: ParamMap): TestableModelInfoRegressor = defaultCopy(extra)
++}
++
++object TestableModelInfoRegressor extends DefaultParamsReadable[TestableModelInfoRegressor]
++
++class TestableModelInfoRegressionModel(override val uid: String)
++  extends RegressionModel[Vector, TestableModelInfoRegressionModel] with DefaultParamsWritable {
++  def this() = this(Identifiable.randomUID("modelInfoRegressionModel"))
++  val orientation = new IntParam(this, "orientation", "Prediction direction produced by fitting")
++  def setOrientation(value: Int): this.type = set(orientation, value)
++  override val numFeatures: Int = 1
++  override def predict(features: Vector): Double = features(0) * $(orientation)
++  override def copy(extra: ParamMap): TestableModelInfoRegressionModel = defaultCopy(extra)
++}
++
++object TestableModelInfoRegressionModel extends DefaultParamsReadable[TestableModelInfoRegressionModel]
++
++class TestableOverridingModelInfoTrainer(uid: String) extends TrainClassifier(uid) {
++  def this() = this(Identifiable.randomUID("overridingModelInfoTrainer"))
++
++  override def fit(dataset: Dataset[_], params: ParamMap): TrainedClassifierModel = {
++    ModelInfoFitRecord.overriddenFits.incrementAndGet()
++    val result = super.fit(dataset, params)
++    val last = result.getLastStage.asInstanceOf[TestableModelInfoClassificationModel]
++    last.setOrientation(-last.getOrientation)
++    result
++  }
++}
++
++trait ModelInfoParamFitOverride extends Estimator[TestableModelInfoClassificationModel] {
++  abstract override def fit(dataset: Dataset[_], params: ParamMap): TestableModelInfoClassificationModel = {
++    super.fit(dataset, params)
++  }
++}
++
++class TestableTraitOverridingModelInfoClassifier(uid: String)
++  extends TestableModelInfoClassifier(uid) with ModelInfoParamFitOverride {
++  def this() = this(Identifiable.randomUID("traitOverridingModelInfoClassifier"))
++}
++
+diff --git a/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyModelInfoRegression.scala b/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyModelInfoRegression.scala
+new file mode 100644
+index 0000000000..eabf95e76d
+--- /dev/null
++++ b/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyModelInfoRegression.scala
+@@ -0,0 +1,59 @@
++// Copyright (C) Microsoft Corporation. All rights reserved.
++// Licensed under the MIT License. See LICENSE in project root for information.
++
++package com.microsoft.azure.synapse.ml.automl
++
++import com.microsoft.azure.synapse.ml.core.test.base.TestBase
++import com.microsoft.azure.synapse.ml.train.{TrainClassifier, TrainRegressor}
++import org.apache.spark.ml.Estimator
++import org.apache.spark.ml.feature.VectorAssembler
++import org.apache.spark.ml.param.ParamMap
++import org.apache.spark.sql.DataFrame
++import org.apache.spark.sql.functions.col
++
++/** These public-API oracles compile against the unmodified production baseline. */
++class VerifyModelInfoRegression extends TestBase {
++  private def data: DataFrame = {
++    val rows = (-16 to 16).filter(_ != 0).map(value =>
++      (value.toDouble, if (value > 0) 1.0 else 0.0))
++    spark.createDataFrame(rows).toDF("x", "label")
++  }
++
++  private def fit(estimator: Estimator[_], params: GridSpace, metric: String, input: DataFrame)
++      : TuneHyperparametersModel = {
++    new TuneHyperparameters().setModels(Array(estimator)).setNumFolds(2).setNumRuns(2)
++      .setParallelism(1).setEvaluationMetric(metric).setSeed(7).setParamSpace(params).fit(input)
++  }
++
++  test("wrapped classifier reports the winning training-only knob") {
++    val learner = new TestableModelInfoClassifier()
++    val trainer = new TrainClassifier().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++    val params = new GridSpace(Array(ParamMap(learner.knob -> 1), ParamMap(learner.knob -> -1)))
++    val best = fit(trainer, params, "accuracy", data)
++
++    assert(best.getBestMetric === 1.0)
++    assert(ModelInfoFitRecord.applied.get(learner.uid).intValue() === 1)
++    assert(best.getBestModelInfo.contains("knob: 1"))
++  }
++
++  test("wrapped regressor reports the winning training-only knob") {
++    val learner = new TestableModelInfoRegressor()
++    val trainer = new TrainRegressor().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++    val params = new GridSpace(Array(ParamMap(learner.knob -> 1), ParamMap(learner.knob -> -1)))
++    val best = fit(trainer, params, "rmse", data.withColumn("label", col("x")))
++
++    assert(best.getBestMetric === 0.0)
++    assert(ModelInfoFitRecord.applied.get(learner.uid).intValue() === 1)
++    assert(best.getBestModelInfo.contains("knob: 1"))
++  }
++
++  test("a direct classifier exposes its applied training-only setting") {
++    val learner = new TestableModelInfoClassifier()
++    val input = new VectorAssembler().setInputCols(Array("x")).setOutputCol("features").transform(data)
++    val params = new GridSpace(Array(ParamMap(learner.knob -> 1), ParamMap(learner.knob -> -1)))
++    val best = fit(learner, params, "accuracy", input)
++
++    assert(best.getBestMetric === 1.0)
++    assert(best.getBestModelInfo.contains("knob: 1"))
++  }
++}
+diff --git a/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyTuneHyperparametersModelInfo.scala b/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyTuneHyperparametersModelInfo.scala
+new file mode 100644
+index 0000000000..144b3f80d3
+--- /dev/null
++++ b/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyTuneHyperparametersModelInfo.scala
+@@ -0,0 +1,236 @@
++// Copyright (C) Microsoft Corporation. All rights reserved.
++// Licensed under the MIT License. See LICENSE in project root for information.
++
++package com.microsoft.azure.synapse.ml.automl
++
++import com.microsoft.azure.synapse.ml.core.test.base.TestBase
++import com.microsoft.azure.synapse.ml.train.{TrainClassifier, TrainRegressor, TrainedClassifierModel,
++  TrainedRegressorModel}
++import org.apache.spark.ml.Estimator
++import org.apache.spark.ml.feature.VectorAssembler
++import org.apache.spark.ml.param.ParamMap
++import org.apache.spark.sql.DataFrame
++import org.apache.spark.sql.functions.col
++
++class VerifyTuneHyperparametersModelInfo extends TestBase {
++  private def data: DataFrame = {
++    val rows = (-16 to 16).filter(_ != 0).map { value =>
++      (value.toDouble, if (value > 0) 1.0 else 0.0)
++    }
++    spark.createDataFrame(rows).toDF("x", "label")
++  }
++
++  private def tune(estimator: Estimator[_], learner: TestableModelInfoClassifier, input: DataFrame)
++      : TuneHyperparametersModel = {
++    val params = new GridSpace(Array(ParamMap(learner.knob -> 1), ParamMap(learner.knob -> -1)))
++    new TuneHyperparameters().setModels(Array(estimator)).setNumFolds(2).setNumRuns(2)
++      .setParallelism(1).setEvaluationMetric("accuracy").setSeed(7).setParamSpace(params).fit(input)
++  }
++
++  private def vectorData: DataFrame = {
++    new VectorAssembler().setInputCols(Array("x")).setOutputCol("features").transform(data)
++  }
++
++  test("winning wrapped classifier reports the applied training setting instead of the last run") {
++    val learner = new TestableModelInfoClassifier()
++    learner.set(learner.buffer, Array[Byte](1, 2, 3))
++    learner.set(learner.unrenderable, "synthetic value")
++    learner.set(learner.note, "line\nquoted\"value")
++    val trainer = new TrainClassifier().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++    val best = tune(trainer, learner, data)
++    val fitted = best.getBestModel.asInstanceOf[TrainedClassifierModel].getLastStage
++    val info = best.getBestModelInfo
++
++    assert(best.getBestMetric === 1.0)
++    assert(!fitted.hasParam("knob"))
++    assert(ModelInfoFitRecord.applied.get(fitted.uid).intValue() === 1)
++    assert(info.contains("knob: 1"))
++    assert(!info.contains("knob: -1"))
++    assert(info.contains("trainer TrainClassifier("))
++    assert(info.contains("estimator TestableModelInfoClassifier("))
++    assert(info.contains("buffer: <binary omitted>"))
++    assert(info.contains("model: <TestableModelInfoClassifier>"))
++    assert(info.contains("unrenderable: <unrenderable>"))
++    assert(!info.contains("synthetic encoder failure"))
++    assert(!info.contains("[B@"))
++    assert(info.contains("note: \"line\\nquoted\\\"value\""))
++    assert(best.copy(ParamMap.empty).getBestModelInfo === info)
++    assert(best.getBestModelParamsInfo === info)
++  }
++
++  test("an informational legacy formatter failure does not change a successful fit") {
++    val learner = new TestableModelInfoClassifier()
++    learner.set(learner.legacyFormattingFailure, 1)
++    val trainer = new TrainClassifier().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++    val best = tune(trainer, learner, data)
++
++    assert(best.getBestMetric === 1.0)
++    assert(best.getBestModelInfo.startsWith("model: <unrenderable>; "))
++    assert(best.getBestModelInfo.contains("knob: 1"))
++    assert(!best.getBestModelInfo.contains("synthetic fitted formatting failure"))
++    assert(best.transform(data).filter(col("prediction") =!= col("label")).count() === 0L)
++    val legacy = best.copy(ParamMap.empty)
++    legacy.clear(legacy.bestModelParamsInfo)
++    val failure = intercept[IllegalArgumentException] { legacy.getBestModelInfo }
++    assert(failure.getMessage === "synthetic fitted formatting failure")
++  }
++
++  test("a direct classifier reports its training setting without a legacy model-type error") {
++    val learner = new TestableModelInfoClassifier()
++    val best = tune(learner, learner, vectorData)
++
++    assert(best.getBestMetric === 1.0)
++    assert(best.getBestModelInfo.contains("knob: 1"))
++    assert(!best.getBestModelInfo.startsWith("model:"))
++  }
++
++  test("custom ParamMap fit dispatch remains active for every fold and the final refit") {
++    ModelInfoFitRecord.overriddenFits.set(0)
++    val learner = new TestableOverridingModelInfoClassifier()
++    val best = tune(learner, learner, vectorData)
++
++    assert(!FitDispatch.usesInheritedParamMapFit(learner))
++    assert(ModelInfoFitRecord.overriddenFits.get() === 5)
++    assert(best.getBestMetric === 1.0)
++    assert(best.transform(vectorData).filter(col("prediction") =!= col("label")).count() === 0L)
++    assert(best.get(best.bestModelParamsInfo).isEmpty)
++    val failure = intercept[Exception] { best.getBestModelInfo }
++    assert(failure.getMessage === EvaluationUtils.ModelTypeUnsupportedErr)
++  }
++
++  test("models without a snapshot retain the exact legacy string and unsupported-type error") {
++    val learner = new TestableModelInfoClassifier()
++    val trainer = new TrainClassifier().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++    val wrapped = tune(trainer, learner, data)
++    val legacy = wrapped.copy(ParamMap.empty)
++    legacy.clear(legacy.bestModelParamsInfo)
++
++    assert(legacy.getBestModelInfo === EvaluationUtils.modelParamsToString(legacy.getBestModel))
++    assert(wrapped.getBestModelInfo === wrapped.getBestModelParamsInfo)
++
++    val direct = tune(learner, learner, vectorData)
++    direct.clear(direct.bestModelParamsInfo)
++    val failure = intercept[Exception] { direct.getBestModelInfo }
++    assert(failure.getMessage === EvaluationUtils.ModelTypeUnsupportedErr)
++  }
++
++  test("inherited ParamMap fit is distinguished from a covariant public override") {
++    assert(FitDispatch.usesInheritedParamMapFit(new TestableModelInfoClassifier()))
++    assert(FitDispatch.usesInheritedParamMapFit(new TrainClassifier()))
++    assert(!FitDispatch.usesInheritedParamMapFit(new TestableOverridingModelInfoClassifier()))
++  }
++
++  test("wrapped and direct regressors report their independently recorded applied setting") {
++    val regressionData = data.withColumn("label", col("x"))
++    val learner = new TestableModelInfoRegressor()
++    val trainer = new TrainRegressor().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++    val params = new GridSpace(Array(ParamMap(learner.knob -> 1), ParamMap(learner.knob -> -1)))
++    def fitted(estimator: Estimator[_], input: DataFrame): TuneHyperparametersModel = {
++      new TuneHyperparameters().setModels(Array(estimator)).setNumFolds(2).setNumRuns(2).setParallelism(1)
++        .setEvaluationMetric("rmse").setSeed(7).setParamSpace(params).fit(input)
++    }
++    val wrapped = fitted(trainer, regressionData)
++    val wrappedModel = wrapped.getBestModel.asInstanceOf[TrainedRegressorModel].getLastStage
++    val directData = new VectorAssembler().setInputCols(Array("x")).setOutputCol("features")
++      .transform(regressionData)
++    val direct = fitted(learner, directData)
++
++    assert(wrapped.getBestMetric === 0.0)
++    assert(direct.getBestMetric === 0.0)
++    assert(ModelInfoFitRecord.applied.get(wrappedModel.uid).intValue() === 1)
++    assert(ModelInfoFitRecord.applied.get(direct.getBestModel.uid).intValue() === 1)
++    assert(wrapped.getBestModelInfo.contains("knob: 1"))
++    assert(direct.getBestModelInfo.contains("knob: 1"))
++    assert(!direct.getBestModelInfo.startsWith("model:"))
++  }
++
++  test("same-named parameters belonging to a losing candidate never enter the winner snapshot") {
++    val first = new TestableModelInfoClassifier()
++    val second = new TestableModelInfoClassifier()
++    val params = new GridSpace(Array(
++      ParamMap(first.knob -> 1, second.knob -> -1),
++      ParamMap(first.knob -> -1, second.knob -> -1)))
++    val best = new TuneHyperparameters().setModels(Array[Estimator[_]](first, second))
++      .setNumFolds(2).setNumRuns(2).setParallelism(1).setEvaluationMetric("accuracy")
++      .setSeed(7).setParamSpace(params).fit(vectorData)
++
++    assert(best.getBestMetric === 1.0)
++    assert(best.getBestModel.uid === first.uid)
++    assert(ModelInfoFitRecord.applied.get(first.uid).intValue() === 1)
++    assert(best.getBestModelInfo.contains(first.uid))
++    assert(!best.getBestModelInfo.contains(second.uid))
++    assert(best.getBestModelInfo.contains("knob: 1"))
++  }
++
++  test("heterogeneous maps report inherited effective values missing from the winning sampled map") {
++    val learner = new TestableModelInfoClassifier()
++    val trainer = new TrainClassifier().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++    val winner = ParamMap(learner.quality -> 1)
++    val params = new GridSpace(Array(ParamMap(learner.knob -> 1, learner.quality -> -1), winner))
++    val best = new TuneHyperparameters().setModels(Array[Estimator[_]](trainer)).setNumFolds(2).setNumRuns(2)
++      .setParallelism(1).setEvaluationMetric("accuracy").setSeed(7).setParamSpace(params).fit(data)
++    val fitted = best.getBestModel.asInstanceOf[TrainedClassifierModel].getLastStage
++
++    assert(!winner.contains(learner.knob))
++    assert(best.getBestMetric === 1.0)
++    assert(ModelInfoFitRecord.applied.get(fitted.uid).intValue() === 1)
++    assert(best.getBestModelInfo.contains("knob: 1"))
++    assert(best.getBestModelInfo.contains("quality: 1"))
++  }
++
++  test("custom wrapper ParamMap fit retains legacy reporting and its final override behavior") {
++    ModelInfoFitRecord.overriddenFits.set(0)
++    val learner = new TestableModelInfoClassifier()
++    val trainer = new TestableOverridingModelInfoTrainer().setModel(learner).setLabelCol("label")
++      .setInputCols(Array("x"))
++    val best = tune(trainer, learner, data)
++    val fitted = best.getBestModel.asInstanceOf[TrainedClassifierModel].getLastStage
++      .asInstanceOf[TestableModelInfoClassificationModel]
++
++    assert(ModelInfoFitRecord.overriddenFits.get() === 5)
++    assert(best.getBestMetric === 1.0)
++    assert(fitted.getOrientation === 1)
++    assert(best.get(best.bestModelParamsInfo).isEmpty)
++    assert(best.getBestModelInfo === EvaluationUtils.modelParamsToString(best.getBestModel))
++  }
++
++  test("saved and loaded snapshots and legacy models retain their respective reporting contracts") {
++    val learner = new TestableModelInfoClassifier()
++    val trainer = new TrainClassifier().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++    val best = tune(trainer, learner, data)
++    val snapshotPath = tmpDir.resolve("snapshot").toString
++    best.write.save(snapshotPath)
++    val loaded = TuneHyperparametersModel.load(snapshotPath)
++    val legacy = best.copy(ParamMap.empty)
++    legacy.clear(legacy.bestModelParamsInfo)
++    val legacyPath = tmpDir.resolve("legacy").toString
++    legacy.write.save(legacyPath)
++    val loadedLegacy = TuneHyperparametersModel.load(legacyPath)
++
++    assert(loaded.getBestModelInfo === best.getBestModelInfo)
++    assert(loaded.copy(ParamMap.empty).getBestModelInfo === best.getBestModelInfo)
++    assert(loaded.transform(data).count() === data.count())
++    assert(loadedLegacy.get(loadedLegacy.bestModelParamsInfo).isEmpty)
++    assert(loadedLegacy.getBestModelInfo === EvaluationUtils.modelParamsToString(loadedLegacy.getBestModel))
++  }
++
++  test("trait-mixin and Java overrides conservatively retain custom fit dispatch") {
++    assert(!FitDispatch.usesInheritedParamMapFit(new TestableTraitOverridingModelInfoClassifier()))
++    assert(!FitDispatch.usesInheritedParamMapFit(new TestableJavaOverridingModelInfoClassifier()))
++  }
++
++  test("independent fits render stable scalar sections after normalizing their owner UIDs") {
++    def rendered(): String = {
++      val learner = new TestableModelInfoClassifier()
++      val trainer = new TrainClassifier().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++      tune(trainer, learner, data).getBestModelInfo
++        .replace(trainer.uid, "trainer-owner").replace(learner.uid, "learner-owner")
++    }
++
++    val first = rendered()
++    val second = rendered()
++
++    assert(first === second)
++    assert(!first.contains("[B@"))
++  }
++}
+diff --git a/lightgbm/src/test/python/synapsemltest/lightgbm/test_tuning_model_info.py b/lightgbm/src/test/python/synapsemltest/lightgbm/test_tuning_model_info.py
+new file mode 100644
+index 0000000000..e2b2b406a8
+--- /dev/null
++++ b/lightgbm/src/test/python/synapsemltest/lightgbm/test_tuning_model_info.py
+@@ -0,0 +1,72 @@
++# Copyright (C) Microsoft Corporation. All rights reserved.
++# Licensed under the MIT License. See LICENSE in project root for information.
++
++import tempfile
++import unittest
++from pathlib import Path
++
++
++class LightGBMTuningModelInfoTests(unittest.TestCase):
++    def test_wrapped_training_only_setting_from_generated_python(self):
++        from synapse.ml.core.init_spark import init_spark
++
++        spark = init_spark()
++        from synapse.ml.automl import TuneHyperparameters
++        from synapse.ml.automl.HyperparamBuilder import (
++            DiscreteHyperParam,
++            HyperparamBuilder,
++            RandomSpace,
++        )
++        from synapse.ml.automl.TuneHyperparametersModel import TuneHyperparametersModel
++        from synapse.ml.lightgbm import LightGBMClassifier
++        from synapse.ml.train import TrainClassifier
++
++        data = spark.range(64).selectExpr(
++            "cast(id % 8 - 4 as double) as x", "cast(id % 8 >= 4 as double) as label"
++        ).coalesce(1)
++        learner = LightGBMClassifier(
++            numIterations=2,
++            numTasks=1,
++            numThreads=1,
++            minDataInLeaf=1,
++            verbosity=-1,
++        )
++        trainer = TrainClassifier(model=learner, labelCol="label", inputCols=["x"])
++        search = (
++            HyperparamBuilder()
++            .addHyperparam(learner, learner.numLeaves, DiscreteHyperParam([7]))
++            .build()
++        )
++        best = TuneHyperparameters(
++            models=[trainer],
++            paramSpace=RandomSpace(search).space(),
++            evaluationMetric="accuracy",
++            numFolds=2,
++            numRuns=1,
++            parallelism=1,
++            seed=7,
++        ).fit(data)
++        loaded = None
++        try:
++            info = best.getBestModelInfo()
++            self.assertIn("numLeaves: 7", info)
++            self.assertEqual(best.getBestModelParamsInfo(), info)
++            self.assertEqual(best.copy({}).getBestModelInfo(), info)
++            with tempfile.TemporaryDirectory(prefix="lightgbm-info-") as root:
++                path = str(Path(root) / "model")
++                best.write().save(path)
++                loaded = TuneHyperparametersModel.load(path)
++                self.assertEqual(loaded.getBestModelInfo(), info)
++                self.assertEqual(loaded.transform(data).count(), data.count())
++        finally:
++            try:
++                if loaded is not None:
++                    restored_native = loaded.getBestModel()._java_obj.getLastStage()
++                    restored_native.getLightGBMBooster().freeNativeMemory()
++            finally:
++                native = best.getBestModel()._java_obj.getLastStage()
++                native.getLightGBMBooster().freeNativeMemory()
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/VerifyLightGBMTuningModelInfo.scala b/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/VerifyLightGBMTuningModelInfo.scala
+new file mode 100644
+index 0000000000..ccd2494e5c
+--- /dev/null
++++ b/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/VerifyLightGBMTuningModelInfo.scala
+@@ -0,0 +1,61 @@
++// Copyright (C) Microsoft Corporation. All rights reserved.
++// Licensed under the MIT License. See LICENSE in project root for information.
++
++package com.microsoft.azure.synapse.ml.lightgbm.split1
++
++import com.microsoft.azure.synapse.ml.automl.{GridSpace, TuneHyperparameters, TuneHyperparametersModel}
++import com.microsoft.azure.synapse.ml.core.test.base.TestBase
++import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassificationModel, LightGBMClassifier}
++import com.microsoft.azure.synapse.ml.train.{TrainClassifier, TrainedClassifierModel}
++import org.apache.spark.ml.Estimator
++import org.apache.spark.ml.param.ParamMap
++
++class VerifyLightGBMTuningModelInfo extends TestBase {
++  private def release(model: TuneHyperparametersModel): Unit = {
++    model.getBestModel.asInstanceOf[TrainedClassifierModel].getLastStage
++      .asInstanceOf[LightGBMClassificationModel].getLightGBMBooster.freeNativeMemory()
++  }
++
++  Seq("bulk", "streaming").foreach { mode =>
++    test(s"winning LightGBM training parameters survive copy and persistence in $mode mode") {
++      val session = spark
++      import session.implicits._
++      val data = (0 until 64).map(index =>
++        ((index % 8 - 4).toDouble, if (index % 8 >= 4) 1.0 else 0.0)).toDF("x", "label").coalesce(1)
++      val learner = new LightGBMClassifier().setNumTasks(1).setNumThreads(1).setNumIterations(2)
++        .setVerbosity(-1).setDataTransferMode(mode).setPassThroughArgs("feature_pre_filter=false")
++      val trainer = new TrainClassifier().setModel(learner).setLabelCol("label").setInputCols(Array("x"))
++      val params = new GridSpace(Array(
++        ParamMap(learner.numLeaves -> 7, learner.minDataInLeaf -> 1),
++        ParamMap(learner.numLeaves -> 31, learner.minDataInLeaf -> 1000)))
++      val best = new TuneHyperparameters().setModels(Array[Estimator[_]](trainer)).setNumFolds(2).setNumRuns(2)
++        .setParallelism(1).setEvaluationMetric("accuracy").setSeed(7).setParamSpace(params).fit(data)
++      var loaded = Option.empty[TuneHyperparametersModel]
++      try {
++        val nativeModel = best.getBestModel.asInstanceOf[TrainedClassifierModel].getLastStage
++        val info = best.getBestModelInfo
++        val path = tmpDir.resolve(s"model-info-$mode").toString
++        best.write.save(path)
++        loaded = Some(TuneHyperparametersModel.load(path))
++
++        assert(best.getBestMetric === 1.0)
++        assert(!nativeModel.hasParam("numLeaves"))
++        assert(info.contains("numLeaves: 7"))
++        assert(info.contains("minDataInLeaf: 1"))
++        assert(!info.contains("numLeaves: 31"))
++        assert(info.contains("referenceDataset: <binary omitted>"))
++        assert(best.copy(ParamMap.empty).getBestModelInfo === info)
++        loaded.foreach { restored =>
++          assert(restored.getBestModelInfo === info)
++          assert(restored.transform(data).count() === data.count())
++        }
++      } finally {
++        try {
++          loaded.foreach(release)
++        } finally {
++          release(best)
++        }
++      }
++    }
++  }
++}

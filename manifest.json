@@ -1,0 +1,168 @@
+{
+  "revision": "I2-E2",
+  "execution_enabled": true,
+  "execution_approval_required": true,
+  "source_commit": "d3f3af6bd3e4b7d191f51c9eb29f9aeffe788193",
+  "validation_branch": "validate-tuning-model-info-1850",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "patch_sha256": "8a5b8b8a689a75e68bf47b36390bb1d0bd745bd3cadb8d01815a8f891f39a6c7",
+  "baseline_files": {
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/automl/BestModelParamsInfo.scala": null,
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/automl/RankingTuning.scala": "8d9d187c3fdd7e9d571ede79b42e66602e75bfb6e9787572d215baf1c84fabc0",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/automl/TuneHyperparameters.scala": "cb655f7d778f354e1230598d29cdd1d267b338317e02d74f946662a88a915ea8",
+    "core/src/test/python/synapsemltest/automl/__init__.py": null,
+    "core/src/test/python/synapsemltest/automl/test_model_info.py": null,
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/automl/ModelInfoFixtures.scala": null,
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyModelInfoRegression.scala": null,
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyRankingTuning.scala": "041e0b29ad451a8d5642a73285ac162e3cffae074cc88fb5ab4f2513856d9e3c",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyTuneHyperparametersModelInfo.scala": null,
+    "docs/Quick Examples/estimators/core/_AutoML.md": "3dc060db30f6ad4efd89cb69b5cba85b4753a166b5a72be72e38d42155c12f2c",
+    "lightgbm/src/test/python/synapsemltest/lightgbm/test_tuning_model_info.py": null,
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/VerifyLightGBMTuningModelInfo.scala": null,
+    "core/src/test/java/com/microsoft/azure/synapse/ml/automl/TestableJavaOverridingModelInfoClassifier.java": null
+  },
+  "candidate_files": {
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/automl/BestModelParamsInfo.scala": "8e97e28681a4799afb3fc39a909ac9d10164ff44a0c88f5e9c396ebd4436488f",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/automl/RankingTuning.scala": "aa1fb204d98cd1a94844237493664fde30432318b72e7f583d7007508ac0d65d",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/automl/TuneHyperparameters.scala": "8acea5902f1d431b72a2026b5319a1190d27e099d802b387d5580b46625e4e70",
+    "core/src/test/java/com/microsoft/azure/synapse/ml/automl/TestableJavaOverridingModelInfoClassifier.java": "c7b01653be360780f3275f80bbe6474d91c05d75ff1c90bd493f9150789e83f5",
+    "core/src/test/python/synapsemltest/automl/__init__.py": "8a4212f75d019a4ed87cbf9f19545bc7360ce312c3ff3188314243b5fb82c345",
+    "core/src/test/python/synapsemltest/automl/test_model_info.py": "1a0caf209ba173898713683d1dc5b088d27bb0f289a9e3f38948256c070cc5d1",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/automl/ModelInfoFixtures.scala": "627ae9b2a57f3eadc674cbff050e9bdcb22d88fd47370228f292473aa80edbe2",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyModelInfoRegression.scala": "fd268f3d86ca6a4a5bc8f49f66c72c589fbb338da4a6d39c0932b1bf7a92bc9e",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyRankingTuning.scala": "38ef84f0347b8b7cfc9cb77620ff8ff39fc00108edabdfca199425bc1539a030",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyTuneHyperparametersModelInfo.scala": "e884d37827a1a811bbf1008d26fefc26fd1d6565482d1b0b3ba920e4c39f6d24",
+    "docs/Quick Examples/estimators/core/_AutoML.md": "ad2258d2a3441d023f2e7260be568cf68858e14a89b4da3b799a92b4e6368256",
+    "lightgbm/src/test/python/synapsemltest/lightgbm/test_tuning_model_info.py": "51d38c611c99e1fc7b71dd9b2333051f366abb0bbeeb90964b65c2b38909243b",
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/VerifyLightGBMTuningModelInfo.scala": "318e5103a951a160dfe8d75db7907ccea42a57d8af50ccaa225bd6d823c09a85"
+  },
+  "baseline_automl_suites": [
+    "HyperparamRangeSuite",
+    "VerifyDefaultHyperparams",
+    "VerifyEvaluationUtils",
+    "VerifyFindBestModel",
+    "VerifyHyperparamBuilder",
+    "VerifyParamSpace",
+    "VerifyRankingTuning",
+    "VerifyTuneHyperparameters"
+  ],
+  "dataset": {
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "native_jar_sha256": "f2b1b13172699832594303ab4c04f3bc8fc2d24737e3e8c11d98d69a88c09272",
+  "input_images": [
+    "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  ],
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "hash_algorithm": "sha1",
+    "hash": "4e3ca243fbac4e8c96eb38d783e2077f67081444",
+    "maximum_bytes": 8388608
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "hash_algorithm": "sha256",
+    "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "maximum_bytes": 19028608
+  },
+  "lanes": {
+    "root": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 14,
+      "network_gib": 12
+    },
+    "core": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 16,
+      "network_gib": 12
+    },
+    "native": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 16,
+      "network_gib": 12
+    },
+    "python": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 28,
+      "network_gib": 20
+    },
+    "website": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 20,
+      "network_gib": 12
+    }
+  },
+  "website_input_sha256": {
+    "package.json": "9052bb2030b565db0202eaa2b2e2cd667bacbdf8cc0553d587e95ae687530f33",
+    "package-lock.json": "879587e02ff8b9fa75762d2bdda28944f77b9a770430559f21bf45883c499ab9"
+  },
+  "attempt_policy": "One initial full hosted run under common clock. No automatic rerun, clock reset or narrowing. Any setup, baseline or resource failure is terminal for this execution; preserve evidence. Candidate failures require substantive review before any further attempt within original limits. Closed #555/PDP1894 attempts remain frozen.",
+  "python_phase_model": "Setup and validation use separate owned containers under SAME workflow clock and caps; setup memory retained, real baseline/project cgroup measured in fresh validation container; no daily allowance or runtime deadline reset.",
+  "packet_sha256": {
+    ".github/workflows/validate-tuning-model-info.yml": "8b4f103d2fdbd11accd573a4e610140ea0c071fef6fe24795004d6e6a36cc629",
+    "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
+    "TestInventory1850.scala": "55fe0721f310d5fcbc7ffcd8da015ddfcaaef19b6db144adacba495cfe0cef2b",
+    "candidate-files/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/BestModelParamsInfo.scala": "8e97e28681a4799afb3fc39a909ac9d10164ff44a0c88f5e9c396ebd4436488f",
+    "candidate-files/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/RankingTuning.scala": "aa1fb204d98cd1a94844237493664fde30432318b72e7f583d7007508ac0d65d",
+    "candidate-files/core/src/main/scala/com/microsoft/azure/synapse/ml/automl/TuneHyperparameters.scala": "8acea5902f1d431b72a2026b5319a1190d27e099d802b387d5580b46625e4e70",
+    "candidate-files/core/src/test/java/com/microsoft/azure/synapse/ml/automl/TestableJavaOverridingModelInfoClassifier.java": "c7b01653be360780f3275f80bbe6474d91c05d75ff1c90bd493f9150789e83f5",
+    "candidate-files/core/src/test/python/synapsemltest/automl/__init__.py": "8a4212f75d019a4ed87cbf9f19545bc7360ce312c3ff3188314243b5fb82c345",
+    "candidate-files/core/src/test/python/synapsemltest/automl/test_model_info.py": "1a0caf209ba173898713683d1dc5b088d27bb0f289a9e3f38948256c070cc5d1",
+    "candidate-files/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/ModelInfoFixtures.scala": "627ae9b2a57f3eadc674cbff050e9bdcb22d88fd47370228f292473aa80edbe2",
+    "candidate-files/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyModelInfoRegression.scala": "fd268f3d86ca6a4a5bc8f49f66c72c589fbb338da4a6d39c0932b1bf7a92bc9e",
+    "candidate-files/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyRankingTuning.scala": "38ef84f0347b8b7cfc9cb77620ff8ff39fc00108edabdfca199425bc1539a030",
+    "candidate-files/core/src/test/scala/com/microsoft/azure/synapse/ml/automl/VerifyTuneHyperparametersModelInfo.scala": "e884d37827a1a811bbf1008d26fefc26fd1d6565482d1b0b3ba920e4c39f6d24",
+    "candidate-files/docs/Quick Examples/estimators/core/_AutoML.md": "ad2258d2a3441d023f2e7260be568cf68858e14a89b4da3b799a92b4e6368256",
+    "candidate-files/lightgbm/src/test/python/synapsemltest/lightgbm/test_tuning_model_info.py": "51d38c611c99e1fc7b71dd9b2333051f366abb0bbeeb90964b65c2b38909243b",
+    "candidate-files/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split1/VerifyLightGBMTuningModelInfo.scala": "318e5103a951a160dfe8d75db7907ccea42a57d8af50ccaa225bd6d823c09a85",
+    "candidate.patch": "8a5b8b8a689a75e68bf47b36390bb1d0bd745bd3cadb8d01815a8f891f39a6c7",
+    "collect.py": "5a09c73836398cd30bdd4dd35e995cf3164bf549aed471c26542fbcc6af7c7cd",
+    "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
+    "entry.py": "243d52d6f06274ae7121ec45987f99c68572ba142836c25c9f5533f847b7f308",
+    "evidence_export.py": "e85e972221e72c28582cfb026339a3b195810fa845c59ffd09d102dc576c9dff",
+    "fresh_driver_model_info.py": "df0747dbe24b7a6bf38efb615df1b6fd0de7b9c119fe4d6f811c4979afb0920d",
+    "generated_artifacts.py": "23633ea1151cac0a0c625a9c3655d4bb90ef3addd491ecf25e33adb528bfff55",
+    "host.py": "16b31fd8ff7b3c4add8a5347226201d39e8d7afb9bd006e26f01934028070bcc",
+    "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
+    "provenance_pytest.py": "68c14934aa125b0eef618c63f32e78aa2ac43211592300a55b119cf0bfaaf540",
+    "python_checks.py": "a96d36a2b313aa501612e6fc0d1190cda2d9a281fdd919085b1dce1ddc396e12",
+    "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
+    "scala_validation.py": "1b31802d3f86ccf0d5edf0bd59542cdb76255bad76b8923a48847a3db9fb9cd5",
+    "validation_d0.py": "c9b58b6f87026f7267fcbd84f2481336bd47f363aa8b65997a4fe64c0745728e",
+    "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
+    "warm_init_spark.py": "375e07af189e10453661ca79f64d27846d3c0434afecb766fed8925a4cefc44b",
+    "website_check.py": "c8e86a2e20294246d713884db83efaa72474c838728df857317f3bb96b826948",
+    "website_generate.py": "181e4c1b4d4711cc9d25799c5dd30aa3a8db86f5b01dce084853126127ee1a5d",
+    "website_validation.py": "66fac8e536d3bdb263174c50b6e2e2211db199024034b4e96779705996f732a4"
+  },
+  "root_fuzz_test_names": [
+    "Assert things have been loaded",
+    "Verify stage fitting and transforming",
+    "Verify all stages can be serialized",
+    "Verify all stages can be tested in python",
+    "Verify all stages can be tested in R",
+    "Verify all pipeline stages don't have exotic characters",
+    "Verify all pipeline stage values match their param names",
+    "Verify correct use of mixins",
+    "Verify correct use of logging APIs",
+    "Verify all classes extending HasSubscriptionKey also extend HasAADToken"
+  ],
+  "root_fuzz_ignored_names": [
+    "Quick analysis of all getters and setters"
+  ],
+  "diagnostic_branch_contract": {
+    "orphan": true,
+    "commit_parents": [],
+    "packet_only": true,
+    "no_upstream_workflows": true,
+    "real_workflow_path": ".github/workflows/validate-tuning-model-info.yml",
+    "noncancelling_concurrency": true,
+    "publication_requires_actual_E2_approval": true
+  },
+  "launcher_contract": "No .jvmopts or .sbtopts at pinned base; explicit 1GiB initial/4GiB max heap bounded by 12GiB container. Publishing explicitly disabled.",
+  "optional_setup_diagnostics": "pip check and bounded archive capture retain status/output, do not waive installed RECORD proof or required tests/global guards."
+}

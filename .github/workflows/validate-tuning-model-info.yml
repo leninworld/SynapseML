@@ -1,0 +1,34 @@
+name: Validate tuning model configuration reporting
+on:
+  push:
+    branches: [validate-tuning-model-info-1850]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: synapse1850-validation-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [root, core, native, python, website]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: microsoft/SynapseML
+          ref: d3f3af6bd3e4b7d191f51c9eb29f9aeffe788193
+          path: source
+          persist-credentials: false
+      - name: Validate full lane in owned Docker
+        env:
+          VALIDATION_LANE: ${{ matrix.lane }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 packet/host.py
