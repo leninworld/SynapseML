@@ -50,6 +50,23 @@ def main():
             "Run, workflow and packet commit mismatch")
     require(run["id"] == int(run_id) and run["head_branch"] == manifest["validation_branch"],
             "Run identity or branch mismatch")
+    # Reuse only the actual completed native job at this exact frozen source.
+    prior = json.loads((packet / manifest["reuse_native_proof"]).read_text())
+    require(prior["frozen_documentation"]["source_sha256"] == manifest["candidate_files"], "Native reuse source mismatch")
+    require(prior["frozen_documentation"]["tested_patch_sha256"] == manifest["patch_sha256"], "Native reuse patch mismatch")
+    require(prior["owned_stop_verified"] and prior["evidence_export_critical_complete"], "Native proof incomplete")
+    prior_request = urllib.request.Request(
+        "https://api.github.com/repos/leninworld/SynapseML/actions/jobs/" + str(prior["job_id"]),
+        headers={"Accept": "application/vnd.github+json", "User-Agent": "validation-controller",
+                 "Authorization": "Bearer " + os.environ["GH_TOKEN"]})
+    with urllib.request.urlopen(prior_request, timeout=15) as response:
+        prior_data = response.read(256 * 1024 + 1)
+    require(len(prior_data) <= 256 * 1024, "Prior job metadata cap")
+    prior_job = json.loads(prior_data)
+    require(prior_job["id"] == 128480429777 and prior_job["run_id"] == 42398326186,
+            "Wrong prior native job")
+    require(prior_job["head_sha"] == "9a62602b3e8838d3c818ef5b6874a826027ffc93" and
+            prior_job["status"] == "completed" and prior_job["conclusion"] == "success", "Prior native not passed")
     created = datetime.datetime.fromisoformat(run["created_at"].replace("Z", "+00:00")).timestamp()
     deadline = created + manifest["target_seconds"]
     absolute = created + manifest["absolute_seconds"]
@@ -67,6 +84,7 @@ def main():
               "absolute_epoch": absolute, "passed": False, "steps": []}
     result.update(head_sha=run["head_sha"], github_sha=os.environ["GITHUB_SHA"],
                   github_ref=os.environ["GITHUB_REF"], packet_head=packet_head)
+    result["reused_native_job"] = {"id": prior_job["id"], "run_id": prior_job["run_id"], "head_sha": prior_job["head_sha"], "conclusion": prior_job["conclusion"], "source_sha256": prior["frozen_documentation"]["source_sha256"]}
     interfaces = list(Path("/sys/class/net").glob("*/statistics/rx_bytes"))
     rx_start = {str(path): int(path.read_text()) for path in interfaces}
 

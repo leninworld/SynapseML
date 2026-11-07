@@ -50,8 +50,9 @@ def website_lane(lane):
     from website_contract import inspect_build
     for name,expected in lane.manifest['website_input_sha256'].items():require(hashlib.sha256((lane.source/'website'/name).read_bytes()).hexdigest()==expected,'Website inputs changed')
     lane.apply();import_formatted(lane)
-    lane.initial_admission('whole-website-finish',remaining_seconds=660)
+    lane.initial_admission('whole-website-finish',remaining_seconds=900)
     lane.command('npm-ci',['npm','ci','--no-audit','--no-fund'],600,cwd=lane.source/'website')
+    lane.command('actual-history-fallback-header-fixture',['python3',str(lane.packet/'website_check.py'),'--fixture'],30,cwd=lane.source/'website')
     lane.command('docgen-install',['python3','-m','pip','install','--user','--no-input','tools/docgen','nbconvert==7.16.6','beautifulsoup4','requests','pyyaml'],300)
     lane.command('docgen-environment',['python3','-m','pip','freeze'],30)
     lane.command('whole-website-generate',['python3',str(lane.packet/'website_generate.py')],300)

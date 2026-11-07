@@ -24,36 +24,27 @@
     "package.json": "9052bb2030b565db0202eaa2b2e2cd667bacbdf8cc0553d587e95ae687530f33",
     "package-lock.json": "879587e02ff8b9fa75762d2bdda28944f77b9a770430559f21bf45883c499ab9"
   },
-  "revision": "SynapseML1669-D2-I2-E1",
+  "revision": "SynapseML1669-SECOND-remaining-website-PROPOSED",
   "execution_enabled": true,
   "execution_approval_required": true,
   "source_commit": "d3f3af6bd3e4b7d191f51c9eb29f9aeffe788193",
-  "validation_branch": "validate-multiclass-shap-1669-i1",
-  "target_seconds": 3000,
-  "absolute_seconds": 3600,
-  "patch_sha256": "eca05683b0750fc37df0b336378dfac788c2c1bb00cbca390f7b73c668bc6eb2",
+  "validation_branch": "validate-multiclass-shap-1669-i2",
+  "target_seconds": 1500,
+  "absolute_seconds": 1800,
+  "patch_sha256": "c0e41f5cf050d3a134d9f7a3b45cf1f87f9bc2fc17ef165268ea94853061477b",
   "baseline_files": {
     "docs/Explore Algorithms/LightGBM/Multiclass SHAP values.ipynb": null,
     "docs/Explore Algorithms/LightGBM/Overview.md": "5d859c742307170283706c6a091cad0f2179ac982025804e590f0d765c22354f",
     "website/sidebars.js": "d4e3ec8c420d162f63a135e3d6b3e24ed535b9779b8f3eab0f3d023e3f2e820a"
   },
   "candidate_files": {
-    "docs/Explore Algorithms/LightGBM/Multiclass SHAP values.ipynb": "ff596366091a9046ee235ee7ef7ac81cc65675aeb9baa3fb0baf0dc08c133e2d",
+    "docs/Explore Algorithms/LightGBM/Multiclass SHAP values.ipynb": "500f764863d70c8782a216942fc187dd9630a2140aa8ee07b11c0c9be15f000e",
     "docs/Explore Algorithms/LightGBM/Overview.md": "c6f9f647cf8721cc27eee64e1f8a144a8bd206da9db0eed3bbfe9f1f01d1c201",
     "website/sidebars.js": "d556b10ecb1bbeee81afd9e53211226bc40221421a939ac6697458437d282ed8"
   },
   "notebook_path": "docs/Explore Algorithms/LightGBM/Multiclass SHAP values.ipynb",
   "workflow_path": ".github/workflows/validate-multiclass-shap-1669.yml",
   "lanes": {
-    "python-notebook": {
-      "memory_gib": 12,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 10,
-      "network_gib": 20,
-      "source_kind": "candidate",
-      "planning_nonreclaimable_gib": 8,
-      "resource_basis": "Same fullenv measured2.84GBsetup/4.05GBbuild;2CPU sequential4GiB SBT heap then1GiB Sparkdriver+small201row native fit;8GiB planning under12GiBhardcap."
-    },
     "website-documentation": {
       "memory_gib": 12,
       "minimum_start_disk_gib": 20,
@@ -65,92 +56,79 @@
     }
   },
   "resource_price": {
-    "source_tracked_bytes": 31945074,
-    "python_wheel_archive_measured_bytes": 3423348073,
-    "python_disk_gib_components": {
-      "environment_conservative": 24,
-      "mamba_cache": 5,
-      "Ivy_SBT": 8,
-      "build": 4,
-      "Spark_tmp": 4,
-      "immutable_images": 4,
-      "pip_cache_archives": 4,
-      "source_evidence": 1,
-      "margin": 10
+    "workload": "Complete unchanged website generation/tests/productionbuild/SSR/navigation/actual deep-route developmentserver; tiny real pinned middleware fixture added before build. Native exact-source passing evidence reused, not rerun.",
+    "prior_website_observed_seconds": {
+      "pulls_and_build": 34.35,
+      "npm_ci": 13.51,
+      "docgen_install": 8.19,
+      "generate": 2.47,
+      "tests": 1.08,
+      "production_build": 185.67,
+      "successful_dev_compilation": 34.83,
+      "failed_old_HTTP_observer": 480.916
     },
-    "root_memory_projection_bytes": 5657185799.5,
-    "python_actual_same_environment_setup_seconds": 229.11,
-    "python_actual_sampled_nonreclaimable_bytes": 2779000000,
-    "website_memory_projection": "Node6GiB heap plus Python/process reserve in8GiB; baseline measured admission before candidate",
-    "disk_constraint": "Verify actual chosen host before pull/G0; no deletion workaround",
-    "time_constraint": "Two sequential jobs, sharedworkflowcreated_at+3000/+3600 includingallqueue/setup/export; no phase/jobclock reset.",
+    "prior_website_sampled_nonreclaimable_peak_bytes": 4754415616,
+    "prior_website_raw_memory_peak_bytes": 6369144832,
+    "planning_nonreclaimable_gib": 8,
+    "hard_memory_gib": 12,
+    "host_minimum_available_gib": 10,
+    "host_OS_reserve_gib": 2,
+    "minimum_start_disk_gib": 20,
+    "disk_basis": "Same exact image and npm/docgen/source closure as first website job; original20GiB guard retained. No cleanup or disk-setting changes.",
+    "network_gib": 12,
+    "estimated_total_seconds": 900,
+    "target_seconds": 1500,
+    "absolute_seconds": 1800,
     "parallel_jobs": 1,
-    "calibration": "Prior actual42351995625 solely pricing, not1669passes",
-    "estimated_serial_seconds": {
-      "two_image_pull_builds_and_G0": 240,
-      "full_environment_2CPU_allowance": 480,
-      "root_compile_Testcompile_styles_2CPU": 540,
-      "warm_codegen_install_publishM2_afterroot": 360,
-      "datasets_twoScalaSHAPtests_notebook": 240,
-      "website_deps_docgen": 90,
-      "website_build_2CPU": 450,
-      "devroute": 120,
-      "evidence": 120
-    },
-    "cold_wheel_archive_bytes": 3423348073,
-    "full_finish_note": "Bothserialjobs, onecreated_atclock. CPU2timeprojection usesactualwarmroot/codegen split, samefullenv, andnative201rowmodel; no extraAPI/modelclaims. Allplannedcosts includeoneoverall120sexportreserve; phaseadmission excludesalreadyspentwork andavoidsdoublingthatreserve.",
+    "execution_slot": "Only after currently running Forgetful42400866098 is terminal",
     "admission_remaining_seconds": {
-      "before_full_env": 2400,
-      "before_native_build": 1920,
-      "before_website_deps": 660
+      "before_website_deps": 900
     },
-    "estimated_total_from_components": 2640,
-    "network_price_gib": {
-      "native": {
-        "samefullPythoncompressedwheels_measured_gib": 3.188241341151297,
-        "Conda_and_cache_allowance": 5,
-        "Maven_SBT": 4,
-        "images": 4,
-        "datasets": 0.11473901011049747,
-        "margin_under_cap20": 3
-      },
-      "website": {
-        "images": 4,
-        "npm": 3,
-        "docgen_python": 1,
-        "margin_under_cap12": 4
-      }
+    "preserved_native_source_sha256": {
+      "docs/Explore Algorithms/LightGBM/Multiclass SHAP values.ipynb": "500f764863d70c8782a216942fc187dd9630a2140aa8ee07b11c0c9be15f000e",
+      "docs/Explore Algorithms/LightGBM/Overview.md": "c6f9f647cf8721cc27eee64e1f8a144a8bd206da9db0eed3bbfe9f1f01d1c201",
+      "website/sidebars.js": "d556b10ecb1bbeee81afd9e53211226bc40221421a939ac6697458437d282ed8"
     }
   },
-  "full_validation_acceptance": "Both serial jobs within SAMEworkfloworigin; alloriginalnotebookcells unchanged except approved semantic-preservingBlackformat; nativeclasspath+Pythonorigin proof; exactformattedclearedNotebookhashsharedwithwholewebsite; no retries.",
+  "full_validation_acceptance": "First native complete PASS reused only for exact same frozen3file source; second complete website build/tests/SSR/link/sidebar and actual same canonical deep-route HTTP response must PASS. Actual2nd attempt recorded; no automatic retry or first-attempt clock reset.",
   "packet_sha256": {
-    ".github/workflows/validate-multiclass-shap-1669.yml": "a223bf6cacf4eaefb8a365f99380900264d610329459758a6eb4d36c4eeffadd",
+    ".github/workflows/validate-multiclass-shap-1669.yml": "d7615d1e61784e137dbdc065a80f837b7601da96befda94019dc26567b2c1444",
     "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
     "artifact_provenance.py": "2e7eaa48ab0ee76dedd5f0a38a710ee61b5ff29d70796829e2fbb17365959f34",
     "bootstrap.py": "6d5a757a954e339522d63949bc138cc59bd66d88562b9ff238aa17bdecd22e03",
-    "candidate-files/docs/Explore Algorithms/LightGBM/Multiclass SHAP values.ipynb": "ff596366091a9046ee235ee7ef7ac81cc65675aeb9baa3fb0baf0dc08c133e2d",
+    "candidate-files/docs/Explore Algorithms/LightGBM/Multiclass SHAP values.ipynb": "500f764863d70c8782a216942fc187dd9630a2140aa8ee07b11c0c9be15f000e",
     "candidate-files/docs/Explore Algorithms/LightGBM/Overview.md": "c6f9f647cf8721cc27eee64e1f8a144a8bd206da9db0eed3bbfe9f1f01d1c201",
     "candidate-files/website/sidebars.js": "d556b10ecb1bbeee81afd9e53211226bc40221421a939ac6697458437d282ed8",
-    "candidate.patch": "eca05683b0750fc37df0b336378dfac788c2c1bb00cbca390f7b73c668bc6eb2",
+    "candidate.patch": "c0e41f5cf050d3a134d9f7a3b45cf1f87f9bc2fc17ef165268ea94853061477b",
     "collect.py": "676208ca7b93756196329fe19ed7b34f5f53ad290e5b82a9c36bd57414fd09bf",
     "common.py": "95924a2c37ad3f92a7ff8df75c160d73aad45457cf54846faf4760ae5316fc15",
     "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
-    "documentation_source.py": "39afcb2f1faa9c3db722b3b4892428817e114a1f325b89173c0269878331652e",
+    "documentation_source.py": "39e5539b861d217adb7a5b775b26d86e9ee6bc875d791a7fd1bd8b4d3c36dcad",
     "entry.py": "30a384590acac29c9bc2b92e08a180a64bf3008c93e78527b6c88bf03f83666c",
     "evidence_export.py": "3838974980d590f509e6af9ee43ca3574f67783363c72989ae047e20e54d23f5",
     "format_checks.py": "56896ed5d7773b2d33d50fa1e2c477f0d8db2a364b7092b569cead340790f814",
     "generated_artifacts.py": "c344075a4cc1ed3954abc25c5cdc0e6049c0ab88963586b23031f298020954a9",
-    "host.py": "fb766ff0a1674af0e7a5b0caa1d43ce22cbe336b5e7a8baf89c5dee741fd42da",
-    "lanes.py": "dbed7e208569a7ff8849a9b2af13ceb88a256695d3132658f8328f1457833b59",
+    "host.py": "1542ad0951a3d1461ab5a442e39f66e21a67e696c8728ef2f54fa9bcc7fecee0",
+    "lanes.py": "23bc9680adb0ba809a3dcf3be4489abe924dfd48eebf64fd5ef93beb245b50f4",
     "notebook_contract.py": "09d36a002431ffbcd438900fec5821b2ff799c56bb921a9bedc7a2fade3164f4",
     "notebook_run.py": "c138eb0522c0dfbcb9ba59e6e9065ac65403932fa0869d9f52ee517913b6fa0a",
+    "prior-native-proof.json": "5dc9475bcb19ceae20de3b4f317e59c4aaa82c0bea0c2984a39d88bb7eadb9ca",
     "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
     "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
     "validation_d0.py": "15076bdb81bbbed6824a7244ecc3cf55fa3a7380fecab0035845dc15aae8bed6",
     "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
-    "website_check.py": "0c4e96b5accc3dd119468b4bd09aadf954ec89eb87366ad262645f2ad20dcc5a",
+    "website_check.py": "3d8440856e45b42d84f8d116a2ae0256da559a4ab99fe77755333e9f40590705",
     "website_contract.py": "31753ff930d4b61c67055d3d2a6cac03418bb84d6d0dc7203739f5341b85f455",
     "website_generate.py": "0a1de9f21e874929992a2de5b18b060895d9ea348cde9e6a6365250d96ae1456",
-    "workflow.yml": "a223bf6cacf4eaefb8a365f99380900264d610329459758a6eb4d36c4eeffadd"
-  }
+    "workflow.yml": "d7615d1e61784e137dbdc065a80f837b7601da96befda94019dc26567b2c1444"
+  },
+  "attempt_number": 2,
+  "prior_attempt": {
+    "workflow": 42398326186,
+    "diagnostic_commit": "9a62602b3e8838d3c818ef5b6874a826027ffc93",
+    "conclusion": "failure",
+    "native": "complete verified PASS reused at identical tested source",
+    "website": "production checks passed; actual deep-route HTTP witness failed; original attempt closed and unchanged"
+  },
+  "reuse_native_proof": "prior-native-proof.json"
 }

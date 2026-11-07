@@ -7,8 +7,8 @@ from validation_runtime import require
 
 def freeze(lane):
     names=lane.manifest['candidate_files'];hashes={n:hashlib.sha256((lane.source/n).read_bytes()).hexdigest() for n in names}
-    tracked=subprocess.check_output(['git','diff','--binary'],cwd=lane.source)
-    new=subprocess.run(['git','diff','--no-index','--binary','--','/dev/null',lane.manifest['notebook_path']],cwd=lane.source,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    tracked=subprocess.check_output(['git','diff','--binary','--abbrev=7'],cwd=lane.source)
+    new=subprocess.run(['git','diff','--no-index','--binary','--abbrev=7','--','/dev/null',lane.manifest['notebook_path']],cwd=lane.source,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     require(new.returncode==1 and not new.stderr,'New notebook patch construction')
     patch=tracked+new.stdout
     (lane.root/'tested-documentation.patch').write_bytes(patch)

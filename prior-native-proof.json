@@ -1,0 +1,49 @@
+{
+  "workflow_id": 42398326186,
+  "job_id": 128480429777,
+  "head_sha": "9a62602b3e8838d3c818ef5b6874a826027ffc93",
+  "native_job_status": "completed",
+  "native_job_conclusion": "success",
+  "first_workflow_conclusion": "failure",
+  "source_commit": "d3f3af6bd3e4b7d191f51c9eb29f9aeffe788193",
+  "frozen_documentation": {
+    "source_sha256": {
+      "docs/Explore Algorithms/LightGBM/Multiclass SHAP values.ipynb": "500f764863d70c8782a216942fc187dd9630a2140aa8ee07b11c0c9be15f000e",
+      "docs/Explore Algorithms/LightGBM/Overview.md": "c6f9f647cf8721cc27eee64e1f8a144a8bd206da9db0eed3bbfe9f1f01d1c201",
+      "website/sidebars.js": "d556b10ecb1bbeee81afd9e53211226bc40221421a939ac6697458437d282ed8"
+    },
+    "tested_patch_sha256": "c0e41f5cf050d3a134d9f7a3b45cf1f87f9bc2fc17ef165268ea94853061477b",
+    "input_patch_sha256": "eca05683b0750fc37df0b336378dfac788c2c1bb00cbca390f7b73c668bc6eb2"
+  },
+  "notebook_result": {
+    "original_code_cells": 6,
+    "private_probe_cells": 1,
+    "execution_counts": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "source_sha256": "500f764863d70c8782a216942fc187dd9630a2140aa8ee07b11c0c9be15f000e",
+    "executed_copy_sha256": "4535b188ba29575064b1996893853a807450be9af02bbc6f5edaa9c5dff16e45"
+  },
+  "native_tests": [
+    {
+      "suite": "com.microsoft.azure.synapse.ml.lightgbm.split5.VerifyLightGBMClassifierStream",
+      "case": "Verify Multiclass LightGBM Classifier local feature importance SHAP values, streaming",
+      "status": "PASS",
+      "scope": "existing baseline shape check, not new notebook proof"
+    },
+    {
+      "suite": "com.microsoft.azure.synapse.ml.lightgbm.split6.VerifyLightGBMClassifierBulk",
+      "case": "Verify Multiclass LightGBM Classifier local feature importance SHAP values, null",
+      "status": "PASS",
+      "scope": "existing baseline shape check, not new notebook proof"
+    }
+  ],
+  "owned_stop_verified": true,
+  "evidence_export_critical_complete": true
+}
