@@ -1,0 +1,229 @@
+// Copyright (C) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in project root for information.
+
+package com.microsoft.azure.synapse.ml.io.split1
+
+import com.microsoft.azure.synapse.ml.core.schema.ImageSchemaUtils
+import com.microsoft.azure.synapse.ml.core.test.base.TestBase
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.mapreduce.TaskAttemptID
+import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl
+import org.apache.spark.ml.ImageInjections
+import org.apache.spark.ml.image.ImageSchema
+import org.apache.spark.ml.source.image.{ImageOutputWriter, PatchedImageFileFormat}
+import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.types.{StringType, StructType}
+
+import java.nio.file.{Files, Path}
+import javax.imageio.ImageIO
+import scala.collection.JavaConverters._
+
+class ImageWriterSuite extends TestBase {
+
+  private val width = 2
+  private val height = 1
+  private val grayChannels = 1
+  private val colorChannels = 3
+  private val alphaChannels = 4
+  private val colorMode = 16
+  private val alphaMode = 24
+  private val grayBytes = Array[Byte](12, 34)
+  private val colorBytes = Array[Byte](3, 2, 1, 6, 5, 4)
+  private val alphaBytes = Array[Byte](3, 2, 1, 64, 6, 5, 4, 127)
+  private val format = classOf[PatchedImageFileFormat].getName
+  private val schema = ImageSchemaUtils.ImageSchemaNullable.add("filenames", StringType)
+
+  private def image(channels: Int): Row = {
+    val (mode, bytes) = channels match {
+      case `grayChannels` => (0, grayBytes)
+      case `colorChannels` => (colorMode, colorBytes)
+      case `alphaChannels` => (alphaMode, alphaBytes)
+    }
+    Row("synthetic", height, width, channels, mode, bytes)
+  }
+
+  private def frame(rows: Seq[Row], schema: StructType = schema): DataFrame = {
+    spark.createDataFrame(rows.asJava, schema)
+  }
+
+  private def output(name: String): Path = tmpDir.resolve(name)
+
+  private def internal(row: Row): InternalRow = {
+    ExpressionEncoder(schema).createSerializer()(row)
+  }
+
+  private def writer(directory: Path): ImageOutputWriter = {
+    val conf = new Configuration(spark.sparkContext.hadoopConfiguration)
+    val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
+    new ImageOutputWriter(directory.resolve("part-0000").toString, 0, 1, context)
+  }
+
+  private def pngFiles(directory: Path): Seq[Path] = {
+    if (!Files.exists(directory)) {
+      Seq.empty
+    } else {
+      val files = Files.walk(directory)
+      try files.iterator().asScala.filter(p => Files.isRegularFile(p) && p.toString.endsWith(".png")).toVector
+      finally files.close()
+    }
+  }
+
+  private def assertPixels(file: Path, channels: Int): Unit = {
+    val decoded = ImageIO.read(file.toFile)
+    assert(Option(decoded).nonEmpty)
+    assert(decoded.getWidth == width && decoded.getHeight == height)
+    channels match {
+      case `grayChannels` =>
+        assert(decoded.getRaster.getSample(0, 0, 0) == grayBytes(0))
+        assert(decoded.getRaster.getSample(1, 0, 0) == grayBytes(1))
+      case `colorChannels` =>
+        assert(decoded.getRGB(0, 0) == 0xff010203)
+        assert(decoded.getRGB(1, 0) == 0xff040506)
+      case `alphaChannels` =>
+        assert(decoded.getRGB(0, 0) == 0x40010203, "PNG alpha pixel mismatch")
+        assert(decoded.getRGB(1, 0) == 0x7f040506, "PNG alpha pixel mismatch")
+    }
+    val sparkImage = ImageInjections.decode(file.toUri.toString, Files.readAllBytes(file)).get.getStruct(0)
+    assert(ImageSchema.getNChannels(sparkImage) == channels)
+    val expected = channels match {
+      case `grayChannels` => grayBytes
+      case `colorChannels` => colorBytes
+      case `alphaChannels` => alphaBytes
+    }
+    assert(ImageSchema.getData(sparkImage).sameElements(expected))
+  }
+
+  test("batch PNG writes preserve pixels, relative nested paths and row counts") {
+    val directory = output("roundtrip")
+    val rows = Seq(grayChannels, colorChannels, alphaChannels).map { channels =>
+      Row(image(channels), s"nested/$channels.png")
+    }
+    frame(rows).repartition(2).write.format(format).save(directory.toString)
+    assert(pngFiles(directory).size == rows.size)
+    Seq(grayChannels, colorChannels, alphaChannels).foreach { channels =>
+      assertPixels(directory.resolve(s"nested/$channels.png"), channels)
+    }
+    val read = spark.read.format(format).option("recursiveFileLookup", "true").load(directory.toString)
+    assert(read.count() == rows.size)
+    assert(ImageSchemaUtils.isImage(read.schema("image")))
+  }
+
+  test("batch writer honors column options and reversed schema order") {
+    val directory = output("column-options")
+    val renamed = frame(Seq(Row(image(colorChannels), "renamed.png")))
+      .selectExpr("filenames AS destination", "image AS flipped")
+    renamed.write.format(format).option("imageCol", "flipped").option("pathCol", "destination")
+      .save(directory.toString)
+    assertPixels(directory.resolve("renamed.png"), colorChannels)
+  }
+
+  test("batch writer preserves default partition directories and overwrite mode") {
+    val directory = output("partitioned")
+    val data = frame(Seq(Row(image(colorChannels), "nested/partition.png"))).withColumn("group", lit("a"))
+    data.write.format(format).partitionBy("group").save(directory.toString)
+    assertPixels(directory.resolve("group=a/nested/partition.png"), colorChannels)
+    data.write.mode("overwrite").format(format).partitionBy("group").save(directory.toString)
+    assert(pngFiles(directory).size == 1)
+    assertPixels(directory.resolve("group=a/nested/partition.png"), colorChannels)
+  }
+
+  test("batch writer accepts the canonical image schema and rejects extra columns") {
+    val schema = ImageSchema.imageSchema.add("filenames", StringType)
+    val data = frame(Seq(Row(image(colorChannels), "canonical.png")), schema)
+    val directory = output("canonical")
+    data.write.format(format).save(directory.toString)
+    assertPixels(directory.resolve("canonical.png"), colorChannels)
+    intercept[Exception] {
+      data.withColumn("extra", lit(1)).write.format(format).save(output("extra-column").toString)
+    }
+    intercept[Exception] {
+      data.write.format(format).option("pathCol", "image").save(output("same-column").toString)
+    }
+    intercept[Exception] { data.write.format(format).save(directory.toString) }
+    assertPixels(directory.resolve("canonical.png"), colorChannels)
+  }
+
+  test("writer close preserves the cached shared filesystem") {
+    val directory = output("shared-filesystem")
+    val conf = spark.sparkContext.hadoopConfiguration
+    val before = FileSystem.get(directory.toUri, conf)
+    frame(Seq(Row(image(colorChannels), "shared.png"))).write.format(format).save(directory.toString)
+    assert(FileSystem.get(directory.toUri, conf) eq before, "Image writer evicted shared filesystem")
+    assertPixels(directory.resolve("shared.png"), colorChannels)
+  }
+
+  test("writer rejects escaping and empty filenames before touching outside files") {
+    val directory = output("invalid-paths")
+    val sentinel = output("sentinel.png")
+    Files.write(sentinel, colorBytes)
+    val names = Seq(sentinel.toString, "../sentinel.png", "nested/../sentinel.png", "file:/outside.png",
+      "C:\\outside.png", "\\\\host\\outside.png", "", Option.empty[String].orNull)
+    names.foreach { name =>
+      val sink = writer(directory)
+      try {
+        val error = intercept[IllegalArgumentException] { sink.write(internal(Row(image(colorChannels), name))) }
+        assert(error.getMessage.toLowerCase.contains("filename"))
+      } finally sink.close()
+    }
+    assert(Files.readAllBytes(sentinel).sameElements(colorBytes))
+    assert(pngFiles(directory).isEmpty)
+  }
+
+  test("writer rejects codecs incompatible with the image before creating files") {
+    val directory = output("bad-codecs")
+    Seq("no-extension", "unknown.unsupported", "alpha.jpg").foreach { name =>
+      val sink = writer(directory)
+      try {
+        val error = intercept[IllegalArgumentException] { sink.write(internal(Row(image(alphaChannels), name))) }
+        assert(error.getMessage.contains("ImageIO writer"))
+      } finally sink.close()
+    }
+    assert(!Files.exists(directory))
+  }
+
+  test("writer rejects null and invalid image rows with clear errors") {
+    val directory = output("bad-images")
+    val invalid = Row("invalid", 0, 0, -1, -1, Array.emptyByteArray)
+    val wrongLength = Row("short", height, width, colorChannels, colorMode, Array.emptyByteArray)
+    Seq((Option.empty[Row].orNull, "Image struct"), (invalid, "valid images"), (wrongLength, "byte length"))
+      .foreach { case (value, expected) =>
+      val sink = writer(directory)
+      try {
+        val error = intercept[IllegalArgumentException] { sink.write(internal(Row(value, "bad.png"))) }
+        assert(error.getMessage.contains(expected))
+      } finally sink.close()
+    }
+    assert(pngFiles(directory).isEmpty)
+  }
+
+  test("writer rejects duplicate names within one task without overwriting") {
+    val directory = output("duplicate")
+    val sink = writer(directory)
+    try {
+      val row = internal(Row(image(colorChannels), "same.png"))
+      sink.write(row)
+      val original = Files.readAllBytes(directory.resolve("same.png"))
+      intercept[java.io.IOException] { sink.write(row) }
+      assert(Files.readAllBytes(directory.resolve("same.png")).sameElements(original))
+    } finally sink.close()
+  }
+
+  test("batch abort removes earlier task images and preserves the outside sentinel") {
+    val directory = output("abort")
+    val sentinel = output("abort-sentinel.png")
+    Files.write(sentinel, colorBytes)
+    val data = frame(Seq(Row(image(colorChannels), "first.png"), Row(image(colorChannels), sentinel.toString)))
+      .orderBy(org.apache.spark.sql.functions.desc("filenames")).coalesce(1)
+    val result = scala.util.Try(data.write.format(format).save(directory.toString))
+    assert(Files.readAllBytes(sentinel).sameElements(colorBytes), "Image write modified outside sentinel")
+    assert(result.isFailure, "Invalid filename did not abort the batch")
+    val error = result.failed.get
+    assert(Iterator.iterate(error)(_.getCause).takeWhile(e => Option(e).nonEmpty)
+      .flatMap(e => Option(e.getMessage)).exists(_.toLowerCase.contains("filename")))
+    assert(pngFiles(directory).isEmpty)
+  }
+}
