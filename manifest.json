@@ -1,0 +1,239 @@
+{
+  "revision": "I3-E1-FIVE-PARALLEL-JOBS-PREPARED",
+  "execution_enabled": true,
+  "execution_approval_required": true,
+  "source_commit": "d3f3af6bd3e4b7d191f51c9eb29f9aeffe788193",
+  "validation_branch": "validate-image-writer-658-i3",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "patch_sha256": "7467b993b9b738330e22b1aa78fdd1110da92e0e67a19b6417971af85d5c5404",
+  "baseline_files": {
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/io/split1/ImageWriterSuite.scala": null,
+    "core/src/main/scala/org/apache/spark/ml/source/image/PatchedImageFileFormat.scala": "ede725371d3cbf2de51be4f1ead0043c2b1443910ed81b1a115bc4e1ace59755",
+    "docs/Quick Examples/transformers/core/_Image.md": "ceef1a238e163708c06bc6ff1cb2a384fc02da5b2683d606d77eafa496ba6a1b",
+    "opencv/src/test/python/synapsemltest/opencv/test_image_writer.py": null
+  },
+  "candidate_files": {
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/io/split1/ImageWriterSuite.scala": "1e08548792191792bb4e4fa8bf0c246887eaa569fc1476b1fa6ae706cd985fe1",
+    "core/src/main/scala/org/apache/spark/ml/source/image/PatchedImageFileFormat.scala": "12d43c03ddffb2337b11bf3c2c34c307988c9736f290302e3ccd6fe04b376761",
+    "docs/Quick Examples/transformers/core/_Image.md": "bc6a3db418e9f4ee35a0fa0dc3f1f57a1e1f6bdb67f9596a74cd1bfbe536ffef",
+    "opencv/src/test/python/synapsemltest/opencv/test_image_writer.py": "79f7a9efb82e2a5f4eadb8e5e8f07896e8d602b7d5968fc99204f829a04c238f"
+  },
+  "scala_regression_path": "core/src/test/scala/com/microsoft/azure/synapse/ml/io/split1/ImageWriterSuite.scala",
+  "python_regression_path": "opencv/src/test/python/synapsemltest/opencv/test_image_writer.py",
+  "scala_cases": {
+    "com.microsoft.azure.synapse.ml.io.split1.ImageWriterSuite": [
+      "batch PNG writes preserve pixels, relative nested paths and row counts",
+      "batch writer honors column options and reversed schema order",
+      "batch writer preserves default partition directories and overwrite mode",
+      "batch writer accepts the canonical image schema and rejects extra columns",
+      "writer close preserves the cached shared filesystem",
+      "writer rejects escaping and empty filenames before touching outside files",
+      "writer rejects codecs incompatible with the image before creating files",
+      "writer rejects null and invalid image rows with clear errors",
+      "writer rejects duplicate names within one task without overwriting",
+      "batch abort removes earlier task images and preserves the outside sentinel"
+    ],
+    "com.microsoft.azure.synapse.ml.io.split1.ImageReaderSuite": [
+      "image dataframe",
+      "read images with subsample",
+      "read images from files",
+      "read images from strings",
+      "read from strings 2",
+      "write images with subsample function 2",
+      "structured streaming with images"
+    ],
+    "com.microsoft.azure.synapse.ml.core.test.pipeline.PipelineTestCoverageSuite": [
+      "Every test suite is claimed by a leg of the UnitTests matrix"
+    ]
+  },
+  "expected_scala_failures": {
+    "batch PNG writes preserve pixels, relative nested paths and row counts": [
+      "PNG alpha pixel mismatch"
+    ],
+    "batch writer honors column options and reversed schema order": [
+      "Image data source supports"
+    ],
+    "writer close preserves the cached shared filesystem": [
+      "Image writer evicted shared filesystem"
+    ],
+    "writer rejects escaping and empty filenames before touching outside files": [
+      "Expected exception java.lang.IllegalArgumentException"
+    ],
+    "writer rejects codecs incompatible with the image before creating files": [
+      "Expected exception java.lang.IllegalArgumentException"
+    ],
+    "writer rejects null and invalid image rows with clear errors": [
+      "Expected exception java.lang.IllegalArgumentException"
+    ],
+    "writer rejects duplicate names within one task without overwriting": [
+      "Expected exception java.io.IOException"
+    ],
+    "batch abort removes earlier task images and preserves the outside sentinel": [
+      "Image write modified outside sentinel"
+    ]
+  },
+  "lanes": {
+    "root": {
+      "memory_gib": 8,
+      "minimum_start_disk_gib": 20,
+      "initial_available_gib": 7,
+      "network_gib": 12,
+      "source_kind": "candidate",
+      "planning_nonreclaimable_gib": 6,
+      "resource_basis": "Actual retained cold root3.055GB ->1.5x+1GiB=5.66GB; cgroup runtime measurement before candidate."
+    },
+    "python-baseline": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 10,
+      "network_gib": 20,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 7,
+      "resource_basis": "Full env actual229s/sample2.779GB; real cold rootcompile3.055GB; sequential SBT4GiBheap then Spark1GiBdriver, conservative7GiB planning."
+    },
+    "python-candidate": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 10,
+      "network_gib": 20,
+      "source_kind": "candidate",
+      "planning_nonreclaimable_gib": 7,
+      "resource_basis": "Full env actual229s/sample2.779GB; real cold rootcompile3.055GB; sequential SBT4GiBheap then Spark1GiBdriver, conservative7GiB planning."
+    },
+    "website-baseline": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 20,
+      "initial_available_gib": 10,
+      "network_gib": 12,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 8,
+      "resource_basis": "Upstream Ubuntu-latest/Node24 with no explicit heapoverride; our Node6GiBheap +Python/process2GiB planning under12GiBcap, not a measured website peak."
+    },
+    "website-candidate": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 20,
+      "initial_available_gib": 10,
+      "network_gib": 12,
+      "source_kind": "candidate",
+      "planning_nonreclaimable_gib": 8,
+      "resource_basis": "Upstream Ubuntu-latest/Node24 with no explicit heapoverride; our Node6GiBheap +Python/process2GiB planning under12GiBcap, not a measured website peak."
+    }
+  },
+  "dataset": {
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "input_images": [
+    "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  ],
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "hash_algorithm": "sha1",
+    "hash": "4e3ca243fbac4e8c96eb38d783e2077f67081444",
+    "maximum_bytes": 8388608
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "hash_algorithm": "sha256",
+    "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "maximum_bytes": 19028608
+  },
+  "website_input_sha256": {
+    "package.json": "9052bb2030b565db0202eaa2b2e2cd667bacbdf8cc0553d587e95ae687530f33",
+    "package-lock.json": "879587e02ff8b9fa75762d2bdda28944f77b9a770430559f21bf45883c499ab9"
+  },
+  "resource_price": {
+    "source_tracked_bytes": 31945074,
+    "python_wheel_archive_measured_bytes": 3423348073,
+    "python_disk_gib_components": {
+      "environment_conservative": 24,
+      "mamba_cache": 5,
+      "Ivy_SBT": 8,
+      "build": 4,
+      "Spark_tmp": 4,
+      "immutable_images": 4,
+      "pip_cache_archives": 4,
+      "source_evidence": 1,
+      "margin": 10
+    },
+    "root_memory_projection_bytes": 5657185799.5,
+    "python_actual_same_environment_setup_seconds": 229.11,
+    "python_actual_sampled_nonreclaimable_bytes": 2779000000,
+    "website_memory_projection": "Node6GiB heap plus Python/process reserve in8GiB; baseline measured admission before candidate",
+    "disk_constraint": "Verify actual chosen host before pull/G0; no deletion workaround",
+    "time_constraint": "Single workflow created_at+3000target/+3600absolute includingqueue; independent3jobs,no retry",
+    "parallel_jobs": 5,
+    "python_components_seconds": {
+      "queue_pull_build_G0": 180,
+      "full_environment_measured229_plus_margin": 360,
+      "cold_full_codegen_packages_publishM2": 1200,
+      "baseline_black": 120,
+      "Spark_pytests_fullpage": 360,
+      "candidate_shipping": 180,
+      "remaining_margin_evidence": 240
+    },
+    "website_components_seconds": {
+      "queue_pull_build_G0": 180,
+      "npm_ci": 420,
+      "docgen_install_full_generation": 420,
+      "npm_test": 120,
+      "production_build": 900,
+      "candidate_dev_compile_HTTP": 480,
+      "margin_evidence": 300
+    },
+    "full_finish_note": "Python roles <=2640s projection; website roles <=2820s projection, each50min shared created_at clock. No repeated cold build inside either role. No baseline coverage or root codegen/publishM2 dropped. All5jobs and cross-role full env closure equality required for full pass; projections require actual host and sampled runtime admission. No new runtime attempt yet."
+  },
+  "packet_sha256": {
+    ".github/workflows/validate-image-writer-658.yml": "4b88445c9a60c36d466c5305ee037eab455d6332cd5f3b50e31b9fe0c32aaff7",
+    "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
+    "artifact_provenance.py": "2e7eaa48ab0ee76dedd5f0a38a710ee61b5ff29d70796829e2fbb17365959f34",
+    "candidate-files/core/src/main/scala/org/apache/spark/ml/source/image/PatchedImageFileFormat.scala": "12d43c03ddffb2337b11bf3c2c34c307988c9736f290302e3ccd6fe04b376761",
+    "candidate-files/core/src/test/scala/com/microsoft/azure/synapse/ml/io/split1/ImageWriterSuite.scala": "1e08548792191792bb4e4fa8bf0c246887eaa569fc1476b1fa6ae706cd985fe1",
+    "candidate-files/docs/Quick Examples/transformers/core/_Image.md": "bc6a3db418e9f4ee35a0fa0dc3f1f57a1e1f6bdb67f9596a74cd1bfbe536ffef",
+    "candidate-files/opencv/src/test/python/synapsemltest/opencv/test_image_writer.py": "79f7a9efb82e2a5f4eadb8e5e8f07896e8d602b7d5968fc99204f829a04c238f",
+    "candidate.patch": "7467b993b9b738330e22b1aa78fdd1110da92e0e67a19b6417971af85d5c5404",
+    "collect.py": "d26a02f41555e0213806caae6b08ffcd354461c8b2e1d8b14941b78232484e11",
+    "common.py": "b61b478e9d1e424096d0e187ac6ecdf46de413e42aefd194346db81a12804dbf",
+    "compare_environments.py": "67a769b09dc785d7b7308fb476b2ae769aeeebf779292ca64243b3e882ec30b8",
+    "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
+    "entry.py": "50c941904f6e11a57d2e1240cf9d589ce4c76fd7d19be7fcb1b1cb42684a0dc7",
+    "evidence_export.py": "41242c914f09bad12466b663f3eb662473827041bad325e99e736ff583426bf6",
+    "format_checks.py": "d2c4a4f9b5198789101ad1833c524627cd295170205e0cab778c88810304c081",
+    "generated_artifacts.py": "353b1d7c488605a1acd2386a653366d495c640b6d8fd072d3dfbee85e83d915c",
+    "host.py": "80a5b8be42925e5d44956586d9fd077366f16de6864a1dc88aa9e92f79e39b15",
+    "lanes.py": "98926acfc881cc6cec3d41d0b1af3d346e484e8121090e3972b21efdf25b8881",
+    "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
+    "provenance_pytest.py": "22f1b69c59e90f6277a140f7b8c7392cdc597300e0c3edc493f324a198f4c48a",
+    "python_checks.py": "f7650601e5e320bc4c26bcf079cde328b9ad27f9cf4feb7eaae2488ebcbfecc9",
+    "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
+    "validation_d0.py": "a03ef6ead55ee7ccc4b4886950cc4f0810fb236f676640839b7ac6a80d0e6bf9",
+    "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
+    "website_check.py": "9f37da6e61274cd761245b6fb6fdc4b7061d3c5ee75afc27e5190bd6074caf6e",
+    "website_generate.py": "181e4c1b4d4711cc9d25799c5dd30aa3a8db86f5b01dce084853126127ee1a5d",
+    "workflow.yml": "4b88445c9a60c36d466c5305ee037eab455d6332cd5f3b50e31b9fe0c32aaff7"
+  },
+  "workflow_path": ".github/workflows/validate-image-writer-658.yml",
+  "full_validation_acceptance": {
+    "required_jobs": [
+      "root",
+      "python-baseline",
+      "python-candidate",
+      "website-baseline",
+      "website-candidate"
+    ],
+    "all_owned_stopped": true,
+    "baseline_expected_failures_exact": true,
+    "candidate_required_tests_no_new_skips": true,
+    "parallel_python_environment_closures_equal": true,
+    "same_source_commit_and_exact_candidate_hashes": true,
+    "compare_both_python_baseline_and_candidate_full_records": true,
+    "all_evidence_decoded_and_hash_verified": true,
+    "any_failed_or_missing_job_means_full_validation_false": true,
+    "no_auto_retry": true,
+    "environment_equality_key": "Entire explicit Conda URLs (including supplied hashes), normalized Python distribution name/version/direct_url. RECORD hashes informational.",
+    "collector_environment_command": "python3 collect.py --compare-environments BASELINE/runtime/environment-closure.json CANDIDATE/runtime/environment-closure.json NEW_RESULT.json"
+  }
+}
