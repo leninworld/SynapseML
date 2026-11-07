@@ -1,0 +1,58 @@
+name: Validate multiclass SHAP documentation
+on:
+  push:
+    branches: [validate-multiclass-shap-1669-i1]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: multiclass-shap-validation-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      notebook_b64: ${{ steps.validate.outputs.notebook_b64 }}
+      notebook_sha256: ${{ steps.validate.outputs.notebook_sha256 }}
+      patch_sha256: ${{ steps.validate.outputs.patch_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: microsoft/SynapseML
+          ref: d3f3af6bd3e4b7d191f51c9eb29f9aeffe788193
+          path: source
+          persist-credentials: false
+      - name: Run complete native notebook validation
+        id: validate
+        env:
+          VALIDATION_LANE: python-notebook
+          GH_TOKEN: ${{ github.token }}
+        run: python3 packet/host.py
+  website:
+    needs: native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: microsoft/SynapseML
+          ref: d3f3af6bd3e4b7d191f51c9eb29f9aeffe788193
+          path: source
+          persist-credentials: false
+      - name: Validate the identical cleared notebook and whole website
+        env:
+          VALIDATION_LANE: website-documentation
+          FORMATTED_NOTEBOOK_B64: ${{ needs.native.outputs.notebook_b64 }}
+          FORMATTED_NOTEBOOK_SHA256: ${{ needs.native.outputs.notebook_sha256 }}
+          FORMATTED_PATCH_SHA256: ${{ needs.native.outputs.patch_sha256 }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 packet/host.py
