@@ -1,0 +1,138 @@
+{
+  "revision": "2817_HOSTED_I1_DRAFT_DISABLED_AWAITING_WHOLE_REVIEW",
+  "execution_enabled": true,
+  "execution_approval_required": true,
+  "source_commit": "6c2699defcfb24d5bff5ba55f2252ba2d8cbea24",
+  "validation_branch": "validate-vw-generic-schema-issue-2817-i1",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "patch_sha256": "de2e1b6d237470eb4d0fad873d2899d2a8e679d13f0e504ac40d923ede3c2d1a",
+  "baseline_files": {
+    "vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitGeneric.scala": "9d94b84dce463b5d819e248a55a2d15084a74ce654a6d156e14ea1b7dbd5a640",
+    "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitGeneric.scala": "6909e480e94e9ef2981a7762dfa45324f2797ca35f88e80cef8acafdd0408f58"
+  },
+  "candidate_files": {
+    "vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitGeneric.scala": "3619c07a3c2dd80ba1f79c4f5fec8b2da95733a6d4e2029faf710a4cd1ec449c",
+    "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitGeneric.scala": "876095788f88fc2cb8d544c0c33de837f4d4d0cac92796f6045c96f5d6bd356c"
+  },
+  "scala_regression_path": "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitGeneric.scala",
+  "python_regression_path": null,
+  "lanes": {
+    "root": {
+      "memory_gib": 10,
+      "minimum_start_disk_gib": 24,
+      "initial_available_gib": 9,
+      "network_gib": 12,
+      "source_kind": "candidate",
+      "planning_nonreclaimable_gib": 7,
+      "resource_basis": "2*actualroot2.709GBsample+1GiB=6.492GB, rounded7GiB; VWnativeunknown checked early and dynamicadmission mandatory. 10GiB limit leaves scopednative/process margin, freshhost capacity required."
+    },
+    "python-candidate": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 10,
+      "network_gib": 20,
+      "source_kind": "candidate",
+      "planning_nonreclaimable_gib": 9,
+      "resource_basis": "2*actualsamefullenvironment/codegen4.049GBsample+1GiB=9.172GB, rounded9GiB; fullunchangedbuildinputs proven, sequentialSpark/JVM and dynamicadmission required."
+    }
+  },
+  "dataset": {
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "input_images": [
+    "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  ],
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "hash_algorithm": "sha1",
+    "hash": "4e3ca243fbac4e8c96eb38d783e2077f67081444",
+    "maximum_bytes": 8388608
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "hash_algorithm": "sha256",
+    "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "maximum_bytes": 19028608
+  },
+  "resource_price": {
+    "state": "COMPLETE_PROPOSED_PRICING_NOT_RUNTIME_RESULT",
+    "measured_root_compile_seconds": 212.874,
+    "measured_full_Python_build_seconds": 372.3,
+    "full_VW_suite": "UNMEASURED_MUST_HAVE_EXPLICIT_STEP_CAP_AND_REAL_BASELINE_ADMISSION",
+    "parallel_jobs": 2,
+    "root_components_seconds": {
+      "queue_pull_image_G0": 240,
+      "metadata_dependencies_dataset": 240,
+      "cold_compile_actual213_plusmargin": 360,
+      "native_control_and_intended_baseline_fail": 180,
+      "candidate_incremental_compile_style_actual44_plusmargin": 180,
+      "focused_two_cases": 180,
+      "full_VW_explicit_unmeasured_step_cap": 1500,
+      "coverage_evidence": 120
+    },
+    "python_components_seconds": {
+      "queue_pull_image_G0": 240,
+      "full_same_environment_measured229_plusmargin": 360,
+      "all6_codegen_package_install_publishM2_cap": 1200,
+      "Black_and_provenance": 120,
+      "real_Spark_scalar_and_array_full_E2E": 600,
+      "evidence_margin": 240
+    },
+    "qualification": "Independent parallel jobs; 50/60minute originalworkflowcreated_at clock includesqueues/pulls/setup. Rootsum3000s exacttarget; Python2760s. FullVW1500s is an explicit unmeasured cap, not measuredruntime. Native preflight/baseline2xactualpeak+1GiB admission stops beforecostlycandidateworkifactualfinishcannotfit. All6codegen tasks explicit; earlier372s build evidence is not a measurement of this exact new6tasklist.",
+    "Python_Spark_heap": "2GiB driver aligned with preserved original python_e2e.py, after sequential4GiBSBT cold build. Planning9GiB from2xactualbuildpeak+1GiB still dominates."
+  },
+  "packet_sha256": {
+    ".github/workflows/validate-vw-generic-schema-issue-2817-i1.yml": "c5e4d9b509f3bd80ed720b95adb5c2ada949e9567bb478f7837ee301ad77ae77",
+    "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
+    "artifact_provenance.py": "2e7eaa48ab0ee76dedd5f0a38a710ee61b5ff29d70796829e2fbb17365959f34",
+    "candidate-files/vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitGeneric.scala": "3619c07a3c2dd80ba1f79c4f5fec8b2da95733a6d4e2029faf710a4cd1ec449c",
+    "candidate-files/vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitGeneric.scala": "876095788f88fc2cb8d544c0c33de837f4d4d0cac92796f6045c96f5d6bd356c",
+    "candidate.patch": "de2e1b6d237470eb4d0fad873d2899d2a8e679d13f0e504ac40d923ede3c2d1a",
+    "collect.py": "02b2e28f9dd3db6c4b078c3adbc79232a9a561c0b2bb9d720bc3c65a979a93fe",
+    "common.py": "5260c1206573efe578f1647fbb56d64e802103263fc2b177e94d44cb5f542cb1",
+    "compare_environments.py": "67a769b09dc785d7b7308fb476b2ae769aeeebf779292ca64243b3e882ec30b8",
+    "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
+    "entry.py": "72d83b25caccb0656a59781af679da54f49e10c84165ba662b42766aca99fe06",
+    "evidence_export.py": "35c08c5fcdadce8c90607a837048378581483084ca93528d22646b9a81f43e3e",
+    "format_checks.py": "d2c4a4f9b5198789101ad1833c524627cd295170205e0cab778c88810304c081",
+    "generated_artifacts.py": "c38f41d48d7dbaee4153f772f4112ba114bc0d9ef65f13e4222dfd925fe373f5",
+    "host.py": "55fdf69ac6e77d465c4b375599aba784ff7edc70af5079e3a607e5e489fdb807",
+    "lanes.py": "1fa9a8dcb994b46335cdd91ab7073794089ca8c7a504ebfefa14a0af92d635af",
+    "native_preflight.py": "0bf7937795caa50e575e03ecaaa356861334a9ab67376a4b6185b79783ac2e2c",
+    "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
+    "python_e2e.py": "be1a72f945aaee032d7cec9a474521b8dc0eae16890005b57e79e12fcd92fe1b",
+    "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
+    "validation_d0.py": "cf24d5486ee0cf3521f3a564d1f2a9ed727f71fa9f92b35740c51792c7334441",
+    "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
+    "workflow.yml": "c5e4d9b509f3bd80ed720b95adb5c2ada949e9567bb478f7837ee301ad77ae77"
+  },
+  "workflow_path": ".github/workflows/validate-vw-generic-schema-issue-2817-i1.yml",
+  "full_validation_acceptance": {
+    "state": "PROPOSED_FULL_SCOPE_AWAITING_WHOLE_REVIEW",
+    "required_jobs": [
+      "root",
+      "python-candidate"
+    ],
+    "scope": "fullVW/rootcompile/Testcompile/style/coverage/all6codegen/generatedPythonrealSparkE2E/nativeno-mock/schema/collisions/serializationallretained",
+    "no_retry_or_scope_reduction": true,
+    "same_source_commit_and_exact_patch": true,
+    "baseline_real_native_control_and_intended_failure_marker": true,
+    "full_VW_unfiltered_zero_failures_or_skips": true,
+    "generated_installed_API_full_original_assertions": true,
+    "all6_module_codegen": true,
+    "PipelineTestCoverageSuite": true,
+    "all_owned_stopped_and_all_evidence_verified": true,
+    "any_missing_or_failed_job_means_incomplete": true,
+    "first_workflow_run_attempt_only": true
+  },
+  "scala_cases": {
+    "com.microsoft.azure.synapse.ml.core.test.pipeline.PipelineTestCoverageSuite": [
+      "Every test suite is claimed by a leg of the UnitTests matrix"
+    ]
+  },
+  "expected_scala_failures": {}
+}
