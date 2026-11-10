@@ -1,0 +1,244 @@
+{
+  "revision": "667_BASELINE_G0_I1_DISABLED_AFTER_REQUIRED_CORRECTIONS",
+  "execution_enabled": true,
+  "execution_approval_required": true,
+  "source_commit": "26c9259673ddad5dd813ba32219f8b365ae3f336",
+  "scope": "Unmodified-production baseline and full validation-route measurement; no product fix",
+  "status": "DRAFT_NOT_EXECUTABLE; controller/pricing/whole review incomplete",
+  "runtime_attempts": 0,
+  "product_source_changes": 0,
+  "witness_file": "witness-files/core/src/test/scala/com/microsoft/azure/synapse/ml/train/EncodedLabelMetricsBaselineProbe.scala",
+  "witness_SHA256": "9164908e02b7c84edfbf1ede631ac88c0e66817739c55669ad03b01ce907223f",
+  "expected_regression_names": [
+    "indexed int labels retain their classifier indices",
+    "indexed long labels retain their classifier indices",
+    "indexed double labels retain their classifier indices",
+    "indexed string labels retain their classifier indices",
+    "indexed boolean labels retain their classifier indices",
+    "indexed multiclass labels retain their classifier indices",
+    "indexed subset with overlapping original values does not silently remap",
+    "indexed labels preserve AUC with sparse=false scores",
+    "indexed labels preserve AUC with sparse=true scores",
+    "indexed labels preserve areaUnderPR with sparse=false scores",
+    "indexed labels preserve areaUnderPR with sparse=true scores",
+    "TrainClassifier preserves labels that were already indexed",
+    "TrainClassifier explicit levels with reindexLabel false use encoded labels",
+    "TuneHyperparameters LR retains indexed labels across folds",
+    "TuneHyperparameters RF retains indexed labels across folds",
+    "FindBestModel preserves preindexed TrainClassifier evaluation",
+    "persisted Pipeline retains indexer classifier and evaluator metadata",
+    "copied real indexed metadata preserves the label convention"
+  ],
+  "expected_control_names": [
+    "identity indexed labels remain a valid control",
+    "raw int TrainClassifier labels remain a valid control",
+    "raw long TrainClassifier labels remain a valid control",
+    "raw double TrainClassifier labels remain a valid control",
+    "raw string TrainClassifier labels remain a valid control",
+    "raw boolean TrainClassifier labels remain a valid control",
+    "Spark StringIndexer without MML levels remains a valid control",
+    "ValueIndexer persistence and IndexToValue preserve the original levels",
+    "unknown produced indices are rejected rather than silently counted",
+    "stripped label metadata retains numeric classifier indices",
+    "MML-only ambiguous nonidentity metadata is rejected"
+  ],
+  "static_checks": {
+    "Scala_import_arguments": "reconciled with actual current source, explicit estimator/transformer arrays and Vector UDF type",
+    "compile": "UNRUN",
+    "execution": "DISABLED",
+    "helper_controller": "INCOMPLETE, combined exact review required"
+  },
+  "validation_branch": "validate-encoded-labels-667-g0",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "baseline_files": {},
+  "candidate_files": {},
+  "patch_sha256": null,
+  "dataset": {
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "input_images": [
+    "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  ],
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "hash_algorithm": "sha1",
+    "hash": "4e3ca243fbac4e8c96eb38d783e2077f67081444",
+    "maximum_bytes": 8388608
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "hash_algorithm": "sha256",
+    "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "maximum_bytes": 19028608
+  },
+  "required_original_suites": {
+    "train": [
+      "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+      "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+      "com.microsoft.azure.synapse.ml.train.VerifyComputePerInstanceStatistics",
+      "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+      "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor"
+    ],
+    "automl": [
+      "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+      "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+      "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+      "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+      "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+      "com.microsoft.azure.synapse.ml.automl.VerifyParamSpace",
+      "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+      "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters"
+    ],
+    "features": [
+      "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelector",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelectorModel",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+      "com.microsoft.azure.synapse.ml.isolationforest.VerifyIsolationForest"
+    ]
+  },
+  "allowed_original_ignored_ids": [
+    [
+      "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+      "Featurizing with categorical columns that have missings - using one hot encoding"
+    ],
+    [
+      "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+      "test with null or missing values, going to categorical and back"
+    ]
+  ],
+  "lanes": {
+    "root-train": {
+      "memory_gib": 10,
+      "minimum_start_disk_gib": 24,
+      "initial_available_gib": 9,
+      "network_gib": 12,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 8,
+      "resource_basis": "One serial4GiB SBT/test JVM, exact-current fork=false. Retained comparable root+VW nonreclaimable peak5523214336B plus2GiB envelope =7670697984B <8GiB initial plan; 10GiB hard cgroup. New early actual training admission requires max(8GiB, measuredpeak+2GiB) and fresh host capacity before full suites. Native/dataset growth is an explicitly bounded unknown; only a complete successful G0 proves route, not this estimate. No doubled concurrent JVM assumption or OOM retry."
+    },
+    "root-automl": {
+      "memory_gib": 10,
+      "minimum_start_disk_gib": 24,
+      "initial_available_gib": 9,
+      "network_gib": 12,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 8,
+      "resource_basis": "One serial4GiB SBT/test JVM, exact-current fork=false. Retained comparable root+VW nonreclaimable peak5523214336B plus2GiB envelope =7670697984B <8GiB initial plan; 10GiB hard cgroup. New early actual training admission requires max(8GiB, measuredpeak+2GiB) and fresh host capacity before full suites. Native/dataset growth is an explicitly bounded unknown; only a complete successful G0 proves route, not this estimate. No doubled concurrent JVM assumption or OOM retry."
+    },
+    "root-features": {
+      "memory_gib": 10,
+      "minimum_start_disk_gib": 24,
+      "initial_available_gib": 9,
+      "network_gib": 12,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 8,
+      "resource_basis": "One serial4GiB SBT/test JVM, exact-current fork=false. Retained comparable root+VW nonreclaimable peak5523214336B plus2GiB envelope =7670697984B <8GiB initial plan; 10GiB hard cgroup. New early actual training admission requires max(8GiB, measuredpeak+2GiB) and fresh host capacity before full suites. Native/dataset growth is an explicitly bounded unknown; only a complete successful G0 proves route, not this estimate. No doubled concurrent JVM assumption or OOM retry."
+    },
+    "python-baseline": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 10,
+      "network_gib": 20,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 10,
+      "resource_basis": "Exact-current environment/build identities match successful full six-module build. Actual retained Python nonreclaimable peak4264173568B: twice+1GiB=9602088960B <10GiB planning; 12GiB cgroup limit. One serial4GiB SBT process then2GiB Spark driver; current capacity and measured admission required. No remote warm cache assumed."
+    }
+  },
+  "resource_price": {
+    "state": "G0_MEASUREMENT_PROPOSAL_NOT_MEASURED_NEW_TRAINING",
+    "parallel_jobs": 4,
+    "target_seconds": 3000,
+    "absolute_seconds": 3600,
+    "root_planned_components_seconds": {
+      "queue_pull_build_fixtures": 240,
+      "fork_dataset": 90,
+      "compile": 360,
+      "early_witness": 240,
+      "complete_original_suites": 1500,
+      "style_coverage_evidence": 300
+    },
+    "root_sum": 2730,
+    "python_planned_components_seconds": {
+      "queue_pull_build_fixtures": 240,
+      "full_environment": 360,
+      "all6_codegen_build_install": 1200,
+      "black_provenance": 120,
+      "real_spark_baseline": 600,
+      "evidence": 240
+    },
+    "python_sum": 2760,
+    "unknowns": "Full original train/automl dataset workloads unmeasured. Explicit1500second step cap and original workflow deadline stop incomplete route; do not retry or claim candidate feasibility if any lane incomplete. No elapsed-time gate bypass by parallel job clocks. Target includes queue and bootstrap; every job shares same workflow created_at.",
+    "post_early_remaining_step_caps_seconds": {
+      "root-train": 1500,
+      "root-automl": 1500,
+      "root-features": 1620
+    },
+    "C6": "Style nowautomlrightaftercompile beforeearlyprobe; coverage nowfeaturesafterfullVW+features/isolationforest. Eachadmissionreserves1680s+120evidence. Nothingomitted, allfourjobsrequired."
+  },
+  "full_validation_acceptance": {
+    "required_jobs": [
+      "root-train",
+      "root-automl",
+      "root-features",
+      "python-baseline"
+    ],
+    "role": "UNMODIFIED_BASELINE_ONLY",
+    "all_original_suites": "unfiltered CI package patterns and fixed benchmark comparison",
+    "private_witness": "18 intended regression cases,11 controls; decisive direct-int/silent-subset/LR/RF must show exact product cause; all controls pass",
+    "generated_python": "all6modulecodegen,corewheel,actualfreshSpark+branchjarorigin,LR/RF/publicAPI/persistence",
+    "no_retry_or_scope_reduction": true,
+    "all_owned_stopped_and_all_evidence_verified": true,
+    "first_workflow_run_attempt_only": true,
+    "any_missing_failed_job": "FULL_ROUTE_INCOMPLETE_NO_PRODUCT_IMPLEMENTATION"
+  },
+  "workflow_path": ".github/workflows/validate-encoded-labels-667-g0.yml",
+  "packet_sha256": {
+    ".github/workflows/validate-encoded-labels-667-g0.yml": "3a99f3fcf2d48c83df9bc3758f6fb70928a3e648e139d8d9842155311afd5993",
+    "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
+    "artifact_provenance.py": "2e7eaa48ab0ee76dedd5f0a38a710ee61b5ff29d70796829e2fbb17365959f34",
+    "baseline_checks.py": "db27a4d6bea696236bfa9bd22a2c012fdc10543fb4a31bbfd366e47466074b6e",
+    "collect.py": "557f10432d100ad1f6e6cd3c1d62ff2310426d3802f09122cbc2878d0ca971a1",
+    "common.py": "575f90f1dfa100e323a5cb31c26ba5d027bc302ac7b593dd007a4ced6c90de4d",
+    "compare_environments.py": "67a769b09dc785d7b7308fb476b2ae769aeeebf779292ca64243b3e882ec30b8",
+    "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
+    "entry.py": "cf24a1d63dfa046ce3408921791c66a484d448d6727f28e5de773739c7d96d65",
+    "evidence_export.py": "2fb2b90f3e072f34ae5f9e40c6ee0cdc6f1afd7cf01e82d23bb1c98c92726dc0",
+    "format_checks.py": "d2c4a4f9b5198789101ad1833c524627cd295170205e0cab778c88810304c081",
+    "generated_artifacts.py": "446bc816027fcebeb2b185da48d9d35f5dca708c933b1c33864f9f470609335b",
+    "host.py": "75475e4145859a7d833d3f9e3f4d951f0a2b4df1c22ccea974d13b65af93f042",
+    "lanes.py": "7aea3b26a089eceadae47ccbba8250a9f0377d65a306343516590394a1cad043",
+    "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
+    "python_e2e.py": "5739b944a0e7d85000c92813de6fe6c5628359a78132140ac3607d3cb0ff6ffb",
+    "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
+    "validation_d0.py": "4a502b2bd017f0b8b09c2dc08f4718b854cef94ca843c654e162822000da8724",
+    "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
+    "witness-files/core/src/test/scala/com/microsoft/azure/synapse/ml/train/EncodedLabelMetricsBaselineProbe.scala": "9164908e02b7c84edfbf1ede631ac88c0e66817739c55669ad03b01ce907223f",
+    "workflow.yml": "3a99f3fcf2d48c83df9bc3758f6fb70928a3e648e139d8d9842155311afd5993"
+  },
+  "metric_constants_source": {
+    "path": "core/src/main/scala/com/microsoft/azure/synapse/ml/core/metrics/MetricConstants.scala",
+    "oid": "278578ec38a1764eeebc327d0bdc5f1ce9abacf9",
+    "sha256": "d91b044e62e2cd6f0b8e8bf16c5d5021a3cb1d09033c639d149de2e85cac449a",
+    "validation_pin": "26c9259673ddad5dd813ba32219f8b365ae3f336"
+  },
+  "metric_columns": {
+    "accuracy": "accuracy",
+    "AUC": "AUC",
+    "areaUnderPR": "areaUnderPR"
+  },
+  "api_evidence": {
+    "GridSpacePython_oid": "387deaebd5a5d628eaa9aecf56160edcc5179aa5",
+    "Spark350_ParamGridBuilder_oid": "d369e7a61cdc51c485777a92596e2e1d1bc22835",
+    "Spark350_url": "https://github.com/apache/spark/blob/v3.5.0/mllib/src/main/scala/org/apache/spark/ml/tuning/ParamGridBuilder.scala",
+    "EvaluationUtils_oid": "a1c2d3a1ee07d2d78f42a4ec592f4b51b2593615",
+    "IndexToValue_oid": "3a29f6607023c6d3e19c010408c694d2c5cd6529"
+  }
+}
