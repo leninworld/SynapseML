@@ -1,0 +1,1876 @@
+{
+  "revision": "SCHEMA_PAIR_I2_PROPOSED_EXACT_EXECUTION",
+  "execution_enabled": true,
+  "execution_approval_required": true,
+  "source_commit": "37948d7d03ef0fa7f1aa24c54c2dd4d8a29c8dc0",
+  "scope": "Independent ValueIndexer/IndexToValue input-schema mutation: full baseline and candidate",
+  "status": "PROPOSED_FOR_WHOLE_EXACT_REVIEW; UNRUN; firstfailedattemptimmutable",
+  "runtime_attempts": 1,
+  "product_source_changes": 2,
+  "witness_file": "witness-files/legacy-d0-fixture-never-injected.scala",
+  "witness_SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "expected_regression_names": [],
+  "expected_control_names": [],
+  "static_checks": {
+    "Scala_compile": "UNRUN",
+    "execution": "DISABLED",
+    "source": "Exactly two clone edits plus35typedcases; R1 .toList correction applied",
+    "helpers": "Whole17PythonhelperASTchecked; actualD0anddependencies stillUNRUN; baseline/candidate exactexecutionreview before run"
+  },
+  "validation_branch": "validate-categorical-input-schema-i2",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "baseline_files": {
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/featurize/VerifyValueIndexer.scala": "839792d51c014b289542dcc77a5b1458b710252c5214cce7ce4db8d9e526b022",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/featurize/ValueIndexer.scala": "2cb1e19adef7972723dcb14e4f7f62663a798a93864374cba7e0d3d60cfbaa8b",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/featurize/IndexToValue.scala": "41b37d64980d93eb693d2e7c3b173475f61d0aff3bde97b6aeaeac6c58577e45"
+  },
+  "candidate_files": {
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/featurize/VerifyValueIndexer.scala": "bd12203a7651f70ced6583feddc9062a27374c6189c2fded713ee15ca8d286a8",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/featurize/ValueIndexer.scala": "d9e68cf8dfafe86dcc5052d936f08592ebd4693d1bc677704c74ba436d153b5d",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/featurize/IndexToValue.scala": "23e085ccd8a0ec8ed19e6b27ce115f4417665e2817df4d938256864fd449b3c0"
+  },
+  "patch_sha256": "c3f1a92fed6fa3c227d306acdf61c1476603a5ea72739ba58238aaa382978d77",
+  "dataset": {
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "input_images": [
+    "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  ],
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "hash_algorithm": "sha1",
+    "hash": "4e3ca243fbac4e8c96eb38d783e2077f67081444",
+    "maximum_bytes": 8388608
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "hash_algorithm": "sha256",
+    "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "maximum_bytes": 19028608
+  },
+  "required_original_suites": {
+    "train": [
+      "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+      "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+      "com.microsoft.azure.synapse.ml.train.VerifyComputePerInstanceStatistics",
+      "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+      "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor"
+    ],
+    "automl": [
+      "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+      "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+      "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+      "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+      "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+      "com.microsoft.azure.synapse.ml.automl.VerifyParamSpace",
+      "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+      "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters"
+    ],
+    "features": [
+      "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelector",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelectorModel",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+      "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+      "com.microsoft.azure.synapse.ml.isolationforest.VerifyIsolationForest"
+    ]
+  },
+  "allowed_original_ignored_ids": [
+    [
+      "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+      "Featurizing with categorical columns that have missings - using one hot encoding"
+    ],
+    [
+      "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+      "test with null or missing values, going to categorical and back"
+    ]
+  ],
+  "lanes": {
+    "root-train": {
+      "memory_gib": 10,
+      "minimum_start_disk_gib": 24,
+      "initial_available_gib": 9,
+      "network_gib": 12,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 8,
+      "resource_basis": "One serial4GiB SBT/test JVM, exact-current fork=false. Retained comparable root+VW nonreclaimable peak5523214336B plus2GiB envelope =7670697984B <8GiB initial plan; 10GiB hard cgroup. New early actual training admission requires max(8GiB, measuredpeak+2GiB) and fresh host capacity before full suites. Native/dataset growth is an explicitly bounded unknown; only a complete successful G0 proves route, not this estimate. No doubled concurrent JVM assumption or OOM retry."
+    },
+    "root-automl": {
+      "memory_gib": 10,
+      "minimum_start_disk_gib": 24,
+      "initial_available_gib": 9,
+      "network_gib": 12,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 8,
+      "resource_basis": "One serial4GiB SBT/test JVM, exact-current fork=false. Retained comparable root+VW nonreclaimable peak5523214336B plus2GiB envelope =7670697984B <8GiB initial plan; 10GiB hard cgroup. New early actual training admission requires max(8GiB, measuredpeak+2GiB) and fresh host capacity before full suites. Native/dataset growth is an explicitly bounded unknown; only a complete successful G0 proves route, not this estimate. No doubled concurrent JVM assumption or OOM retry."
+    },
+    "root-features": {
+      "memory_gib": 10,
+      "minimum_start_disk_gib": 24,
+      "initial_available_gib": 9,
+      "network_gib": 12,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 8,
+      "resource_basis": "One serial4GiB SBT/test JVM, exact-current fork=false. Retained comparable root+VW nonreclaimable peak5523214336B plus2GiB envelope =7670697984B <8GiB initial plan; 10GiB hard cgroup. New early actual training admission requires max(8GiB, measuredpeak+2GiB) and fresh host capacity before full suites. Native/dataset growth is an explicitly bounded unknown; only a complete successful G0 proves route, not this estimate. No doubled concurrent JVM assumption or OOM retry."
+    },
+    "python-baseline": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 10,
+      "network_gib": 20,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 10,
+      "resource_basis": "Exact-current environment/build identities match successful full six-module build. Actual retained Python nonreclaimable peak4264173568B: twice+1GiB=9602088960B <10GiB planning; 12GiB cgroup limit. One serial4GiB SBT process then2GiB Spark driver; current capacity and measured admission required. No remote warm cache assumed."
+    }
+  },
+  "resource_price": {
+    "state": "MEASURED_COMPARABLE_FULL_ROUTE_PLUS_CANDIDATE_INCREMENT",
+    "basis": "Actual independent retained I2 core/build identities unchanged; rootcompile225.62s,train185.75s,peak4.134GB; fullPythonenv270.36s,all6codegen/package472.92s,realSpark64.59s,peak4.79GB. Same serial4GiBSBT; clone allocation plus35tiny cases, five LRfits. No native dependency change. New actual runtime/capacity required, no warm-cache assumption. Actual per-suite timings now included below, not inferred from train. Each candidate admission uses observed same-run baseline task durations with25%margin+300s and at least1200s; actualmemory/cold-stageguardsretained.",
+    "root_budget_seconds": {
+      "bootstrap_dataset_fixtures": 330,
+      "original_compile": 360,
+      "original_full_suites": 480,
+      "baseline35cases_compile_and_run": 360,
+      "candidate_compile_and_full_suites": 600,
+      "styles_evidence": 300
+    },
+    "python_budget_seconds": {
+      "bootstrap_fixtures": 300,
+      "environment": 360,
+      "baseline_build_install": 600,
+      "candidate_incremental_build_install": 600,
+      "two_fresh_spark_processes": 360,
+      "black_provenance_evidence": 300
+    },
+    "target_seconds": 3000,
+    "absolute_seconds": 3600,
+    "prior_runs_remain_closed": true,
+    "actual_retained_phase_measurements": {
+      "train": {
+        "seconds": 185.748135934,
+        "exit": 1,
+        "receipt_path": "co_create/20261109/synapse667-baseline-G0/corrected-I2/results/root-train/runtime/full-original-train-plus-witness.json",
+        "receipt_SHA256": "b273145050f208fc93bd9847709161cd84d8d4f7f06f2ca0c53edaf7814cb364"
+      },
+      "automl": {
+        "seconds": 121.06833230400002,
+        "exit": 0,
+        "receipt_path": "co_create/20261109/synapse667-baseline-G0/corrected-I2/results/root-automl/runtime/full-original-automl.json",
+        "receipt_SHA256": "2028a9c88d7cc93a64707fd6f5b5277fccfb23629d2078802e74303fec5206c7"
+      },
+      "features_isolationforest": {
+        "seconds": 57.77710646699995,
+        "exit": 0,
+        "receipt_path": "co_create/20261109/synapse667-baseline-G0/corrected-I2/results/root-features/runtime/full-original-features-and-isolationforest.json",
+        "receipt_SHA256": "8952d25eb55f81ca4c81924ba5494cfe104ab6e85598a36a6527d9b753043cc2"
+      },
+      "vw": {
+        "seconds": 31.850601759999904,
+        "exit": 0,
+        "receipt_path": "co_create/20261109/synapse667-baseline-G0/corrected-I2/results/root-features/runtime/full-original-VW-regression-consumer.json",
+        "receipt_SHA256": "10e28ad0d6364a5d6af67d17dc474738cc1409d171b39433d2708bbdd298b3d4"
+      },
+      "coverage": {
+        "seconds": 9.517247122999947,
+        "exit": 0,
+        "receipt_path": "co_create/20261109/synapse667-baseline-G0/corrected-I2/results/root-features/runtime/pipeline-coverage.json",
+        "receipt_SHA256": "0c020228c4d929e00211f8f0a13d37bdb944d6c62c3526add5895b6d04e4a28b"
+      },
+      "python_all6_build_install": {
+        "seconds": 472.91538761899994,
+        "exit": 0,
+        "receipt_path": "co_create/20261109/synapse667-baseline-G0/corrected-I2/results/python-baseline/runtime/baseline-build-install.json",
+        "receipt_SHA256": "d2cab9220e5a01000ce2f7330b70421c69b51e59a6c0f79ea0d037cdde48b34e"
+      },
+      "python_Spark": {
+        "seconds": 64.58567424700004,
+        "exit": 0,
+        "receipt_path": "co_create/20261109/synapse667-baseline-G0/corrected-I2/results/python-baseline/runtime/generated-installed-Python-real-Spark-baseline.json",
+        "receipt_SHA256": "481a6ac27ed64ffe809caa80a6b9d8ebbf9d0c89a92792ba5b3ed2c0572d371d"
+      },
+      "python_environment": {
+        "seconds": 270.358108472,
+        "exit": 0,
+        "receipt_path": "co_create/20261109/synapse667-baseline-G0/corrected-I2/results/python-baseline/runtime/full-environment.json",
+        "receipt_SHA256": "2a4dd3cfdebe0345a0a7dcb3013797a97192ea8da950161f432ef2a034ec6e42"
+      }
+    },
+    "priced_lane_total_seconds": {
+      "root-train": 1815,
+      "root-automl": 1655,
+      "root-features": 2078,
+      "python-baseline": 2520
+    }
+  },
+  "full_validation_acceptance": {
+    "role": "BASELINE_AND_CANDIDATE_SCHEMA_PAIR",
+    "original_suites": "all unfiltered packages and benchmarks retained",
+    "known_original_NaN_failure": "org.apache.spark.SparkException / Vector values MUST NOT be NaN or Infinity; exact suite/case and baseline/candidate signature required, not a test pass",
+    "source_base_tree_required": "ababaac0b9fa50aa00a9f77547cc39ea87b7c343",
+    "no_old667_or926_retry": true,
+    "all_owned_stopped_and_all_evidence_verified": true,
+    "first_workflow_run_attempt_only": true
+  },
+  "workflow_path": ".github/workflows/validate-categorical-schema.yml",
+  "source_tree": "ababaac0b9fa50aa00a9f77547cc39ea87b7c343",
+  "scala_regression_path": "core/src/test/scala/com/microsoft/azure/synapse/ml/featurize/VerifyValueIndexer.scala",
+  "legacy_helper_fixtures_only": true,
+  "schema_cases": [
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer preserves overwritten integer input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexerModel preserves overwritten integer input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer and model preserve appended integer input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer JVM Pipeline preserves integer input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves overwritten integer input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves appended integer input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue Pipeline preserves integer input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer preserves overwritten long input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexerModel preserves overwritten long input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer and model preserve appended long input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer JVM Pipeline preserves long input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves overwritten long input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves appended long input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue Pipeline preserves long input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer preserves overwritten double input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexerModel preserves overwritten double input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer and model preserve appended double input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer JVM Pipeline preserves double input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves overwritten double input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves appended double input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue Pipeline preserves double input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer preserves overwritten string input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexerModel preserves overwritten string input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer and model preserve appended string input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer JVM Pipeline preserves string input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves overwritten string input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves appended string input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue Pipeline preserves string input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer preserves overwritten boolean input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexerModel preserves overwritten boolean input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer and model preserve appended boolean input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "ValueIndexer JVM Pipeline preserves boolean input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves overwritten boolean input schema"
+      ],
+      "baseline_mutation_failure": true
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue preserves appended boolean input schema"
+      ],
+      "baseline_mutation_failure": false
+    },
+    {
+      "id": [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "IndexToValue Pipeline preserves boolean input schema"
+      ],
+      "baseline_mutation_failure": true
+    }
+  ],
+  "known_NaN": {
+    "id": [
+      "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+      "Verify you can train on a dataset that contains a vector column"
+    ],
+    "type": "org.apache.spark.SparkException",
+    "token": "Vector values MUST NOT be NaN or Infinity, but got [3.0,4.0,0.34,0.12,NaN,0.2,-1.23]"
+  },
+  "original_case_ids": {
+    "train": [
+      [
+        "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+        "Column resolution follows Spark case sensitivity"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+        "Column validation rejects ambiguous and incompatible input types"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+        "Empty configured column names fail with setter guidance"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+        "Explicit labels override scoring metadata and incomplete metadata remains actionable"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+        "Invalid evaluation metrics report the valid values"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+        "Regression schemas, copies, and persisted pipelines preserve configured behavior"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+        "Scalar and vector classification scores agree and null rows are ignored"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.ComputeModelStatisticsValidationSuite",
+        "Top-level columns with SQL punctuation remain addressable"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Complete explicit settings override ambiguous scored-model metadata"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Conflicting prediction metadata fails independently of schema column order"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Copy and pipeline preserve explicit statistics parameters"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Duplicate raw-score metadata is rejected only when the metric consumes it"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Equivalent complete model metadata is de-duplicated deterministically"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Evaluate a dataset with missing values"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Explicit columns and metric beat unrelated scored-model metadata"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Explicit evaluation metric omits irrelevant all-metrics hint when labelCol is missing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Explicit settings select classification after a stale regression score is dropped"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Invalid explicit scores column fails only for score-consuming metrics"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Missing default score column produces an actionable error"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Multiple complete scored-model metadata candidates fail deterministically"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Single complete scored-model metadata remains supported"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Smoke test for evaluating a dataset"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Smoke test to train classifier, score and evaluate on a dataset using all three modules"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Smoke test to train regressor, score and evaluate on a dataset using all three modules"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Verify compute model statistics does not get stuck in a loop in catalyst"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Verify computing statistics on generic spark ML estimators is supported"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Verify multiclass evaluation is not slow for large number of labels"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "Verify results of multiclass metrics"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "all and classification metrics append binary metrics in runtime output order"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "areaUnderPR rejects multiclass and unsupported metric inputs"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "areaUnderPR uses Spark trapezoidal precision-recall AUC"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "areaUnderROC remains an AUC output alias"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "classification schema without cardinality metadata retains the legacy common metrics"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "multiclass classification schema retains the legacy common metrics"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "transformSchema rejects binary-only metrics for multiclass MML categorical labels"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "transformSchema validates required columns before returning a binary-only metric schema"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputeModelStatistics",
+        "validate AUC from compute model statistic and binary classification evaluator gives the same result"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputePerInstanceStatistics",
+        "Smoke test for evaluating a dataset"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputePerInstanceStatistics",
+        "Smoke test to train classifier, score and evaluate on a dataset using all three modules"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputePerInstanceStatistics",
+        "Smoke test to train regressor, score and evaluate on a dataset using all three modules"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputePerInstanceStatistics",
+        "Verify computing per instance statistics on generic spark ML estimators is supported"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyComputePerInstanceStatistics",
+        "Verify log loss uses the distinct label count when levels metadata is absent"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Compare benchmark results file to generated file"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Smoke test for training on a classifier"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on PimaIndian.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on TelescopeData.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on bank.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on breast-cancer-wisconsin.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on breast-cancer.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on data_banknote_authentication.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on fertility_Diagnosis.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on multiclass BreastTissue.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on multiclass CarEvaluation.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on multiclass abalone.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on random.forest.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on task.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify classifier can be trained and scored on transfusion.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify train classifier works on a dataset with categorical columns"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify you can score on a dataset without a label column"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+        "Verify you can train on a dataset that contains a vector column"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "Smoke test for training on a regressor"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "Verify a trained regression model can be saved"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "Verify regressor can be trained and scored on CASP-train-csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "Verify regressor can be trained and scored on airfoil_self_noise-train-csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "Verify train regressor works with different output types"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "Verify you can score on a dataset without a label column"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "issue 1667 - TrainRegressor fails clearly when all text features are constant"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "issue 1667 - TrainRegressor fits the original RandomForest constant-text repro"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.train.VerifyTrainRegressor",
+        "issue 1667 - TrainRegressor ignores constant text columns when useful features remain"
+      ]
+    ],
+    "automl": [
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "DoubleRangeHyperParam stays within its range"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "FloatRangeHyperParam stays within its range"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "HyperParamUtils.getRangeHyperParam honors the seed for every numeric type"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "IntRangeHyperParam stays within its range"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "LongRangeHyperParam covers a non-power-of-two range without bias"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "LongRangeHyperParam covers a power-of-two range without bias"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "LongRangeHyperParam rejects an inverted range instead of silently returning min"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "LongRangeHyperParam stays in bounds when the span overflows Long"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "LongRangeHyperParam stays within a range too large to fit in an Int"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "LongRangeHyperParam stays within its range"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "LongRangeHyperParam with an empty range returns min"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.HyperparamRangeSuite",
+        "equal seeds reproduce equal sequences and differing seeds diverge"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "DecisionTreeClassifier default range is non-empty"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "GBTClassifier default range is non-empty"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "LogisticRegression default range is non-empty"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "MultilayerPerceptronClassifier default range is non-empty"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "NaiveBayes default range is non-empty"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "RandomForestClassifier default range is non-empty"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "all defaultRange entries are concrete distributions that sample in range"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "default ranges produce values inside the declared bounds"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for DecisionTreeClassifier includes expected params"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for DecisionTreeClassifier returns non-empty array"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for GBTClassifier includes expected params"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for GBTClassifier returns non-empty array"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for LogisticRegression includes expected params"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for LogisticRegression returns non-empty array"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for MultilayerPerceptronClassifier includes expected params"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for MultilayerPerceptronClassifier returns non-empty array"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for NaiveBayes includes smoothing param"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for NaiveBayes returns non-empty array"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for RandomForestClassifier includes expected params"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyDefaultHyperparams",
+        "defaultRange for RandomForestClassifier returns non-empty array"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "ModelTypeUnsupportedErr constant has expected value"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "classification metrics use chooseHighest ordering"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator rejects areaUnderPR for regressors"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for classification AUC"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for classification Accuracy"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for classification Precision"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for classification Recall"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for classification accuracy"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for classification areaUnderPR"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for regression MAE"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for regression MSE"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for regression R2"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator returns correct metric for regression RMSE"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator throws for unsupported classification metric"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator throws for unsupported model type"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator throws for unsupported regression metric"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getMetricWithOperator treats areaUnderROC as an AUC alias"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getModelType returns ClassificationKind for a Classifier"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getModelType returns RegressionKind for DecisionTreeRegressor"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getModelType returns RegressionKind for GBTRegressor"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getModelType returns RegressionKind for LinearRegression"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getModelType returns RegressionKind for RandomForestRegressor"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "getModelType throws ModelTypeUnsupportedErr for an unsupported stage"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "regression metrics use chooseLowest ordering (except R2)"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "unsupported classification metric throws"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "unsupported model type throws"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyEvaluationUtils",
+        "unsupported regression metric throws"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+        "FindBestModel rejects invalid evaluation metrics"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+        "Smoke test to verify that evaluate can be run"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+        "Verify the best model can be saved with AUC"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+        "Verify the best model can be saved with areaUnderPR"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyFindBestModel",
+        "Verify the best model metrics can be retrieved and are valid"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "DiscreteHyperParam getValues returns Java list"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "DiscreteHyperParam selects from provided values"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "DiscreteHyperParam.getValues returns Java list"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "DoubleRangeHyperParam generates values within range"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "DoubleRangeHyperParam respects seed for reproducibility"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "FloatRangeHyperParam generates values within range"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getDiscreteHyperParam creates DiscreteHyperParam from Java ArrayList"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getDiscreteHyperParam creates from Java ArrayList"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam matches Double type"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam matches Float type"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam matches Int type"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam matches Long type"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam returns DoubleRangeHyperParam for Double"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam returns FloatRangeHyperParam for Float"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam returns IntRangeHyperParam for Int"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam returns LongRangeHyperParam for Long"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam throws for unsupported types"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperParamUtils.getRangeHyperParam throws on unsupported type"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperparamBuilder adds multiple hyperparams"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperparamBuilder adds single hyperparam"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperparamBuilder builds array of param-dist pairs"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperparamBuilder builds empty array when no params added"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperparamBuilder empty build returns empty array"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "HyperparamBuilder supports method chaining"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "IntRangeHyperParam generates values within range"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "IntRangeHyperParam respects seed for reproducibility"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "LongRangeHyperParam generates values within range"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "LongRangeHyperParam respects seed for reproducibility"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "LongRangeHyperParam stays in range for a span wider than Long.MaxValue"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "RangeHyperParam stores min, max, and seed"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyHyperparamBuilder",
+        "seeded RangeHyperParam produces deterministic sequences"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyParamSpace",
+        "Dist.getParamPair creates correct ParamPair"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyParamSpace",
+        "GridSpace iterates over all ParamMaps in order"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyParamSpace",
+        "GridSpace with empty array produces empty iterator"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyParamSpace",
+        "RandomSpace iterator always hasNext"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyParamSpace",
+        "RandomSpace produces infinite iterator"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "graded NDCG handles cutoff, pessimistic ties and zero relevance"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "group folds are deterministic, balanced, nonempty and never split a query"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "parallel failure interrupts sibling training before releasing cached data"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker evaluation failures expose the cause and release cached data"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning accepts unrelated pass-through keys and quoted values"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning clears copied reference data without mutating the input estimator"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning preserves its advertised prediction column when the second candidate wins"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects inconsistent prediction columns before training with numRuns=1"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects inconsistent prediction columns before training with numRuns=2"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects pass-through gains '\"label_gain\"=0,4' with sampled=false"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects pass-through gains '\"label_gain\"=0,4' with sampled=true"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects pass-through gains ''label_gain'=0,4' with sampled=false"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects pass-through gains ''label_gain'=0,4' with sampled=true"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects pass-through gains '=label_gain=0,4' with sampled=false"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects pass-through gains '=label_gain=0,4' with sampled=true"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects pass-through gains 'label_gain=' with sampled=false"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning rejects pass-through gains 'label_gain=' with sampled=true"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker tuning selects the graded-NDCG winner and refits a ranker"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "ranker-only validation rejects ambiguous models, columns, metrics and search spaces"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "tuner caller interruption waits for worker cleanup and restores only the caller flag"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "worker cleanup preserves interruption provenance for caller failure"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "worker cleanup preserves interruption provenance for execution failure"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "worker cleanup preserves interruption provenance for worker failure"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "worker cleanup waits beyond the timeout with caller interruption=false"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "worker cleanup waits beyond the timeout with caller interruption=true"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyRankingTuning",
+        "worker interruption preserves the cause without interrupting the tuner caller"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Compare benchmark results file to generated file"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on PimaIndian.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on TelescopeData.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on bank.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on breast-cancer-wisconsin.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on breast-cancer.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on data_banknote_authentication.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on fertility_Diagnosis.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on multiclass BreastTissue.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on multiclass CarEvaluation.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on random.forest.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on task.train.csv"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.automl.VerifyTuneHyperparameters",
+        "Verify classifier can be trained and scored on transfusion.csv"
+      ]
+    ],
+    "features": [
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+        "Test for cleaning missing data with boolean custom value"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+        "Test for cleaning missing data with custom value"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+        "Test for cleaning missing data with mean"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+        "Test for cleaning missing data with median"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCleanMissingData",
+        "Test for cleaning missing data with string custom value"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelector",
+        "Basic Usage"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelector",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelector",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelector",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelector",
+        "issue 1667 - CountSelector produces an empty model without throwing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelectorModel",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelectorModel",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelectorModel",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelectorModel",
+        "issue 1667 - CountSelectorModel supports empty indices, copy, and persistence"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelectorModel",
+        "issue 1667 - empty CountSelectorModel preserves nulls and matches transformSchema"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyCountSelectorModel",
+        "issue 1667 - empty CountSelectorModel validates input and output columns"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test convert all types to Boolean"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test convert all types to String"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test convert string to boolean throws an exception"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test convert to Byte"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test convert to Double"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test convert to Integer"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test convert to Long"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test convert to Short"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test convert to categorical"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test date string to timestamp conversion"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test long to timestamp conversion"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test that categorical features will be cleared"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test timestamp to long conversion"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyDataConversions",
+        "Test timestamp to string conversion"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurize copy retains vectorAssemblerHandleInvalid and other configured params"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurize estimator save/load retains vectorAssemblerHandleInvalid"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurize keep supports sparse, dense, and null vectors and preserves feature metadata"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurize keep works in a persisted Pipeline with a downstream transformer"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurize setVectorAssemblerHandleInvalid rejects unsupported values"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurize vectorAssemblerHandleInvalid defaults to skip and preserves prior row-dropping behavior"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurize vectorAssemblerHandleInvalid=error throws on missing scalar values"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurize vectorAssemblerHandleInvalid=keep preserves all rows and encodes missing values as NaN"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurizing on some basic data types"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurizing with categorical columns - using one hot encoding"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurizing with categorical columns that have missings - using one hot encoding"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurizing with date and timestamp columns"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurizing with text columns - using hashing with count based feature selection"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurizing with text columns that have missing values - using hashing with count based feature selection"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Featurizing with vector columns, sparse and dense"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "Verify featurizing text data produces proper tokenized output"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "issue 1667 - collapsed text coexists with vectorAssemblerHandleInvalid keep and defaultCopy"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "issue 1667 - constant categorical columns keep Spark one-hot validation"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "issue 1667 - constant numeric columns keep their original semantics"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "issue 1667 - featurize fails clearly when all text features are constant"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "issue 1667 - featurize fails clearly when text vocabulary is empty or null"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyFeaturize",
+        "issue 1667 - ordinary text featurization is unchanged when constant text columns are present"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyIndexToValue",
+        "Test: Going to Categorical and Back"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "Test: Convert the regular column into categorical"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "Test: String categorical levels"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.VerifyValueIndexer",
+        "test with null or missing values, going to categorical and back"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.MultiNGramSpec",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.MultiNGramSpec",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.MultiNGramSpec",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.MultiNGramSpec",
+        "operate on tokens"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.PageSplitterSpec",
+        "Basic usage"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.PageSplitterSpec",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.PageSplitterSpec",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.PageSplitterSpec",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.TextFeaturizerSpec",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.TextFeaturizerSpec",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.TextFeaturizerSpec",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.TextFeaturizerSpec",
+        "operate on sentences,tokens,or ngrams"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.featurize.text.TextFeaturizerSpec",
+        "throw errors if the schema is incorrect"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.isolationforest.VerifyIsolationForest",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.isolationforest.VerifyIsolationForest",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.isolationforest.VerifyIsolationForest",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.isolationforest.VerifyIsolationForest",
+        "Verify isolationForestMammographyDataTest"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.isolationforest.VerifyIsolationForest",
+        "Verify predictionCol"
+      ]
+    ],
+    "vw": [
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Compare benchmark results file to generated file"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Experiment Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Getters and Setters work as anticipated"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Serialization Fuzzing"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify SGD and SparkML model stats"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on Buzz.TomsHardware.train.csv with args"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on Buzz.TomsHardware.train.csv with args --adaptive"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on Concrete_Data.train.csv with args"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on Concrete_Data.train.csv with args --adaptive"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on airfoil_self_noise.train.csv with args"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on airfoil_self_noise.train.csv with args --adaptive"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on energyefficiency2012_data.train.csv with args"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on energyefficiency2012_data.train.csv with args --adaptive"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on machine.train.csv with args"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify VowpalWabbitRegressor can be trained and scored on machine.train.csv with args --adaptive"
+      ],
+      [
+        "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitRegressor",
+        "Verify multiple input columns"
+      ]
+    ],
+    "coverage": [
+      [
+        "com.microsoft.azure.synapse.ml.core.test.pipeline.PipelineTestCoverageSuite",
+        "Every test suite is claimed by a leg of the UnitTests matrix"
+      ]
+    ]
+  },
+  "expected_python_schema_cases": [
+    "indexed-integer",
+    "indexed-long",
+    "indexed-double",
+    "indexed-string",
+    "indexed-boolean",
+    "persistence-integer",
+    "persistence-string"
+  ],
+  "packet_sha256": {
+    ".github/workflows/validate-categorical-schema.yml": "bc4e9e699a4a1735952fddcd417f405bf7968a6398eef49a2b7fe8a70522fbf4",
+    "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
+    "artifact_provenance.py": "2e7eaa48ab0ee76dedd5f0a38a710ee61b5ff29d70796829e2fbb17365959f34",
+    "baseline_checks.py": "6f937439d86937defcd2c895aa45d8e1574095956ef30bd7f63a180a968be948",
+    "candidate-files/core/src/main/scala/com/microsoft/azure/synapse/ml/featurize/IndexToValue.scala": "23e085ccd8a0ec8ed19e6b27ce115f4417665e2817df4d938256864fd449b3c0",
+    "candidate-files/core/src/main/scala/com/microsoft/azure/synapse/ml/featurize/ValueIndexer.scala": "d9e68cf8dfafe86dcc5052d936f08592ebd4693d1bc677704c74ba436d153b5d",
+    "candidate-files/core/src/test/scala/com/microsoft/azure/synapse/ml/featurize/VerifyValueIndexer.scala": "bd12203a7651f70ced6583feddc9062a27374c6189c2fded713ee15ca8d286a8",
+    "candidate.patch": "c3f1a92fed6fa3c227d306acdf61c1476603a5ea72739ba58238aaa382978d77",
+    "cms-error-fixture.txt": "1f4eb4da383d4adb6ddbf75c41c8b39675440baea264137327209cd8f9653d2d",
+    "collect.py": "557f10432d100ad1f6e6cd3c1d62ff2310426d3802f09122cbc2878d0ca971a1",
+    "common.py": "23058b57b0c38d46accef0d00349ef83081946fe33c8fde2d464b565fb77f8fd",
+    "compare_environments.py": "67a769b09dc785d7b7308fb476b2ae769aeeebf779292ca64243b3e882ec30b8",
+    "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
+    "entry.py": "97a16b19a23e35a13d67c51ec06ca638959df24ae6f540f2df3a9d4f3ae55dc6",
+    "evidence_export.py": "2fb2b90f3e072f34ae5f9e40c6ee0cdc6f1afd7cf01e82d23bb1c98c92726dc0",
+    "format_checks.py": "d2c4a4f9b5198789101ad1833c524627cd295170205e0cab778c88810304c081",
+    "generated_artifacts.py": "3b83ac2416df5764cc476eb8dd014af4dff811aa792e3c27c24c94c8af53402e",
+    "host.py": "bfec80c21e09c48d95896db358387e7d5c71fdb4d255528951359e3b01cec0bf",
+    "lanes.py": "8e8ae3c2b3486171449a81a7f1b97f072c1458299227aa94a9603553e4a432b6",
+    "producer-error-fixture.txt": "08d0f24f88348c771f0ddd680092700c83d4740029ded7036fbcdbe97f89dbd7",
+    "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
+    "python_e2e.py": "e7f1a414161719bc50ae37cc31d0111579d9b8922c670e49e4e75770f4cf6ae2",
+    "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
+    "schema_checks.py": "8a234f5c769232ff36524a0e83ca44a83f86c15fcaaf9a4fab337dc7c0ecc069",
+    "schema_d0.py": "76da444a6161250f957536fdb8c6d3b119e9d38ecf72aa2ff79f046103c8c877",
+    "validation_d0.py": "acb3cd8c95ad5c337dbbd77210e544aef323173253794bbd95d14eb0361ff1e9",
+    "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
+    "workflow.yml": "bc4e9e699a4a1735952fddcd417f405bf7968a6398eef49a2b7fe8a70522fbf4"
+  },
+  "legacy_D0_fixture_contract": {
+    "fields": [
+      "witness_file",
+      "witness_SHA256",
+      "expected_regression_names",
+      "expected_control_names"
+    ],
+    "use": "Required only by retained synthetic helper fixtures and pristine-source freeze. No witness is injected into actual source. Empty expectation lists are not product-test selection.",
+    "static_references": {
+      "baseline_checks.py": [
+        "witness_file",
+        "witness_SHA256",
+        "expected_regression_names",
+        "expected_control_names"
+      ],
+      "common.py": [
+        "witness_file",
+        "witness_SHA256"
+      ],
+      "validation_d0.py": [
+        "witness_file",
+        "witness_SHA256",
+        "expected_regression_names",
+        "expected_control_names"
+      ]
+    }
+  },
+  "attempt_history": {
+    "failed_run": 42762155627,
+    "failed_commit": "4d60d1c885b0defc3114a7a55c7523547b18e4f1",
+    "attempts_consumed": 1,
+    "new_attempt_authorized": true,
+    "failed_clock_preserved": {
+      "created": "2026-11-10T05:26:35Z",
+      "target_seconds": 3000,
+      "absolute_seconds": 3600
+    },
+    "reentry": "New whole corrected-packet approval and separately valid new-attempt authority required; not a retry grant.",
+    "proposed_attempt_number": 2,
+    "maximum_fix_attempts": 2,
+    "authorization": "ExactwholeexecutionClaudeapprovalandindependentCodexreceipt-required; no authority from flagalone"
+  }
+}
