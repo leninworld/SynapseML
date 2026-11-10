@@ -1,0 +1,132 @@
+{
+  "revision": "643_G0_BASELINE_ONLY_DISABLED_AWAITING_WHOLE_EXECUTION_REVIEW",
+  "execution_enabled": true,
+  "execution_approval_required": true,
+  "source_commit": "36dfb77160ec99ea2bf43c7fae5decaf63ee7396",
+  "validation_branch": "validate-vw-raw-prediction-643-g0",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "patch_sha256": null,
+  "baseline_files": {
+    "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/RawPredictionBaselineMain.scala": null,
+    "vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitClassifier.scala": "3d9ee5513f570ab4b4bb88058e8ad57171f9016ab04eab9546af65934c2fbbce",
+    "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitClassifier.scala": "eafa1d6c0ea0bf3606e54ccfd3418a5d89a19fec6c389a722e674f795b7803e0",
+    "environment.yml": "8c48bc5204f9412bfcbde1bf541890efba161813c2ab5f53621dc97c3cd91dc1",
+    "AGENTS.md": "ad81ebeffa7a158e17315c70cf10cf89a0b6ebe95ad3845b23d781f115997ab0",
+    "CONTRIBUTING.md": "ec302b7ef4db4bb95e5f9ae98bded565162f5465d808ab417e9d67410e9e74c7"
+  },
+  "candidate_files": {
+    "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/RawPredictionBaselineMain.scala": "88958bd07a627329b56e33c776258afda40650355e8a273270414a669fb255a4"
+  },
+  "scala_regression_path": "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/RawPredictionBaselineMain.scala",
+  "python_regression_path": null,
+  "lanes": {
+    "root": {
+      "memory_gib": 10,
+      "minimum_start_disk_gib": 24,
+      "initial_available_gib": 9,
+      "network_gib": 12,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 7,
+      "resource_basis": "Verifiedrun42600450683 sample2530684928B;2x+1GiB=6135111680B, conservativelyrounded7GiB. Actualcurrent fullfinish admissionmandatory;10GiB cgroup unchanged."
+    },
+    "python-baseline": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 10,
+      "network_gib": 20,
+      "source_kind": "baseline",
+      "planning_nonreclaimable_gib": 10,
+      "resource_basis": "Verifiedrun42600450683 buildsample4264173568B;2x+1GiB=9602088960B, conservativelyrounded10GiB.12GiB cgroup/10GiBinitialhostguard unchanged; actualcurrent admissionmandatory."
+    }
+  },
+  "dataset": {
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "input_images": [
+    "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  ],
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "hash_algorithm": "sha1",
+    "hash": "4e3ca243fbac4e8c96eb38d783e2077f67081444",
+    "maximum_bytes": 8388608
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "hash_algorithm": "sha256",
+    "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "maximum_bytes": 19028608
+  },
+  "resource_price": {
+    "state": "PRICED_FROM_VERIFIED_42600450683_PRIORS_CURRENT_ADMISSION_REQUIRED",
+    "measured_root_compile_seconds": 89.767158671,
+    "measured_full_Python_build_seconds": 480.958688931,
+    "full_VW_suite": "Previously116tests/72.169857s; current complete unfiltered suite required, no count substitution.",
+    "parallel_jobs": 2,
+    "qualification": "Older fullVW/root and completeenvironment/build memory traces are planning evidence only. Native currentx86 runner/disk/memory and exactsource required atlaunch. Original workflowcreated_at target3000s/hard3600s includesqueue/setup. After early compile/mode proof and Pythonbuild use2x measured nonreclaimable+1GiB admission before remainder. Any deficit or harness/dependency failure stops, no automaticretry or clockreset.",
+    "Python_Spark_heap": "2GiB driver aligned with preserved original python_e2e.py, after sequential4GiBSBT cold build. Planning9GiB from2xactualbuildpeak+1GiB still dominates.",
+    "measured_full_VW_seconds": 72.169857441,
+    "measured_full_environment_seconds": 231.834955446,
+    "new_mode_matrix": "New84Scala+72Pythonobservations/native18; unmeasured, explicit480s caps. No claimed actualcurrent runtime.",
+    "full_VW_Python": "Unmeasured full generated VW namespace; explicit600s step cap plus fresh measured admission."
+  },
+  "packet_sha256": {
+    ".github/workflows/validate-vw-raw-prediction-643-g0.yml": "7deceefee040b4c00dba0f1990283cd7206bb20b106fcf55b32f2964944a7502",
+    "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
+    "artifact_provenance.py": "2e7eaa48ab0ee76dedd5f0a38a710ee61b5ff29d70796829e2fbb17365959f34",
+    "baseline_oracles.py": "648acde07d1f57e50c9c9d5c49b32a7f737140ef52ef476407c5213c0adc8aa0",
+    "candidate-files/vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/RawPredictionBaselineMain.scala": "88958bd07a627329b56e33c776258afda40650355e8a273270414a669fb255a4",
+    "collect.py": "02b2e28f9dd3db6c4b078c3adbc79232a9a561c0b2bb9d720bc3c65a979a93fe",
+    "common.py": "e5ffc4338c095a8078b8d5cfa85f60349325d80cb53b67cb7eebe7339f8d98ee",
+    "compare_environments.py": "67a769b09dc785d7b7308fb476b2ae769aeeebf779292ca64243b3e882ec30b8",
+    "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
+    "entry.py": "a9a496f7d7babacc0972bf5ee8b9e2a53c99d401ca236adc1d9a69019726f6f1",
+    "evidence_export.py": "35c08c5fcdadce8c90607a837048378581483084ca93528d22646b9a81f43e3e",
+    "format_checks.py": "d2c4a4f9b5198789101ad1833c524627cd295170205e0cab778c88810304c081",
+    "generated_artifacts.py": "9620b2a51f44fc26cf9dd3f41479c85942e6ac1148be454cd13d49c3f16b1d1d",
+    "host.py": "311a6e51f1953147f2cbcf96d00bafc04dcde983a0a1b2dad82d378836204b9b",
+    "lanes.py": "9c40b0d9cd4745646f1d881a6b44a0b4b6b669ee27ab88a1c15a7e5f227678ae",
+    "native_preflight.py": "0bf7937795caa50e575e03ecaaa356861334a9ab67376a4b6185b79783ac2e2c",
+    "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
+    "python_e2e.py": "6321f04c28458ba54d936bf47afd9fa04ec7d9b834744eaadd97b31c23aafe66",
+    "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
+    "validation_d0.py": "a897cefc0a5f19424b6fbb36d3ec98e3040c2d02472061635e145fa7afedc97b",
+    "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
+    "workflow.yml": "7deceefee040b4c00dba0f1990283cd7206bb20b106fcf55b32f2964944a7502"
+  },
+  "workflow_path": ".github/workflows/validate-vw-raw-prediction-643-g0.yml",
+  "full_validation_acceptance": {
+    "state": "BASELINE_DIAGNOSTIC_ONLY_NOT_A_VALIDATED_FIX",
+    "required_jobs": [
+      "root",
+      "python-baseline"
+    ],
+    "baseline_source_unchanged": true,
+    "injected_probe_only_no_production_patch": true,
+    "complete_VW_unfiltered_and_affected_core_codegen_consumers": true,
+    "complete_VW_Python_namespace": true,
+    "generated_installed_classifiers_real_Spark": true,
+    "fixture_and_decode_and_metadata_evidence_required": true,
+    "candidate_validated": false,
+    "actual_matrix_and_native_mismatches_retained": true,
+    "no_retry_or_scope_reduction": true,
+    "original_workflow_run_attempt_only": true
+  },
+  "scala_cases": {},
+  "expected_scala_failures": {},
+  "baseline_known_failure": {
+    "suite": "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+    "name": "Verify you can train on a dataset that contains a vector column",
+    "must_contain": [
+      "Vector values MUST NOT be NaN or Infinity",
+      "[3.0,4.0,0.34,0.12,NaN,0.2,-1.23]"
+    ],
+    "counted_as_pass": false,
+    "allowed_absent_if_fixed": true,
+    "evidence_source": "Retained actual baseline37948d7 run42772446328 XML; currentsource36df reclassification mustmatch orstop."
+  }
+}
