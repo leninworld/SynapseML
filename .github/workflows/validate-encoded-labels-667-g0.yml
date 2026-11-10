@@ -1,0 +1,34 @@
+name: Measure encoded-label evaluation baseline
+on:
+  push:
+    branches: [validate-encoded-labels-667-g0-i2]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: encoded-labels-667-g0-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [root-train, root-automl, root-features, python-baseline]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: microsoft/SynapseML
+          ref: 26c9259673ddad5dd813ba32219f8b365ae3f336
+          path: source
+          persist-credentials: false
+      - name: Measure complete baseline lane in owned hosted Docker
+        env:
+          VALIDATION_LANE: ${{ matrix.lane }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 packet/host.py
