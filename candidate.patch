@@ -1,0 +1,334 @@
+diff --git a/vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitClassifier.scala b/vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitClassifier.scala
+index 7837b69915..f10f0aa8e7 100644
+--- a/vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitClassifier.scala
++++ b/vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitClassifier.scala
+@@ -6,6 +6,7 @@ package com.microsoft.azure.synapse.ml.vw
+ import com.microsoft.azure.synapse.ml.codegen.Wrappable
+ import com.microsoft.azure.synapse.ml.core.schema.DatasetExtensions._
+ import com.microsoft.azure.synapse.ml.logging.{FeatureNames, SynapseMLLogging}
++import org.apache.spark.ml.attribute.{AttributeGroup, NominalAttribute}
+ import org.apache.spark.ml.classification.{ProbabilisticClassificationModel, ProbabilisticClassifier}
+ import org.apache.spark.ml.linalg.{Vector, Vectors}
+ import org.apache.spark.ml.param._
+@@ -14,7 +15,7 @@ import org.apache.spark.ml.util._
+ import org.apache.spark.ml.{ComplexParamsReadable, ComplexParamsWritable}
+ import org.apache.spark.sql._
+ import org.apache.spark.sql.functions.{col, udf}
+-import org.apache.spark.sql.types.{DoubleType, StringType, StructType}
++import org.apache.spark.sql.types.{DoubleType, Metadata, StringType, StructType}
+ import org.vowpalwabbit.spark.VowpalWabbitExample
+ 
+ import scala.math.exp
+@@ -108,51 +109,91 @@ class VowpalWabbitClassificationModel(override val uid: String)
+ 
+   def numClasses: Int = getNumClassesModel
+ 
+-  override def transform(dataset: Dataset[_]): DataFrame = {
+-    logTransform[DataFrame]({
+-      val df = transformImplInternal(dataset)
++  private def argumentValue(option: String): Option[String] = {
++    val tokens = vwArgs.getArgs.trim.split("\\s+").flatMap(_.split("=", 2))
++    tokens.sliding(2).collect {
++      case Array(name, value) if name == option => value
++    }.toSeq.lastOption
++  }
+ 
+-      if (getNumClassesModel == 2) {
+-        // which mode one wants to use depends a bit on how this should be deployed
+-        // 1. if you stay in spark w/o link=logistic is probably more convenient as it also returns the raw prediction
+-        // 2. if you want to export the model *and* get probabilities at scoring term w/ link=logistic is preferable
+-
+-        // convert raw prediction to probability (if needed)
+-        val probabilityUdf = if (vwArgs.getArgs.contains("--link logistic"))
+-          udf { (pred: Double) => Vectors.dense(Array(1 - pred, pred)) }
+-        else
+-          udf { (pred: Double) => {
+-            val prob = 1.0 / (1.0 + exp(-pred))
+-            Vectors.dense(Array(1 - prob, prob))
+-          }}
+-
+-        val probability2predictionUdf = udf(probability2prediction _)
+-
+-        df
+-          .withColumn($(rawPredictionCol),
+-            col(vowpalWabbitPredictionCol).getField("prediction").cast(DoubleType))
+-          .withColumn($(probabilityCol), probabilityUdf(col($(rawPredictionCol))))
+-          // convert probability to prediction
+-          .withColumn($(predictionCol), probability2predictionUdf(col($(probabilityCol))))
+-      }
+-      else {
+-        val outputsProbs = vw.getOutputPredictionType.equals("prediction_type_t::scalars")
++  private def hasClassScores: Boolean =
++    vw.getOutputPredictionType == "prediction_type_t::scalars"
++
++  private def winnerIndexBase: Int = {
++    // ECT labels stay one-based; its reduction does not use --indexing.
++    if (argumentValue("--ect").isDefined) 1
++    else if (argumentValue("--indexing").contains("0")) 0
++    else 1
++  }
++
++  private def predictionMetadata: Metadata = {
++    val extra = if (getNumClassesModel != 2 && !hasClassScores && winnerIndexBase == 1) 1 else 0
++    NominalAttribute.defaultAttr.withNumValues(getNumClassesModel + extra).toMetadata()
++  }
+ 
+-        if (outputsProbs) {
+-          // find prediction based on highest prob
+-          val argMaxUDF = udf { (probs: Vector) => probs.argmax.toDouble }
+-          val arrayToVector = udf { (probs: Seq[Float]) => Vectors.dense(probs.toArray.map(_.toDouble)) }
++  private def outputMetadata(name: String): Metadata = {
++    if (name == getPredictionCol) predictionMetadata
++    else new AttributeGroup(name, getNumClassesModel).toMetadata()
++  }
++
++  override def transformSchema(schema: StructType): StructType = {
++    val declared = super.transformSchema(schema)
++    val winnerOnly = getNumClassesModel != 2 && !hasClassScores
++    StructType(declared.fields.filterNot(field =>
++      winnerOnly && getProbabilityCol.nonEmpty && field.name == getProbabilityCol).map { field =>
++      if (getPredictionCol.nonEmpty && field.name == getPredictionCol) field.copy(metadata = predictionMetadata)
++      else field
++    })
++  }
+ 
+-          df
+-            .withColumn($(rawPredictionCol), col(vowpalWabbitPredictionCol).getField("predictions"))
+-            .withColumn($(probabilityCol), arrayToVector(col($(rawPredictionCol))))
+-            .withColumn($(predictionCol), argMaxUDF(col($(probabilityCol))))
++  /** Raw output is a vector with numClasses entries. Unlinked binary values are
++    * [-margin, margin]; logistic-linked binary values are [1-p, p]. Other links
++    * keep their existing sigmoid probability conversion. Multiclass scalars
++    * retain native values (including scores in the existing probability column).
++    * Winner-only reductions expose an indicator, not per-class margins, at the
++    * native label minus its indexing base. Their prediction keeps the native
++    * label and they do not produce a probability column.
++    */
++  override def transform(dataset: Dataset[_]): DataFrame = {
++    logTransform[DataFrame]({
++      val df = transformImplInternal(dataset)
++      val native = col(vowpalWabbitPredictionCol)
++      val scalar = native.getField("prediction").cast(DoubleType)
++      val classes = getNumClassesModel
++      val outputs: Seq[(String, Column)] = if (classes == 2) {
++        val linked = argumentValue("--link").contains("logistic")
++        val probabilityUdf = udf { (value: Double) =>
++          val p = if (linked) value else 1.0 / (1.0 + exp(-value))
++          Vectors.dense(1 - p, p)
++        }
++        val rawUdf = udf { (value: Double) =>
++          if (linked) Vectors.dense(1 - value, value) else Vectors.dense(-value, value)
++        }
++        val probability = probabilityUdf(scalar)
++        val predictionUdf = udf(probability2prediction _)
++        Seq(getRawPredictionCol -> rawUdf(scalar), getProbabilityCol -> probability,
++          getPredictionCol -> predictionUdf(probability))
++      } else if (hasClassScores) {
++        val vectorUdf = udf { (values: Seq[Float]) =>
++          require(values.length == classes,
++            s"VW returned ${values.length} scores; numClasses must match the native model ($classes)")
++          Vectors.dense(values.toArray.map(_.toDouble))
+         }
+-        else
+-          df
+-            .withColumn($(rawPredictionCol),
+-              col(vowpalWabbitPredictionCol).getField("prediction").cast(DoubleType))
+-            .withColumn($(predictionCol), col($(rawPredictionCol)))
++        val vector = vectorUdf(native.getField("predictions"))
++        val argMaxUdf = udf { (values: Vector) => values.argmax.toDouble }
++        Seq(getRawPredictionCol -> vector, getProbabilityCol -> vector, getPredictionCol -> argMaxUdf(vector))
++      } else {
++        val base = winnerIndexBase
++        val indicatorUdf = udf { (label: Double) =>
++          val index = label.toInt - base
++          require(label == label.toInt.toDouble && index >= 0 && index < classes,
++            s"VW label $label with indexing base $base is outside numClasses=$classes")
++          Vectors.sparse(classes, Array(index), Array(1.0))
++        }
++        Seq(getRawPredictionCol -> indicatorUdf(scalar), getPredictionCol -> scalar)
++      }
++      outputs.foldLeft(df) { case (frame, (name, value)) =>
++        if (name.isEmpty) frame else frame.withColumn(name, value.as(name, outputMetadata(name)))
+       }
+     }, dataset.columns.length)
+   }
+diff --git a/vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitClassifier.scala b/vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitClassifier.scala
+index 621f612d63..654fb8a794 100644
+--- a/vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitClassifier.scala
++++ b/vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitClassifier.scala
+@@ -6,6 +6,9 @@ package com.microsoft.azure.synapse.ml.vw
+ import com.microsoft.azure.synapse.ml.core.test.benchmarks.{Benchmarks, DatasetUtils}
+ import com.microsoft.azure.synapse.ml.core.test.fuzzing.{EstimatorFuzzing, TestObject}
+ import org.apache.spark.TaskContext
++import org.apache.spark.ml.attribute.AttributeGroup
++import org.apache.spark.ml.linalg.{SQLDataTypes, Vector, Vectors}
++import org.apache.spark.ml.param.ParamMap
+ import org.apache.spark.ml.evaluation.{BinaryClassificationEvaluator, MulticlassClassificationEvaluator}
+ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+ import org.apache.spark.ml.util.MLReadable
+@@ -19,6 +22,7 @@ import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+ import org.apache.spark.sql.functions._
+ import org.apache.spark.sql.types.{DoubleType, IntegerType}
+ import org.apache.spark.sql.{DataFrame, Dataset, Row}
++import org.vowpalwabbit.spark.VowpalWabbitNative
+ 
+ import java.io.File
+ import java.util.UUID
+@@ -419,6 +423,157 @@ class VerifyVowpalWabbitClassifier extends Benchmarks with EstimatorFuzzing[Vowp
+       .csv(fileLocation)
+   }
+ 
++  private def rawContractModel(args: String, examples: Seq[String]): VowpalWabbitClassificationModel = {
++    val native = new VowpalWabbitNative(args + " --quiet --holdout_off")
++    try {
++      (0 until 3).foreach { _ => examples.foreach(native.learnFromString) }
++      new VowpalWabbitClassificationModel().setNumClassesModel(3)
++        .setModel(native.getModel).setAdditionalFeatures(Array.empty[String])
++    } finally {
++      native.close()
++    }
++  }
++
++  private def rawContractData: DataFrame = {
++    val rows: Seq[(Long, Vector)] = Seq((0L, Vectors.dense(1.0, 0.0)),
++      (1L, Vectors.dense(0.0, 1.0)), (2L, Vectors.dense(1.0, 1.0)))
++    spark.createDataFrame(rows).toDF("id", "features").coalesce(1)
++  }
++
++  private def rawExpected(detail: Row, mode: String, base: Int, classes: Int)
++    : (Vector, Option[Vector], Double) = {
++    if (mode == "scores") {
++      val vector = Vectors.dense(detail.getAs[Seq[Float]]("predictions").map(_.toDouble).toArray)
++      (vector, Some(vector), vector.argmax.toDouble)
++    } else {
++      val value = detail.getAs[Number]("prediction").doubleValue()
++      if (mode == "winner") {
++        val raw = Vectors.sparse(classes, Array(value.toInt - base), Array(1.0))
++        (raw, None, value)
++      } else {
++        val linked = mode == "linked"
++        val p = if (linked) value else 1.0 / (1.0 + math.exp(-value))
++        val probability = Vectors.dense(1 - p, p)
++        val raw = if (linked) probability else Vectors.dense(-value, value)
++        (raw, Some(probability), probability.argmax.toDouble)
++      }
++    }
++  }
++
++  private def checkRawContract(model: VowpalWabbitClassificationModel, data: DataFrame,
++                               mode: String, base: Int): Unit = {
++    val declared = model.transformSchema(data.schema)
++    val output = model.transform(data)
++    assert(!output.columns.contains(""))
++    Seq(model.getRawPredictionCol, model.getProbabilityCol, model.getPredictionCol).filter(_.nonEmpty).foreach { name =>
++      assert(declared.fieldNames.contains(name) == output.columns.contains(name))
++      if (declared.fieldNames.contains(name)) {
++        assert(declared(name).dataType == output.schema(name).dataType)
++        assert(declared(name).metadata == output.schema(name).metadata)
++      }
++    }
++    if (mode == "winner" && model.getPredictionCol.nonEmpty) {
++      assert(output.schema(model.getPredictionCol).metadata.getMetadata("ml_attr").getLong("num_vals") ==
++        (model.getNumClassesModel + base).toLong)
++    }
++    if (model.getRawPredictionCol.nonEmpty) {
++      assert(output.schema(model.getRawPredictionCol).dataType == SQLDataTypes.VectorType)
++      assert(AttributeGroup.fromStructField(output.schema(model.getRawPredictionCol)).size == model.getNumClassesModel)
++    }
++    output.collect().foreach { row =>
++      val expected = rawExpected(row.getAs[Row](model.vowpalWabbitPredictionCol), mode, base,
++        model.getNumClassesModel)
++      if (model.getRawPredictionCol.nonEmpty) {
++        assert(row.getAs[Vector](model.getRawPredictionCol).toArray.sameElements(expected._1.toArray))
++      }
++      if (model.getProbabilityCol.nonEmpty && expected._2.isDefined) {
++        assert(row.getAs[Vector](model.getProbabilityCol).toArray.sameElements(expected._2.get.toArray))
++      }
++      if (model.getPredictionCol.nonEmpty) assert(row.getAs[Double](model.getPredictionCol) == expected._3)
++    }
++  }
++
++  private def checkRawVariants(name: String, model: VowpalWabbitClassificationModel,
++                               mode: String, base: Int): Unit = {
++    val data = rawContractData
++    checkRawContract(model, data, mode, base)
++    checkRawContract(model.copy(ParamMap.empty).setRawPredictionCol("rawCustom")
++      .setProbabilityCol("probCustom").setPredictionCol("predCustom"), data, mode, base)
++    checkRawContract(model.copy(ParamMap.empty).setRawPredictionCol(""), data, mode, base)
++    checkRawContract(model.copy(ParamMap.empty).setProbabilityCol(""), data, mode, base)
++    checkRawContract(model.copy(ParamMap.empty).setPredictionCol(""), data, mode, base)
++    val saved = new File(tmpDir.toFile, "raw-vector-" + name).toString
++    model.write.save(saved)
++    checkRawContract(VowpalWabbitClassificationModel.load(saved), data, mode, base)
++  }
++
++  test("VW raw vectors preserve binary probabilities, metadata, disabled columns and persistence") {
++    Seq("margin" -> "", "linked-space" -> "--link logistic", "linked-equals" -> "--link=logistic").foreach {
++      case (name, link) =>
++        val model = rawContractModel("--loss_function logistic " + link,
++          Seq("-1 |f x:1", "1 |f x:2")).setNumClassesModel(2)
++        if (link.nonEmpty) assert(model.vwArgs.getArgs.contains("--link logistic"))
++        checkRawVariants(name, model, if (link.isEmpty) "margin" else "linked", 0)
++    }
++  }
++
++  test("VW raw vectors preserve multiclass scores and winner labels for all indexing modes") {
++    Seq(("zero", "--indexing 0", 0), ("one", "--indexing 1", 1), ("default", "", 1)).foreach {
++      case (name, indexing, base) =>
++        val model = rawContractModel("--oaa 3 --loss_function logistic " + indexing,
++          (0 until 3).map(i => s"${i + base} |f x:${i + 1}"))
++        checkRawVariants("winner-" + name, model, "winner", base)
++        checkRawVariants("scores-" + name, model.copy(ParamMap.empty).setTestArgs("--scores"), "scores", base)
++        checkRawVariants("probabilities-" + name, model.copy(ParamMap.empty).setTestArgs("--probabilities"),
++          "scores", base)
++    }
++  }
++
++  test("VW raw winner indicators cover externally trained csoaa and ect models") {
++    Seq("csoaa" -> Seq("1:0 2:1 3:1 |f x:1", "1:1 2:0 3:1 |f x:2"),
++      "ect" -> Seq("1 |f x:1", "2 |f x:2", "3 |f x:3")).foreach { case (mode, examples) =>
++      checkRawVariants(mode, rawContractModel(s"--$mode 3", examples), "winner", 1)
++    }
++  }
++
++  test("VW raw zero binary margins retain the class-zero tie") {
++    val model = rawContractModel("--noconstant", Seq.empty[String]).setNumClassesModel(2)
++    val result = model.transform(rawContractData)
++    assert(result.schema(model.getRawPredictionCol).dataType == SQLDataTypes.VectorType)
++    val row = result.head()
++    assert(row.getAs[Vector](model.getRawPredictionCol).toArray.sameElements(Array(0.0, 0.0)))
++    assert(row.getAs[Vector](model.getProbabilityCol).toArray.sameElements(Array(0.5, 0.5)))
++    assert(row.getAs[Double](model.getPredictionCol) == 0.0)
++  }
++
++  test("VW raw rescoring preserves output-column overwrite compatibility") {
++    val model = rawContractModel("", Seq("-1 |", "1 |")).setNumClassesModel(2)
++    val previous = -99.0
++    val input = rawContractData.withColumn("prediction", lit(previous))
++      .withColumn("rawPrediction", lit(previous)).withColumn("probability", lit(previous))
++    val output = model.transform(input)
++    assert(output.select("prediction").collect().forall(_.getDouble(0) != previous))
++    assert(input.select("prediction").collect().forall(_.getDouble(0) == previous))
++  }
++
++  private def requireClassCountError(model: VowpalWabbitClassificationModel): Unit = {
++    val error = intercept[Exception] { model.transform(rawContractData).collect() }
++    assert(Iterator.iterate[Throwable](error)(_.getCause).takeWhile(_ != null)
++      .exists(cause => Option(cause.getMessage).exists(_.contains("numClasses"))))
++  }
++
++  test("VW raw vectors reject mismatched class counts without truncating native output") {
++    val model = rawContractModel("--oaa 3", Seq("3 |", "3 |", "3 |"))
++    val native = new VowpalWabbitNative("--testonly --quiet", model.getModel)
++    try {
++      assert(native.predictFromString("|").asInstanceOf[java.lang.Integer].intValue() == 3)
++    } finally {
++      native.close()
++    }
++    requireClassCountError(model.copy(ParamMap.empty).setNumClassesModel(1))
++    requireClassCountError(model.copy(ParamMap.empty).setTestArgs("--scores").setNumClassesModel(4))
++  }
++
+   override def reader: MLReadable[_] = VowpalWabbitClassifier
+   override def modelReader: MLReadable[_] = VowpalWabbitClassificationModel
+ 
