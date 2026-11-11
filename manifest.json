@@ -1,0 +1,191 @@
+{
+  "revision": "643_I2_PRIVATE_FORMAT_CORRECTION_NO_EXECUTION_EXCEPTION",
+  "execution_enabled": true,
+  "execution_approval_required": true,
+  "source_commit": "36dfb77160ec99ea2bf43c7fae5decaf63ee7396",
+  "validation_branch": "validate-vw-raw-prediction-643-i2",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "patch_sha256": "d69be28238bf8fb778e109d9f8c51abc1cdd12b5404b0c04860d169609c462c8",
+  "baseline_files": {
+    "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/RawPredictionBaselineMain.scala": null,
+    "vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitClassifier.scala": "3d9ee5513f570ab4b4bb88058e8ad57171f9016ab04eab9546af65934c2fbbce",
+    "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitClassifier.scala": "eafa1d6c0ea0bf3606e54ccfd3418a5d89a19fec6c389a722e674f795b7803e0",
+    "environment.yml": "8c48bc5204f9412bfcbde1bf541890efba161813c2ab5f53621dc97c3cd91dc1",
+    "AGENTS.md": "ad81ebeffa7a158e17315c70cf10cf89a0b6ebe95ad3845b23d781f115997ab0",
+    "CONTRIBUTING.md": "ec302b7ef4db4bb95e5f9ae98bded565162f5465d808ab417e9d67410e9e74c7"
+  },
+  "candidate_files": {
+    "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/RawPredictionBaselineMain.scala": "9fa748fe3e0edb56fc344d248a46190f4c0b19fd4a5da718849841694b5a3af2",
+    "vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitClassifier.scala": "b04c3880be186df81dbef9aea4273f93fd18920ae1708bf6684e512209c1bb48",
+    "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitClassifier.scala": "502f90a0270c73b1d70b4463a138b0c113461e5d9f69924840605b44cf7c9ac6"
+  },
+  "scala_regression_path": "vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/RawPredictionBaselineMain.scala",
+  "python_regression_path": null,
+  "lanes": {
+    "root": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 24,
+      "initial_available_gib": 13.5,
+      "network_gib": 12,
+      "source_kind": "paired",
+      "planning_nonreclaimable_gib": 12,
+      "resource_basis": "Actual same-source G1 fullroot5573943296B or G0 fullPython4106956800B; 2x+1GiB. Fresh actual paired admission required; standard separate16GiBVMs."
+    },
+    "python-paired": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 32,
+      "initial_available_gib": 13.5,
+      "network_gib": 20,
+      "source_kind": "paired",
+      "planning_nonreclaimable_gib": 9,
+      "resource_basis": "Actual same-source G1 fullroot5573943296B or G0 fullPython4106956800B; 2x+1GiB. Fresh actual paired admission required; standard separate16GiBVMs."
+    }
+  },
+  "dataset": {
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "input_images": [
+    "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  ],
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "hash_algorithm": "sha1",
+    "hash": "4e3ca243fbac4e8c96eb38d783e2077f67081444",
+    "maximum_bytes": 8388608
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "hash_algorithm": "sha256",
+    "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "maximum_bytes": 19028608
+  },
+  "resource_price": {
+    "state": "PRICED_FROM_ACTUAL_643_G0_G1_FULL_LANES_FRESH_ADMISSION_REQUIRED",
+    "parallel_jobs": 2,
+    "root_whole_baseline_seconds": 740.5245659351349,
+    "python_whole_baseline_seconds": 1071.5197129249573,
+    "conservative_root_seconds": 2081.04913187027,
+    "conservative_python_seconds": 2773.0394258499146,
+    "formula": "2x actual full workflow-to-container-finish +480 new behavior+120 evidence reserve; setup/source/env cached within same paired lane, no claim hosted caches exist beforehand",
+    "actual_2x_memory_plus1_root_bytes": 12221628416,
+    "actual_2x_memory_plus1_python_bytes": 9287655424,
+    "fresh_container_allocation_gib": 12,
+    "initial_available_gib": 13.5,
+    "host_total_gib": 14,
+    "before_full_available_gib": 13.5,
+    "JVM_heap": "SBT explicit-Xmx4G and Spark driver2G unchanged. JAVA_TOOL_OPTIONS MaxRAM10737418240 pins other JVM defaults to original10GiB venue; record effective MaxHeapSize.",
+    "new_early_style_reserve_seconds": 30,
+    "new_early_style_basis": "Actual I1rootbaselineTeststyle18.56s, warmSBT; reserve30s extra, fullscope unchanged andexisting admission/deadline remainsbinding"
+  },
+  "packet_sha256": {
+    "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
+    "artifact_provenance.py": "2e7eaa48ab0ee76dedd5f0a38a710ee61b5ff29d70796829e2fbb17365959f34",
+    "baseline_oracles.py": "648acde07d1f57e50c9c9d5c49b32a7f737140ef52ef476407c5213c0adc8aa0",
+    "candidate-files/vw/src/main/scala/com/microsoft/azure/synapse/ml/vw/VowpalWabbitClassifier.scala": "b04c3880be186df81dbef9aea4273f93fd18920ae1708bf6684e512209c1bb48",
+    "candidate-files/vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/RawPredictionBaselineMain.scala": "9fa748fe3e0edb56fc344d248a46190f4c0b19fd4a5da718849841694b5a3af2",
+    "candidate-files/vw/src/test/scala/com/microsoft/azure/synapse/ml/vw/VerifyVowpalWabbitClassifier.scala": "502f90a0270c73b1d70b4463a138b0c113461e5d9f69924840605b44cf7c9ac6",
+    "candidate.patch": "d69be28238bf8fb778e109d9f8c51abc1cdd12b5404b0c04860d169609c462c8",
+    "candidate_oracles.py": "a4bd940294678aaabd5a96976ce6d99ec4679f5b749a0254a8518dad025cddda",
+    "collect.py": "02b2e28f9dd3db6c4b078c3adbc79232a9a561c0b2bb9d720bc3c65a979a93fe",
+    "common.py": "d84c3afeb084cb854505817fc9a1a2ff6a782b3cc53de2604f7b993e5f80a086",
+    "compare_environments.py": "67a769b09dc785d7b7308fb476b2ae769aeeebf779292ca64243b3e882ec30b8",
+    "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
+    "entry.py": "2db826c76a752f0f19a64cb4230fa5f0541f7946f474405c07a4f36090998d2f",
+    "evidence_export.py": "35c08c5fcdadce8c90607a837048378581483084ca93528d22646b9a81f43e3e",
+    "format_checks.py": "d2c4a4f9b5198789101ad1833c524627cd295170205e0cab778c88810304c081",
+    "generated_artifacts.py": "9620b2a51f44fc26cf9dd3f41479c85942e6ac1148be454cd13d49c3f16b1d1d",
+    "host.py": "311a6e51f1953147f2cbcf96d00bafc04dcde983a0a1b2dad82d378836204b9b",
+    "lanes.py": "ff627aa0ce09ea8af4f6e64182a5b8681f10890ee3f606b9ea2d616f055af85b",
+    "native_preflight.py": "0bf7937795caa50e575e03ecaaa356861334a9ab67376a4b6185b79783ac2e2c",
+    "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
+    "python_e2e.py": "578a48396c6de450a81f276d35b3f713daea4ad0d8fa916e79ecbf0621afc873",
+    "role_source_fixture.py": "65d087946ade7bd216233d3c22d6668ccd94c262e774fbc6ab79acedab7c6511",
+    "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
+    "validation_d0.py": "a897cefc0a5f19424b6fbb36d3ec98e3040c2d02472061635e145fa7afedc97b",
+    "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
+    "workflow.yml": "f403c91f733411bc9b6ed1b8bb37376d43129b6de62ffb9d049242d206d6e15b",
+    ".github/workflows/validate-vw-raw-prediction-643-i2.yml": "f403c91f733411bc9b6ed1b8bb37376d43129b6de62ffb9d049242d206d6e15b"
+  },
+  "workflow_path": ".github/workflows/validate-vw-raw-prediction-643-i2.yml",
+  "full_validation_acceptance": {
+    "state": "PROPOSED_PAIRED_CANDIDATE_NOT_RUN",
+    "required_jobs": [
+      "root",
+      "python-paired"
+    ],
+    "full_original_and_candidate_VW": true,
+    "full_original_and_candidate_four_core_suites": true,
+    "full_original_and_candidate_PyCodegen_and_VW_Python": true,
+    "all84_Scala_and18_native_and72_installed_Python_observations": true,
+    "exact_known_NaN_failure_paired_not_pass": true,
+    "no_new_failures_skips_or_missing_baseline_ids": true,
+    "whole_root_styles_compile_testcompile": true,
+    "candidate_validated": false,
+    "no_automatic_retry": true
+  },
+  "scala_cases": {},
+  "expected_scala_failures": {},
+  "baseline_known_failure": {
+    "suite": "com.microsoft.azure.synapse.ml.train.VerifyTrainClassifier",
+    "name": "Verify you can train on a dataset that contains a vector column",
+    "must_contain": [
+      "Vector values MUST NOT be NaN or Infinity",
+      "[3.0,4.0,0.34,0.12,NaN,0.2,-1.23]"
+    ],
+    "counted_as_pass": false,
+    "allowed_absent_if_fixed": true,
+    "evidence_source": "Retained actual baseline37948d7 run42772446328 XML; currentsource36df reclassification mustmatch orstop."
+  },
+  "feature_failures": {
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw vectors preserve binary probabilities, metadata, disabled columns and persistence": [
+      "did not equal"
+    ],
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw vectors preserve multiclass scores and winner labels for all indexing modes": [
+      "did not equal"
+    ],
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw winner indicators cover externally trained csoaa and ect models": [
+      "did not equal"
+    ],
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw zero binary margins retain the class-zero tie": [
+      "did not equal"
+    ],
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw vectors reject mismatched class counts without truncating native output": [
+      "expected exception",
+      "to be thrown"
+    ]
+  },
+  "candidate_attempt_accounting": {
+    "new_candidate_cycle_after_closed_baseline_design": true,
+    "baseline_G0_G1_not_replayed_or_reset": true,
+    "prior_diagnostic_runs": [
+      42914463843,
+      42933495087
+    ],
+    "requested_candidate_attempt": 2,
+    "maximum_attempts": 2,
+    "authorization": "AUTHORIZED_ONE_I2_RUN_OVERALL_ATTEMPT_4",
+    "no_current_clock": true,
+    "overall_scope_attempt_requested": 4,
+    "new_user_execution_exception_required": true,
+    "prior_two_diagnostic_attempts_preserved": true,
+    "proposed_maximum_attempts": 2,
+    "prior_I1": {
+      "run": 42958797007,
+      "root": "FAILED diagnosticline155style beforecompile",
+      "Python": "CANCELLED_BY_OWNER deterministicfuturestyleblock",
+      "no_product_or_full_candidate_validation": true
+    }
+  },
+  "all_new_test_ids": [
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw vectors preserve binary probabilities, metadata, disabled columns and persistence",
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw vectors preserve multiclass scores and winner labels for all indexing modes",
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw winner indicators cover externally trained csoaa and ect models",
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw zero binary margins retain the class-zero tie",
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw rescoring preserves output-column overwrite compatibility",
+    "com.microsoft.azure.synapse.ml.vw.VerifyVowpalWabbitClassifier::VW raw vectors reject mismatched class counts without truncating native output"
+  ]
+}

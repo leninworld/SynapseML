@@ -1,0 +1,34 @@
+name: Measure VW classifier raw-prediction contract
+on:
+  push:
+    branches: [validate-vw-raw-prediction-643-i2]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: vw-raw-prediction-validation-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [root, python-paired]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: microsoft/SynapseML
+          ref: 36dfb77160ec99ea2bf43c7fae5decaf63ee7396
+          path: source
+          persist-credentials: false
+      - name: Validate full lane in owned hosted Docker
+        env:
+          VALIDATION_LANE: ${{ matrix.lane }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 packet/host.py
