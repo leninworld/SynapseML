@@ -1,0 +1,150 @@
+{
+  "input_images": [
+    "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  ],
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "hash_algorithm": "sha1",
+    "hash": "4e3ca243fbac4e8c96eb38d783e2077f67081444",
+    "maximum_bytes": 8388608
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "hash_algorithm": "sha256",
+    "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "maximum_bytes": 19028608
+  },
+  "dataset": {
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "revision": "874-WHOLE-WEBSITE-CORRECTION-I2-PROPOSAL",
+  "execution_enabled": true,
+  "execution_approval_required": true,
+  "source_commit": "80191a61e743b8ba462b692d2ffa2e95ac2df91d",
+  "validation_branch": "validate-python-model-inputs-874-website-i2",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "baseline_files": {
+    "docs/Explore Algorithms/LightGBM/Overview.md": "c6f9f647cf8721cc27eee64e1f8a144a8bd206da9db0eed3bbfe9f1f01d1c201",
+    "docs/Explore Algorithms/LightGBM/Python model inputs.md": null,
+    "lightgbm/src/test/resources/python-interop/README.md": null,
+    "lightgbm/src/test/resources/python-interop/expected.tsv": null,
+    "lightgbm/src/test/resources/python-interop/generate.py": null,
+    "lightgbm/src/test/resources/python-interop/python-model.txt": null,
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split6/PythonModelInteropSuite.scala": null,
+    "website/sidebars.js": "d556b10ecb1bbeee81afd9e53211226bc40221421a939ac6697458437d282ed8"
+  },
+  "candidate_files": {
+    "docs/Explore Algorithms/LightGBM/Overview.md": "db9261547e94aa92dca473a7f9b07e2b2d02eb1022c7d061b63aa8388658b833",
+    "docs/Explore Algorithms/LightGBM/Python model inputs.md": "289bdd4c5223e5ef7cfd19ffca39cd39c65d6bfd788433bfbe971337cc112199",
+    "lightgbm/src/test/resources/python-interop/README.md": "ed911b914bb337b4113dd52327f2ac36b12b38cb3ab36cd95966d57803e8f207",
+    "lightgbm/src/test/resources/python-interop/expected.tsv": "00185629cc179d5374345678e25baea2015b026f499648033508fb427fb7464c",
+    "lightgbm/src/test/resources/python-interop/generate.py": "7571c4404ad76ef3a6db5b4bad118e5f188528bc5bad79983a8e3000318af4a5",
+    "lightgbm/src/test/resources/python-interop/python-model.txt": "767aef4e256ddb3535b1f690a87043d96c3f5e9ba7ddf4623b430d7c8fae192e",
+    "lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split6/PythonModelInteropSuite.scala": "94ea8982016f0131665f3327cd5c061f95c27565fe4177b4e932b7bfb6960525",
+    "website/sidebars.js": "cd4ae8657fea609e2a76cb80d67e894185f329c1b9c7e0297052cc60fa8c02ae"
+  },
+  "workflow_path": ".github/workflows/validate-inputs874.yml",
+  "lanes": {
+    "python-candidate": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 10,
+      "network_gib": 24,
+      "source_kind": "candidate",
+      "planning_nonreclaimable_gib": 10.75,
+      "resource_basis": "Actual same-image cold setup276.332s/2.796GB sampled anon+kernel; full prior candidate963s with website build215.925s/max5.176GB. Conservative same-closure wholewebsite planning10.75GiB under12GiB cap. Same2CPU64GiBstartingdisk24GiBnetwork; native actualPASS reused only at exactsame8filehashes/base/lock/JDK/Spark/nativepair."
+    }
+  },
+  "lightgbm": {
+    "url": "https://files.pythonhosted.org/packages/38/5c/d9773cf0ea7938f3b777eaacc6f9d58f69ca76a667771364ffefed9095b4/lightgbm-3.3.5-py3-none-manylinux1_x86_64.whl",
+    "hash_algorithm": "sha256",
+    "hash": "044f65664c1a32c98cb619bafa97d8cd9d93c2c2d5053376aadfe509a3a3e7fa",
+    "maximum_bytes": 1999997,
+    "exact_bytes": 1999997
+  },
+  "resource_price": {
+    "actual_previous_setup_seconds": 276.332,
+    "actual_website_npm_seconds": 14.064,
+    "actual_generation_seconds": 2.944,
+    "actual_41tests_seconds": 1.258,
+    "actual_build_seconds": 215.925,
+    "unrun_dev_route_ceiling_seconds": 600,
+    "fixtures_reserve_seconds": 90,
+    "pull_setup_allowance_seconds": 700,
+    "evidence_reserve_seconds": 120,
+    "estimated_upper_seconds": 1750,
+    "target_seconds": 3000,
+    "absolute_seconds": 3600,
+    "no_Mac_Docker_or_externaldisk_mutation": true
+  },
+  "full_validation_acceptance": "REUSE prior verified native/build/codegen/all3docs/artifact/generator results ONLY exacteightfilefrozenpatch/base/pins; fresh complete website generation, all41tests, productionbuild, actual normalized SSRarticle/sidebar/Overview contract, actual Acceptheader fixture, realdevHTTProute and finalfull8filehash/scope. Fullfinishrequiresboth oldverifiednative evidence andthisnewwebsitepass; never label reuseasfreshnativeexecution.",
+  "packet_sha256": {
+    ".github/workflows/validate-inputs874.yml": "0ce2e6430cc2e4d427030dad0579a71a08781cf57e28814f60a72a4177eddf28",
+    "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
+    "artifact_provenance.py": "2e7eaa48ab0ee76dedd5f0a38a710ee61b5ff29d70796829e2fbb17365959f34",
+    "bootstrap.py": "1627d753f11e2060195a4b9b98fd91945875d937cd97e49d4791e8aa2c4eac40",
+    "candidate-files/docs/Explore Algorithms/LightGBM/Overview.md": "db9261547e94aa92dca473a7f9b07e2b2d02eb1022c7d061b63aa8388658b833",
+    "candidate-files/docs/Explore Algorithms/LightGBM/Python model inputs.md": "289bdd4c5223e5ef7cfd19ffca39cd39c65d6bfd788433bfbe971337cc112199",
+    "candidate-files/lightgbm/src/test/resources/python-interop/README.md": "ed911b914bb337b4113dd52327f2ac36b12b38cb3ab36cd95966d57803e8f207",
+    "candidate-files/lightgbm/src/test/resources/python-interop/expected.tsv": "00185629cc179d5374345678e25baea2015b026f499648033508fb427fb7464c",
+    "candidate-files/lightgbm/src/test/resources/python-interop/generate.py": "7571c4404ad76ef3a6db5b4bad118e5f188528bc5bad79983a8e3000318af4a5",
+    "candidate-files/lightgbm/src/test/resources/python-interop/python-model.txt": "767aef4e256ddb3535b1f690a87043d96c3f5e9ba7ddf4623b430d7c8fae192e",
+    "candidate-files/lightgbm/src/test/scala/com/microsoft/azure/synapse/ml/lightgbm/split6/PythonModelInteropSuite.scala": "94ea8982016f0131665f3327cd5c061f95c27565fe4177b4e932b7bfb6960525",
+    "candidate-files/website/sidebars.js": "cd4ae8657fea609e2a76cb80d67e894185f329c1b9c7e0297052cc60fa8c02ae",
+    "candidate.patch": "db46a915737b56f1892a4566099d39e429295ea77214627ce519e5d9575fd543",
+    "candidate_lane.py": "1d5613f0365dce600c8360dcce1a9365e168d65dbc86cb148c159cfe5529754e",
+    "collect.py": "676208ca7b93756196329fe19ed7b34f5f53ad290e5b82a9c36bd57414fd09bf",
+    "common.py": "50d2434cae04b822fe0f79057101e9df4df8bfdcd4a7135b85fac510edcabc10",
+    "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
+    "documentation_run.py": "8ca3146438bc386ba4c073c517e3a06761a05fc73e157913ff7ad76c59a3f826",
+    "entry.py": "6369fa4ea16e73ae55516bf14dd4ef5f0c842dbe0567215425308f129d8ba83e",
+    "evidence_export.py": "3838974980d590f509e6af9ee43ca3574f67783363c72989ae047e20e54d23f5",
+    "format_checks.py": "56896ed5d7773b2d33d50fa1e2c477f0d8db2a364b7092b569cead340790f814",
+    "generated_artifacts.py": "d62c73588998b09e1ce0c46a9063e90ea1588612be56147a2440ec7d29196cd2",
+    "host.py": "1640321b9a03ab9ee4a5a9a1228a0d2b75c85add0f8b28d3d290bf1af5a495de",
+    "notebook_contract.py": "09d36a002431ffbcd438900fec5821b2ff799c56bb921a9bedc7a2fade3164f4",
+    "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
+    "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
+    "validation_d0.py": "15076bdb81bbbed6824a7244ecc3cf55fa3a7380fecab0035845dc15aae8bed6",
+    "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
+    "website_check.py": "3d8440856e45b42d84f8d116a2ae0256da559a4ab99fe77755333e9f40590705",
+    "website_contract.py": "2ea06ff276faa7f27470ab353be972b11aac7af3646b28772d1564d0dc580977",
+    "website_generate.py": "0a1de9f21e874929992a2de5b18b060895d9ea348cde9e6a6365250d96ae1456",
+    "workflow.yml": "0ce2e6430cc2e4d427030dad0579a71a08781cf57e28814f60a72a4177eddf28"
+  },
+  "attempt_policy": {
+    "ordinary_limit": 2,
+    "attempts_actually_started": 2,
+    "consumed_runs": [
+      43148911429,
+      43153624699
+    ],
+    "proposed_overall_attempt": 3,
+    "additional_execution_exception_required": true,
+    "additional_execution_exception_received": false,
+    "retry_authorized": false,
+    "reset_counters": false
+  },
+  "patch_sha256": "db46a915737b56f1892a4566099d39e429295ea77214627ce519e5d9575fd543",
+  "website_input_sha256": {
+    "package.json": "9052bb2030b565db0202eaa2b2e2cd667bacbdf8cc0553d587e95ae687530f33",
+    "package-lock.json": "1069bda5e22a6e1b2186521bc9f2edd0464648e061f08d57602fcfb480546c7b"
+  },
+  "prior_candidate_evidence": {
+    "run": 43153624699,
+    "head": "3c2e7d8fcc6376287372260af350e2e3452b1169",
+    "source_commit": "80191a61e743b8ba462b692d2ffa2e95ac2df91d",
+    "tested_patch_sha256": "db46a915737b56f1892a4566099d39e429295ea77214627ce519e5d9575fd543",
+    "genuine_regeneration": true,
+    "all_five_JUnit_pass": true,
+    "all_three_code_blocks_pass": true,
+    "full_root_build_style_codegen_artifacts_pass": true,
+    "whole_validation_passed": false,
+    "critical_export_complete": true,
+    "native_results_reuse_requires_exact_source_and_dependency_identity": true
+  }
+}
