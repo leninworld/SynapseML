@@ -1,0 +1,141 @@
+{
+  "input_images": [
+    "eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5",
+    "python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e",
+    "node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0"
+  ],
+  "sbt": {
+    "url": "https://repo.maven.apache.org/maven2/org/scala-sbt/sbt-launch/1.10.11/sbt-launch-1.10.11.jar",
+    "hash_algorithm": "sha1",
+    "hash": "4e3ca243fbac4e8c96eb38d783e2077f67081444",
+    "maximum_bytes": 8388608
+  },
+  "micromamba": {
+    "url": "https://github.com/mamba-org/micromamba-releases/releases/download/2.10.0-0/micromamba-linux-64",
+    "hash_algorithm": "sha256",
+    "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
+    "maximum_bytes": 19028608
+  },
+  "dataset": {
+    "bytes": 123200074,
+    "sha256": "f8f8592c30451628ef3c0f63aab3b1f85d18acf6565de0b48086b273e94622fb"
+  },
+  "revision": "874-G0-I1-PRIVATE",
+  "execution_enabled": true,
+  "execution_approval_required": true,
+  "source_commit": "80191a61e743b8ba462b692d2ffa2e95ac2df91d",
+  "validation_branch": "validate-python-native-interop-874-g0",
+  "target_seconds": 3000,
+  "absolute_seconds": 3600,
+  "baseline_files": {},
+  "candidate_files": {},
+  "workflow_path": ".github/workflows/validate-interop874.yml",
+  "lanes": {
+    "python-interop": {
+      "memory_gib": 12,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 10,
+      "network_gib": 20,
+      "source_kind": "candidate",
+      "planning_nonreclaimable_gib": 8,
+      "resource_basis": "Same fullenv measured2.84GBsetup/4.05GBbuild;2CPU sequential4GiB SBT heap then1GiB Sparkdriver+small201row native fit;8GiB planning under12GiBhardcap."
+    }
+  },
+  "lightgbm": {
+    "url": "https://files.pythonhosted.org/packages/38/5c/d9773cf0ea7938f3b777eaacc6f9d58f69ca76a667771364ffefed9095b4/lightgbm-3.3.5-py3-none-manylinux1_x86_64.whl",
+    "hash_algorithm": "sha256",
+    "hash": "044f65664c1a32c98cb619bafa97d8cd9d93c2c2d5053376aadfe509a3a3e7fa",
+    "maximum_bytes": 1999997,
+    "exact_bytes": 1999997
+  },
+  "resource_price": {
+    "source_tracked_bytes": 31945074,
+    "python_wheel_archive_measured_bytes": 3423348073,
+    "python_disk_gib_components": {
+      "environment_conservative": 24,
+      "mamba_cache": 5,
+      "Ivy_SBT": 8,
+      "build": 4,
+      "Spark_tmp": 4,
+      "immutable_images": 4,
+      "pip_cache_archives": 4,
+      "source_evidence": 1,
+      "margin": 10
+    },
+    "root_memory_projection_bytes": 5657185799.5,
+    "python_actual_same_environment_setup_seconds": 229.11,
+    "python_actual_sampled_nonreclaimable_bytes": 2779000000,
+    "website_memory_projection": "Node6GiB heap plus Python/process reserve in8GiB; baseline measured admission before candidate",
+    "disk_constraint": "Verify actual chosen host before pull/G0; no deletion workaround",
+    "time_constraint": "Two sequential jobs, sharedworkflowcreated_at+3000/+3600 includingallqueue/setup/export; no phase/jobclock reset.",
+    "parallel_jobs": 1,
+    "calibration": "Prior actual42351995625 solely pricing, not1669passes",
+    "estimated_serial_seconds": {
+      "two_image_pull_builds_and_G0": 240,
+      "full_environment_2CPU_allowance": 480,
+      "root_compile_Testcompile_styles_2CPU": 540,
+      "warm_codegen_install_publishM2_afterroot": 360,
+      "datasets_twoScalaSHAPtests_notebook": 240,
+      "website_deps_docgen": 90,
+      "website_build_2CPU": 450,
+      "devroute": 120,
+      "evidence": 120
+    },
+    "cold_wheel_archive_bytes": 3423348073,
+    "full_finish_note": "Bothserialjobs, onecreated_atclock. CPU2timeprojection usesactualwarmroot/codegen split, samefullenv, andnative201rowmodel; no extraAPI/modelclaims. Allplannedcosts includeoneoverall120sexportreserve; phaseadmission excludesalreadyspentwork andavoidsdoublingthatreserve.",
+    "admission_remaining_seconds": {
+      "before_full_env": 2400,
+      "before_native_build": 1920,
+      "before_website_deps": 660
+    },
+    "estimated_total_from_components": 1560,
+    "network_price_gib": {
+      "native": {
+        "samefullPythoncompressedwheels_measured_gib": 3.188241341151297,
+        "Conda_and_cache_allowance": 5,
+        "Maven_SBT": 4,
+        "images": 4,
+        "datasets": 0.11473901011049747,
+        "margin_under_cap20": 3
+      },
+      "website": {
+        "images": 4,
+        "npm": 3,
+        "docgen_python": 1,
+        "margin_under_cap12": 4
+      }
+    },
+    "G0_scope_note": "One native baseline/import/parity measurement job, not two serial candidate documentation jobs. Full candidate tutorial/website scope remains separate and mandatory. Reuses full environment/root build/codegen plus actual real native checks, early import/train/parity. No actual execution or cache availability claim.",
+    "G0_removed_optional_checks": "Do not run unchanged website, codegen/wheel installation/publishM2/datasets/SHAPs solely for G0; full candidate still requires complete affected build/styles/codegen/artifacts/native regressions/tutorial+website. Exact early native testOnly compiles dependency closure before parity."
+  },
+  "full_validation_acceptance": "G0 ONLY: exact current full environment, actual extra-wheel import/train/export, direct native Scala raw/normal scores+exactleaves on dense/sparse14distinctrows, actual source/JVM library identity. testOnly compilation included. No candidate/tutorial/website/build-codegen-installed-artifact pass claimed. Those full candidate checks remain mandatory later; one candidate attempt remains under ordinary2total.",
+  "packet_sha256": {
+    "bootstrap.py": "1627d753f11e2060195a4b9b98fd91945875d937cd97e49d4791e8aa2c4eac40",
+    "collect.py": "676208ca7b93756196329fe19ed7b34f5f53ad290e5b82a9c36bd57414fd09bf",
+    "fixture_generator.py": "c141042207bcc57a11e945e23fed88bd681c5c9cdaefffc77cc0a7fb5ae8d098",
+    "workflow.yml": "90eb8f26b385a7b72b55e59abf5be1b29fa2db5896484f37d8ec8ece440cabce",
+    "notebook_contract.py": "09d36a002431ffbcd438900fec5821b2ff799c56bb921a9bedc7a2fade3164f4",
+    "conda": "6f6001fbe049538d145ac913975474b60776418a4e459a72b3ea9ba0b7d781b9",
+    "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
+    "host.py": "4dd7b456f45101374515cf8ff31e048e52a1f070d628d62e931f41c4a5481c0f",
+    "NativeInterop874Probe.scala": "f77cdc31add0c14aaef42b78f6faab752b0215a389fe65435c1969574c7932b1",
+    "evidence_export.py": "3838974980d590f509e6af9ee43ca3574f67783363c72989ae047e20e54d23f5",
+    "format_checks.py": "56896ed5d7773b2d33d50fa1e2c477f0d8db2a364b7092b569cead340790f814",
+    "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
+    "common.py": "ac3ee52b476ceaaa5f9b9c62e629fe9faa82fefc52c4daf3b1ead15abe85ab23",
+    "entry.py": "160542396ad4bf9e5a068510f5c6c11d15ab72a8b51181edc4cf5406a508b205",
+    "sbt": "6773952ca99d0ad1451d07a5bf060bd517d8d8f8002714a2beee8ce1c288c5c3",
+    "validation_d0.py": "15076bdb81bbbed6824a7244ecc3cf55fa3a7380fecab0035845dc15aae8bed6",
+    "website_contract.py": "31753ff930d4b61c67055d3d2a6cac03418bb84d6d0dc7203739f5341b85f455",
+    "interop_lane.py": "1c0a51e9f8f1995c0e0b5718dde2b8ea385fdef94a20f5b917939d6ea4fb26cf",
+    ".github/workflows/validate-interop874.yml": "90eb8f26b385a7b72b55e59abf5be1b29fa2db5896484f37d8ec8ece440cabce"
+  },
+  "attempt_policy": {
+    "ordinary_limit": 2,
+    "attempts_actually_started": 0,
+    "this_G0_attempt": 1,
+    "full_candidate_attempt_remaining_after_G0": 1,
+    "retry_authorized": false,
+    "reset_counters": false
+  }
+}

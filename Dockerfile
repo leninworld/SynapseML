@@ -1,0 +1,11 @@
+FROM eclipse-temurin@sha256:b7ff112d9bde19e97f7a8e906df4d585ebae3ac674187c43df8f427d61ff5bc5 AS jdk
+FROM node@sha256:a43f7fc3e52e87d12a905f46eea0275def84ca8f2981a5b53fed44d7fb398ee0 AS node
+FROM python@sha256:dde3796db6d2436a0cda34c64b78d748d20f9a593370d45a65db75311752b36e
+COPY --from=jdk /opt/java/openjdk /opt/java/openjdk
+COPY --from=node /usr/local /opt/node
+RUN groupadd --gid 1001 validation && useradd --uid 1001 --gid 1001 --create-home validation
+COPY --chmod=755 sbt conda /usr/local/bin/
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH=/opt/node/bin:/opt/java/openjdk/bin:/usr/local/bin:/usr/bin:/bin
+USER 1001:1001
+ENTRYPOINT ["python3", "/packet/entry.py"]

@@ -1,0 +1,30 @@
+name: Measure Python native LightGBM interop
+on:
+  push:
+    branches: [validate-python-native-interop-874-g0]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: python-native-interop-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: microsoft/SynapseML
+          ref: 80191a61e743b8ba462b692d2ffa2e95ac2df91d
+          path: source
+          persist-credentials: false
+      - name: Measure native Python-to-Scala contract in Docker
+        env:
+          VALIDATION_LANE: python-interop
+          GH_TOKEN: ${{ github.token }}
+        run: python3 packet/host.py
