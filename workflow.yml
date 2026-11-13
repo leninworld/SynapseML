@@ -1,0 +1,30 @@
+name: Validate nested Search schema preflight
+on:
+  push:
+    branches: [validate-search-nested-schema-477-i1]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: search-schema-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  schema:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: microsoft/SynapseML
+          ref: 53eaecb293f24ac9c288d91efd0e490bce209739
+          path: source
+          persist-credentials: false
+      - name: Paired schema preflight and full offline validation in Docker
+        env:
+          VALIDATION_LANE: python-schema
+          GH_TOKEN: ${{ github.token }}
+        run: python3 packet/host.py
