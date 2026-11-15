@@ -1,0 +1,30 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2
+[info] welcome to sbt 1.10.11 (Eclipse Adoptium Java 11.0.32.1)
+[info] loading settings for project source-build from assembly.sbt, build.sbt, plugins.sbt...
+[info] loading project definition from /runtime/source/project
+[info] loading settings for project root from build.sbt, sonatype.sbt...
+[info] Secret pgp-pw not downloaded. Set SYNAPSEML_ENABLE_PUBLISH=true to enable publishing.
+[info] Secret pgp-private not downloaded. Set SYNAPSEML_ENABLE_PUBLISH=true to enable publishing.
+[info] Secret pgp-public not downloaded. Set SYNAPSEML_ENABLE_PUBLISH=true to enable publishing.
+[info] OnnxRuntimeDependency: overriding com.microsoft.onnxruntime:onnxruntime 1.8.1 -> 1.17.3 (see project/OnnxRuntimeDependency.scala).
+[info] set current project to synapseml (in build file:/runtime/source/)
+[info] Defining ThisBuild / version
+[info] The new value will be used by Compile / packageBin / packageOptions, Compile / packageSrc / packageOptions and 153 others.
+[info] 	Run `last` for details.
+[info] Reapplying settings...
+[info] OnnxRuntimeDependency: overriding com.microsoft.onnxruntime:onnxruntime 1.8.1 -> 1.17.3 (see project/OnnxRuntimeDependency.scala).
+[info] set current project to synapseml (in build file:/runtime/source/)
+[info] cognitive / scalaVersion
+[info] 	2.12.17
+[info] core / scalaVersion
+[info] 	2.12.17
+[info] lightgbm / scalaVersion
+[info] 	2.12.17
+[info] deepLearning / scalaVersion
+[info] 	2.12.17
+[info] vw / scalaVersion
+[info] 	2.12.17
+[info] opencv / scalaVersion
+[info] 	2.12.17
+[info] ThisBuild / scalaVersion
+[info] 	2.12.17
