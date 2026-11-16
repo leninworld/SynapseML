@@ -102,7 +102,9 @@ class DoubleMLMultipleTreatmentsTests(unittest.TestCase):
             t0 = math.sin((i + 1) * 0.37) + math.cos(i * 0.38) + 0.15 * x
             t1 = math.sin((i + 1) * 0.74) + math.cos(i * 0.57) + 0.15 * x
             y = (
-                t0 + 2 * t1 + 0.4 * x
+                t0
+                + 2 * t1
+                + 0.4 * x
                 + (0.7 if group == "east" else -0.7)
                 + 0.02 * math.sin(i * 0.73)
             )
@@ -295,7 +297,7 @@ class DoubleMLMultipleTreatmentsTests(unittest.TestCase):
             loaded._transfer_params_to_java()
             with self.assertRaisesRegex(
                 Exception,
-            "Plural treatment statistics do not match "
-            "fitted treatment columns and width",
+                "Plural treatment statistics do not match "
+                "fitted treatment columns and width",
             ):
                 loaded.getConfidenceIntervals()

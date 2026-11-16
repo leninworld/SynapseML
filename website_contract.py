@@ -96,7 +96,7 @@ def fixture():
     book_route = '/SynapseML/docs/next/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects/'
     quick_route = '/SynapseML/docs/next/Quick Examples/estimators/estimators_causal/'
     def html(marker, route, sidebar=True):
-        return ('<link rel="canonical" href="https://example.invalid' + route + '">'
+        return ('<link rel="canonical" href="https://example.invalid' + route + '">' +
                 ('<aside><a href="' + route + '">Current</a></aside>' if sidebar else '') + '<article>' +
                 marker.replace('continuous', '<code>continuous</code>') +
                 ' T1 T2 synthetic bootstrap multiplicity</article>')

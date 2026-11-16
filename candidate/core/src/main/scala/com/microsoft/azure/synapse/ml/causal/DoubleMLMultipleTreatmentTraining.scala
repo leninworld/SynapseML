@@ -11,7 +11,7 @@ import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.param.shared.{HasPredictionCol, HasProbabilityCol, HasRawPredictionCol}
 import org.apache.spark.ml.regression.{GeneralizedLinearRegression, Regressor}
 import org.apache.spark.ml.util.Identifiable
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.{Column, DataFrame, Dataset}
 import org.apache.spark.sql.functions.{col, count, covar_samp, isnan, lit, sum, variance, when}
 import org.apache.spark.sql.types.{DataType, DoubleType, IntegerType, LongType}
 
@@ -181,10 +181,28 @@ private[causal] object DoubleMLMultipleTreatmentTraining {
     }
   }
 
-  /** One aggregation collects only O(K²) statistics; no input rows are collected. */
+  /** One aggregation collects only O(K^2) statistics; no input rows are collected. */
   def finalStage(frame: DataFrame, treatments: Array[String], residuals: Array[String],
                  outcomeResidual: String): Array[Double] = {
     finalStageNamed(frame, treatments, residuals, outcomeResidual, treatments)
+  }
+
+  private def invalidValues(names: Array[String]): Column = {
+    names.map { name =>
+      val value = col(name).cast(DoubleType)
+      value.isNull || isnan(value) || value === lit(Double.PositiveInfinity) || value === lit(Double.NegativeInfinity)
+    }.reduce(_ || _)
+  }
+
+  private def validateVariances(treatments: Array[String], originalTreatments: Array[String],
+                                rawVariance: Array[Double], residualVariance: Array[Double]): Unit = {
+    treatments.indices.foreach { i =>
+      require(finite(rawVariance(i)) && rawVariance(i) > 0,
+        s"Treatment '${originalTreatments(i)}' has nonpositive or nonfinite variance")
+      require(finite(residualVariance(i)) && residualVariance(i) > 0 &&
+        residualVariance(i) / rawVariance(i) > RelativeVarianceFloor,
+        s"Treatment '${originalTreatments(i)}' has insufficient residual variance")
+    }
   }
 
   private def finalStageNamed(frame: DataFrame, treatments: Array[String], residuals: Array[String],
@@ -192,10 +210,7 @@ private[causal] object DoubleMLMultipleTreatmentTraining {
     val size = treatments.length
     val covariancePairs = for (i <- 0 until size; j <- i until size) yield (i, j)
     val checked = treatments ++ residuals :+ outcomeResidual
-    val invalid = checked.map { name =>
-      val value = col(name).cast(DoubleType)
-      value.isNull || isnan(value) || value === lit(Double.PositiveInfinity) || value === lit(Double.NegativeInfinity)
-    }.reduce(_ || _)
+    val invalid = invalidValues(checked)
     val columns = Seq(count(lit(1)).as("n"), sum(when(invalid, 1L).otherwise(0L)).as("invalid")) ++
       treatments.map(name => variance(col(name).cast(DoubleType))) ++
       residuals.map(name => variance(col(name))) ++
@@ -205,13 +220,7 @@ private[causal] object DoubleMLMultipleTreatmentTraining {
     require(stats.getLong(1) == 0, "Nonfinite treatment or residual values")
     val rawVariance = (0 until size).map(i => stats.getDouble(2 + i)).toArray
     val residualVariance = (0 until size).map(i => stats.getDouble(2 + size + i)).toArray
-    treatments.indices.foreach { i =>
-      require(finite(rawVariance(i)) && rawVariance(i) > 0,
-        s"Treatment '${originalTreatments(i)}' has nonpositive or nonfinite variance")
-      require(finite(residualVariance(i)) && residualVariance(i) > 0 &&
-        residualVariance(i) / rawVariance(i) > RelativeVarianceFloor,
-        s"Treatment '${originalTreatments(i)}' has insufficient residual variance")
-    }
+    validateVariances(treatments, originalTreatments, rawVariance, residualVariance)
     val correlation = Array.ofDim[Double](size, size)
     covariancePairs.zipWithIndex.foreach { case ((i, j), index) =>
       val covariance = stats.getDouble(2 + 2 * size + index)

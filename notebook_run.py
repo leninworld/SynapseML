@@ -19,6 +19,20 @@ def execute_client(notebook, timeout, kernel_name, cwd, env, on_cell_start=None)
     return client.execute(env=env)
 
 
+def execution_notebook(value):
+    """Owned runtime copy: normalize JSON source arrays, preserving every other field."""
+    import nbformat
+    normalized = copy.deepcopy(value)
+    for cell in normalized['cells']:
+        source = cell['source']
+        require(isinstance(source, str) or
+                (isinstance(source, list) and all(isinstance(line, str) for line in source)),
+                'INVALID_NOTEBOOK_SOURCE_REPRESENTATION')
+        if isinstance(source, list):
+            cell['source'] = ''.join(source)
+    return nbformat.from_dict(normalized)
+
+
 def dependency_fixture(kernel_name, cwd, env):
     """Future Docker-only real kernel positive/error, same production execution function."""
     import nbformat
@@ -74,9 +88,62 @@ def dependency_fixture(kernel_name, cwd, env):
                     for cell in aborted.cells[1:]), 'REAL_KERNEL_HOOK_ABORT_DID_NOT_STOP')
     else:
         raise RuntimeError('REAL_KERNEL_HOOK_ABORT_ACCEPTED')
+    # Reproduce the canonical on-disk JSON representation, not new_code_cell's strings.
+    raw_source_lists = json.dumps({'nbformat': 4, 'nbformat_minor': 4, 'metadata': {},
+        'cells': [
+            {'cell_type': 'markdown', 'metadata': {}, 'source': ['# Source-list control\n',
+                                                                       'Markdown remains present.\n']},
+            {'cell_type': 'code', 'metadata': {}, 'execution_count': None, 'outputs': [],
+             'source': ['value = 6\n', 'print("DML_SOURCE_LIST_FIRST", value)\n']},
+            {'cell_type': 'code', 'metadata': {}, 'execution_count': None, 'outputs': [],
+             'source': ['print("DML_SOURCE_LIST_SECOND", value + 1)\n']}]})
+    raw_value = json.loads(raw_source_lists)
+    invalid_source_controls = []
+    for label, invalid_source in [('non-string-non-list', 17),
+                                  ('non-string-list-element', ['valid line\n', 17])]:
+        invalid = copy.deepcopy(raw_value)
+        invalid['cells'][1]['source'] = invalid_source
+        unchanged = json.dumps(invalid, sort_keys=True)
+        try:
+            # No execute_client call: validation must reject before any kernel launch.
+            execution_notebook(invalid)
+        except RuntimeError as error:
+            require(str(error) == 'INVALID_NOTEBOOK_SOURCE_REPRESENTATION',
+                    'WRONG_INVALID_SOURCE_FAILURE:' + label)
+        else:
+            raise RuntimeError('INVALID_NOTEBOOK_SOURCE_ACCEPTED:' + label)
+        require(json.dumps(invalid, sort_keys=True) == unchanged,
+                'INVALID_NOTEBOOK_INPUT_MUTATED:' + label)
+        invalid_source_controls.append(label)
+    normalized = execution_notebook(raw_value)
+    require(all(isinstance(cell.source, str) and 'id' not in cell for cell in normalized.cells),
+            'SOURCE_LIST_NORMALIZATION_OR_ID_MUTATION')
+    expected_value = copy.deepcopy(raw_value)
+    for cell in expected_value['cells']:
+        cell['source'] = ''.join(cell['source'])
+    require(normalized == expected_value and json.dumps(raw_value) == json.dumps(
+        json.loads(raw_source_lists)), 'NORMALIZATION_CHANGED_NON_SOURCE_FIELDS_OR_INPUT')
+    normalized.cells.insert(0, nbformat.v4.new_code_cell('print("DML_LIST_OPERATOR_SETUP")'))
+    normalized.cells.append(nbformat.v4.new_code_cell('print("DML_LIST_OPERATOR_CLEANUP")'))
+    source_list_indices = []
+    def source_list_start(cell, cell_index, **kwargs):
+        if cell['cell_type'] == 'code':
+            source_list_indices.append(cell_index)
+    execute_client(normalized, lambda cell: 15, kernel_name, cwd, env,
+                   on_cell_start=source_list_start)
+    require(source_list_indices == [0, 2, 3, 4] and len(normalized.cells[1:-1]) == 3,
+            'SOURCE_LIST_OPERATOR_CANONICAL_MAPPING')
+    require(all(normalized.cells[index]['execution_count'] is not None
+                for index in (0, 2, 3, 4)) and normalized.cells[1]['cell_type'] == 'markdown',
+            'SOURCE_LIST_REAL_KERNEL_EXECUTION')
+    require(any('DML_SOURCE_LIST_SECOND 7' in output.get('text', '')
+                for output in normalized.cells[3]['outputs']), 'SOURCE_LIST_ACTUAL_OUTPUT')
     return {'realKernelPositive': True, 'realKernelFailure': True,
             'realKernelHookIndices': hook_indices, 'realKernelHookAbort': True,
-            'hookAbortSubsequentCellsUnexecuted': True, 'projectFits': 0}
+            'hookAbortSubsequentCellsUnexecuted': True,
+            'rawJSONSourceListMarkdownCode': True,
+            'invalidSourceNormalizationControls': invalid_source_controls,
+            'sourceListOperatorCanonicalMapping': True, 'projectFits': 0}
 
 
 def run(config, source, out):
@@ -106,7 +173,11 @@ def run(config, source, out):
                'runtimeOnlyURICopy': {'cell': 5, 'from': PUBLIC_URI, 'to': staged.as_uri(),
                                     'runtimeCopySHA256': sha(json.dumps(runtime, sort_keys=True).encode()),
                                     'oneConstantASTVerified': True, 'otherFourteenCellHashes': other14},
-               'noLiveWASBSConnectorClaim': True}
+               'noLiveWASBSConnectorClaim': True,
+               'executionSourceNormalization': {
+                   'method': 'Join JSON source arrays into strings on deep runtime copy only',
+                   'canonicalSourceRepresentationUnchanged': True,
+                   'allNonSourceFieldsPreserved': True, 'cellIDsAddedByNormalization': False}}
     (out / 'notebook-execution-receipt.json').write_text(json.dumps(receipt, indent=2))
     import nbformat
     import ipykernel
@@ -132,7 +203,7 @@ def run(config, source, out):
     operator_cell = nbformat.v4.new_code_cell(prelude)
     operator_cell.pop('id', None)
     # Setup is visible and separate, never presented as an authored contribution cell.
-    expanded = nbformat.from_dict(copy.deepcopy(runtime))
+    expanded = execution_notebook(runtime)
     expanded.cells.insert(0, operator_cell)
     cleanup_cell = nbformat.v4.new_code_cell(
         'spark.stop()\nprint("DML_NOTEBOOK_SPARK_STOP_COMPLETE")\n')
