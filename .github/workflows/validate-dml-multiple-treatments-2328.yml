@@ -1,0 +1,34 @@
+name: Validate multiple-treatment DML
+on:
+  push:
+    branches: [validate-dml-multiple-treatments-2328-i1]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: dml-multiple-treatments-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  candidate:
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [candidate-legacy, candidate-plural, candidate-causal, candidate-installed, docs-python, docs-scala, docs-notebook, docs-website]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: packet
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: microsoft/SynapseML
+          ref: 45578f08e6bacf8475de0e92f1717e761d40f795
+          path: source
+          persist-credentials: false
+      - name: Full candidate lane in bounded native Docker
+        env:
+          VALIDATION_LANE: ${{ matrix.lane }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 packet/host.py
