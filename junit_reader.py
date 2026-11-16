@@ -19,14 +19,31 @@ OFFLINE = [
 ]
 
 
-def verified_report(path, suite, wanted, failures):
+ROOT_FUZZING_SUITE = "com.microsoft.azure.synapse.ml.core.test.fuzzing.FuzzingTest"
+ROOT_FUZZING_IGNORED = "Quick analysis of all getters and setters"
+ROOT_FUZZING_IGNORE_SOURCE = {
+    "sourcePin": "45578f08e6bacf8475de0e92f1717e761d40f795",
+    "path": "src/test/scala/com/microsoft/azure/synapse/ml/core/test/fuzzing/FuzzingTest.scala",
+    "blobOID": "57bc9cdf529c6f92b5a38214f0bf46a5f8ddb47a", "line": 214,
+}
+
+
+def verified_report(path, suite, wanted, failures, allowed_skips=()):
+    require(not allowed_skips or (suite == ROOT_FUZZING_SUITE and
+            tuple(allowed_skips) == (ROOT_FUZZING_IGNORED,)), "Unapproved inherited skip allowance")
     report = ET.parse(path).getroot()
     require(report.get("name") == suite, "Wrong JUnit suite")
     cases = list(report.iter("testcase"))
     names = [case.get("name") for case in cases]
     require(len(names) == len(set(names)) and set(names) == set(wanted), "Exact JUnit IDs mismatch")
-    require(not list(report.iter("skipped")), "Unexpected skipped case")
-    require(int(report.get("skipped", "0")) == 0, "Unexpected skipped total")
+    skipped_cases = [case for case in cases if case.findall("skipped")]
+    skipped_names = [case.get("name") for case in skipped_cases]
+    require(set(skipped_names) == set(allowed_skips), "Exact inherited skipped IDs mismatch")
+    require(all(len(case.findall("skipped")) == 1 for case in skipped_cases) and
+            len(list(report.iter("skipped"))) == len(skipped_cases), "Malformed skipped elements")
+    require(int(report.get("skipped", "0")) == len(allowed_skips), "Unexpected skipped total")
+    require(not any(case.findall("failure") or case.findall("error") for case in skipped_cases),
+            "Ignored case has failure/error")
     require(not list(report.iter("error")), "JUnit execution error")
     actual = {}
     for case in cases:
@@ -42,7 +59,10 @@ def verified_report(path, suite, wanted, failures):
     require(int(report.get("tests")) == len(cases), "JUnit total mismatch")
     require(int(report.get("failures")) == len(actual) and int(report.get("errors")) == 0,
             "JUnit failure/error totals mismatch")
-    return {"suite": suite, "names": names, "failures": list(actual), "count": len(cases)}
+    return {"suite": suite, "names": names, "failures": list(actual), "count": len(cases),
+            "executedCount": len(cases) - len(skipped_names),
+            "skippedCount": len(skipped_names), "skippedIDs": skipped_names,
+            "inheritedSkipSource": ROOT_FUZZING_IGNORE_SOURCE if allowed_skips else None}
 
 
 def reader_controls(path, suite, wanted, failures, directory):

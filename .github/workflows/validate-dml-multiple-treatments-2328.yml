@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [candidate-legacy, candidate-plural, candidate-causal, candidate-installed, docs-python, docs-scala, docs-notebook, docs-website]
+        lane: [candidate-legacy, candidate-causal-dml, candidate-causal-other, candidate-causal-synthetic-control, candidate-causal-synthetic-did, candidate-causal-cls, docs-website]
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:

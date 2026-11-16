@@ -74,6 +74,39 @@ def select_evidence(root, paths, cap=63 * 1024**2, tail_bytes=32768):
     return selected, omitted
 
 
+def attach_critical_diagnostics(root, selected, omissions, cap):
+    from causal_diagnostics import partial_log_diagnostic
+    seen=set()
+    index=0
+    while index<len(omissions):
+        item=omissions[index];index+=1
+        name=item['path']
+        if not (item['critical'] and name.endswith('.log') and name not in seen):
+            continue
+        seen.add(name)
+        source=root/name
+        if source.is_symlink() or not source.is_file():
+            continue
+        diagnostic_name=name+'.partial-diagnostic.json'
+        if diagnostic_name in selected:
+            continue
+        data=json.dumps(partial_log_diagnostic(source,name),sort_keys=True).encode()
+        # Diagnostics consume the SAME payload envelope. Reverse removals keep
+        # established priorities; all displaced critical proof stays a failure.
+        while selected and sum(len(value)for value in selected.values())+len(data)>cap:
+            removed=next(reversed(selected));value=selected.pop(removed)
+            critical=not(removed.endswith('.tail')or(removed.endswith('.log')and
+                         removed.rsplit('/',1)[-1]not in CRITICAL_LOGS))
+            omissions.append({'path':removed,'bytes':len(value),'critical':critical,
+                              'reason':'critical-diagnostic-budget'})
+        if len(data)>cap:
+            omissions.append({'path':diagnostic_name,'bytes':len(data),'critical':True,
+                              'reason':'critical-diagnostic-budget'})
+        else:
+            selected[diagnostic_name]=data
+    return selected,omissions
+
+
 ENCODED_CAP = 58 * 1024**2
 
 
@@ -106,6 +139,7 @@ def export_evidence(root, paths, absolute, emit=print, cap=63 * 1024**2,
         raise RuntimeError("Encoded cap cannot exceed 58 MiB")
     # Cache the exact compression results; omission never recompresses payloads.
     selected, omissions = select_evidence(root, paths, cap, tail_bytes)
+    selected, omissions = attach_critical_diagnostics(root, selected, omissions, cap)
     encoded = {name: encoded_lines(name, data) for name, data in selected.items()}
     terminal_lines = terminal_lines or (lambda result: [])
     while True:
@@ -138,6 +172,9 @@ def export_evidence(root, paths, absolute, emit=print, cap=63 * 1024**2,
         omissions.append({"path": name, "bytes": len(data), "reason": "encoded-line-budget",
                           "critical": not (name.endswith(".tail") or
                               (name.endswith(".log") and name.rsplit("/", 1)[-1] not in CRITICAL_LOGS))})
+        if name.endswith('.log') and name.rsplit('/',1)[-1] in CRITICAL_LOGS:
+            selected, omissions = attach_critical_diagnostics(root, selected, omissions, cap)
+            encoded = {key: encoded_lines(key, value) for key, value in selected.items()}
     # No evidence is emitted until the entire encoded plan and terminal fit.
     sent = []
     for name, lines in [("evidence-export.json", first), *encoded.items()]:

@@ -3,6 +3,7 @@ from html.parser import HTMLParser
 import json
 from pathlib import Path, PurePosixPath
 import re
+import stat
 import urllib.parse
 import zipfile
 from docs_contract import require, sha
@@ -10,6 +11,49 @@ from docs_contract import require, sha
 MAX_BYTES = 24 * 1024**2
 MAX_FILES = 2048
 MAX_FILE_BYTES = 8 * 1024**2
+
+
+MAX_DIAGNOSTIC_BYTES = 2 * 1024**2
+
+
+def build_asset_inventory(build, out):
+    """Stat-only complete scan totals, with explicitly bounded/truncated detail rows."""
+    rows, row_bytes, entries, regular_files, regular_bytes = [], 0, 0, 0, 0
+    symlinks, errors, rows_truncated = 0, [], False
+    for path in sorted((build / 'assets').rglob('*')):
+        relative = str(path.relative_to(build))
+        try:
+            info = path.lstat()
+        except OSError as error:
+            if len(errors) < 16:
+                errors.append({'path': relative, 'errorClass': type(error).__name__})
+            continue
+        entries += 1
+        link = stat.S_ISLNK(info.st_mode)
+        kind = ('symlink' if link else 'regular' if stat.S_ISREG(info.st_mode)
+                else 'directory' if stat.S_ISDIR(info.st_mode) else 'other')
+        symlinks += int(link)
+        if kind == 'regular':
+            regular_files += 1
+            regular_bytes += info.st_size
+        row = {'path': relative, 'size': info.st_size, 'filetype': kind, 'symlink': link}
+        encoded = len(json.dumps(row).encode()) + 2
+        if row_bytes + encoded <= MAX_DIAGNOSTIC_BYTES - 8192:
+            rows.append(row)
+            row_bytes += encoded
+        else:
+            rows_truncated = True
+    value = {'stage': 'STAT_ONLY_WHOLE_BUILD_ASSETS_BEFORE_ADMISSION',
+             'scanTotalsComplete': not errors, 'entryCount': entries,
+             'regularFileCount': regular_files, 'regularFileBytes': regular_bytes,
+             'symlinkCount': symlinks, 'rows': rows, 'rowsTruncated': rows_truncated,
+             'rowsRetained': len(rows), 'statErrors': errors,
+             'noAssetBodiesRead': True, 'maximumJSONBytes': MAX_DIAGNOSTIC_BYTES}
+    raw = json.dumps(value, separators=(',', ':')).encode()
+    require(len(raw) <= MAX_DIAGNOSTIC_BYTES, 'VISUAL_INVENTORY_JSON_CAP')
+    (out / 'docs-visual-assets-build-inventory.json').write_bytes(raw)
+    require(not errors, 'VISUAL_ASSET_STAT_SCAN_INCOMPLETE')
+    return value
 
 
 class References(HTMLParser):
@@ -30,6 +74,7 @@ class References(HTMLParser):
 def export(build, pages, out, executed_html=None):
     build = build.resolve(strict=True)
     require(len(pages) == 2 and len(set(pages)) == 2, 'EXACT_TWO_PRODUCTION_PAGES')
+    build_asset_inventory(build, out)
     selected, queue, external, unbound, previews, total = {}, [], [], [], [], 0
 
     def add(path, destination, override=None):
@@ -43,8 +88,30 @@ def export(build, pages, out, executed_html=None):
             require(selected[destination][0] == path, 'VISUAL_DESTINATION_COLLISION')
             return
         size = len(override) if override is not None else path.stat().st_size
-        require(size <= MAX_FILE_BYTES and total + size <= MAX_BYTES and
-                len(selected) < MAX_FILES, 'VISUAL_CLOSURE_CAP')
+        failed = {'oneFileBytes': size > MAX_FILE_BYTES,
+                  'aggregateBytes': total + size > MAX_BYTES,
+                  'fileCount': len(selected) >= MAX_FILES}
+        if any(failed.values()):
+            diagnostic = {'complete': False, 'stage': 'ADD_ADMISSION_CAP_REFUSED_BEFORE_ZIP',
+                          'failure': 'VISUAL_CLOSURE_CAP', 'failedCapFlags': failed,
+                          'failingBuildRelativePath': str(path.relative_to(build)),
+                          'failingDestination': destination, 'statBytes': path.stat().st_size,
+                          'candidateBytes': size, 'acceptedCount': len(selected),
+                          'acceptedBytes': total, 'prospectiveCount': len(selected) + 1,
+                          'prospectiveBytes': total + size,
+                          'limits': {'oneFileBytes': MAX_FILE_BYTES, 'bytes': MAX_BYTES,
+                                     'files': MAX_FILES},
+                          'zipCreated': False, 'files': {}, 'rowsTruncated': False}
+            for name, (_, row, _) in selected.items():
+                diagnostic['files'][name] = row
+            raw = json.dumps(diagnostic, separators=(',', ':')).encode()
+            if len(raw) > MAX_DIAGNOSTIC_BYTES:
+                diagnostic['files'] = {}
+                diagnostic['rowsTruncated'] = True
+                raw = json.dumps(diagnostic, separators=(',', ':')).encode()
+            require(len(raw) <= MAX_DIAGNOSTIC_BYTES, 'VISUAL_CAP_DIAGNOSTIC_JSON_CAP')
+            (out / 'docs-visual-assets.json').write_bytes(raw)
+            raise RuntimeError('VISUAL_CLOSURE_CAP')
         total += size
         selected[destination] = (path, {'bytes': size, 'sha256': sha(override if override is not None else path.read_bytes())}, override)
         queue.append((path, destination))
@@ -149,6 +216,9 @@ def fixture():
         result = export(build, pages, good)
         require(result['complete'] and result['previewOnlyCSP'] and
                 len(result['previewTransportAdaptations']) == 2, 'VISUAL_POSITIVE')
+        scan = json.loads((good / 'docs-visual-assets-build-inventory.json').read_text())
+        require(scan['scanTotalsComplete'] and not scan['rowsTruncated'] and
+                scan['regularFileCount'] == 2, 'VISUAL_POSITIVE_WHOLE_STAT_INVENTORY')
         pages[0].write_text(html.replace('www.googletagmanager.com/gtag/js?id=G-RWPE0183E8',
                                         'example.invalid/unknown.js'))
         bad = root / 'bad'
@@ -160,4 +230,42 @@ def fixture():
         else:
             raise RuntimeError('VISUAL_EXTERNAL_NEGATIVE_ACCEPTED')
         require((bad / 'docs-visual-assets.json').is_file(), 'EVIDENCE_BEFORE_REFUSAL')
-    return {'positive': 1, 'externalNegative': 1, 'relativeFontClosure': True, 'projectCode': False}
+    cap_controls = []
+    # Bounded real files, never a raised limit or a mocked stat result.
+    for label, sizes, flag in [
+            ('leaf', [MAX_FILE_BYTES + 1], 'oneFileBytes'),
+            ('aggregate', [7 * 1024**2] * 4, 'aggregateBytes'),
+            ('count', [1] * 2045, 'fileCount')]:
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name)
+            build, out = root / 'build', root / 'out'
+            (build / 'assets').mkdir(parents=True)
+            out.mkdir()
+            pages = [build / 'book.html', build / 'quick.html']
+            for page in pages:
+                page.write_text('<html><head></head><body>Owned cap control</body></html>')
+            for index, size in enumerate(sizes):
+                # truncate creates bounded filesystem objects without large in-memory buffers.
+                with (build / 'assets' / ('asset-' + str(index).zfill(4))).open('xb') as stream:
+                    stream.truncate(size)
+            try:
+                export(build, pages, out)
+            except RuntimeError as error:
+                require(str(error) == 'VISUAL_CLOSURE_CAP', 'WRONG_CAP_CONTROL_FAILURE:' + label)
+            else:
+                raise RuntimeError('VISUAL_CAP_CONTROL_ACCEPTED:' + label)
+            failure = json.loads((out / 'docs-visual-assets.json').read_text())
+            inventory = json.loads((out / 'docs-visual-assets-build-inventory.json').read_text())
+            require(failure['failedCapFlags'][flag] and not failure['complete'] and
+                    failure['zipCreated'] is False and not (out / 'docs-visual-assets.zip').exists(),
+                    'VISUAL_CAP_CONTROL_DIAGNOSTICS:' + label)
+            require(inventory['scanTotalsComplete'] and
+                    inventory['regularFileCount'] == len(sizes) and
+                    inventory['regularFileBytes'] == sum(sizes),
+                    'VISUAL_CAP_CONTROL_WHOLE_SCAN_TOTALS:' + label)
+            require((out / 'docs-visual-assets.json').stat().st_size <= MAX_DIAGNOSTIC_BYTES and
+                    (out / 'docs-visual-assets-build-inventory.json').stat().st_size <=
+                    MAX_DIAGNOSTIC_BYTES, 'VISUAL_CONTROL_METADATA_CAP:' + label)
+            cap_controls.append(label)
+    return {'positive': 1, 'externalNegative': 1, 'relativeFontClosure': True,
+            'realFilesystemCapNegatives': cap_controls, 'projectCode': False}

@@ -31,7 +31,10 @@ def main():
         from native_events import controls as event_controls
         event_controls(root / ('native-event-controls-' + phase))
         from native_candidate_controls import controls as native_controls
-        native_controls(root / ('native-candidate-controls-' + phase), packet, manifest['candidate_native'])
+        native_control_result = native_controls(root / ('native-candidate-controls-' + phase), packet, manifest['candidate_native'])
+        require(native_control_result['count'] == manifest['candidate_native']['expectedNativeCandidateControlCount'], 'Native helper control count incomplete')
+        from retained_root_report import replay as replay_retained_root_report
+        replay_retained_root_report(lane, phase)
         # Exercised tiny fixture first, before source-copy/dependency acquisition/project code.
         if not reused:
             sbt=download(manifest['sbt'],root/'bootstrap/sbt-launch.jar',deadline);lane.initial_source()
@@ -56,7 +59,7 @@ def main():
             require(fixtures['complete'] is True, 'Incomplete standard test fixtures')
             lane.datasets_home = Path(fixtures['dataset_dir'])
             os.environ['DATASETS_HOME'] = str(lane.datasets_home)
-        if name in ('candidate-legacy','candidate-plural','candidate-causal'):
+        if name in ('candidate-legacy','candidate-plural') or name.startswith('candidate-causal-'):
             from native_candidate_lane import validate
         elif name == 'candidate-installed':
             from candidate_installed_lane import validate

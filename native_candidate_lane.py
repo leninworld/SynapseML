@@ -11,6 +11,7 @@ from junit_reader import verified_report
 from g0_contract import clock_admission
 from candidate_contract import candidate_unchanged
 from native_events import classify_log
+from causal_diagnostics import run_with_causal_snapshot
 
 REGISTRATION='com.microsoft.azure.synapse.ml.core.test.pipeline.PipelineTestCoverageSuite'
 
@@ -18,8 +19,8 @@ REGISTRATION='com.microsoft.azure.synapse.ml.core.test.pipeline.PipelineTestCove
 def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def checked_report(path,suite,wanted):
-    result=verified_report(path,suite,wanted,())
+def checked_report(path,suite,wanted,allowed_skips=()):
+    result=verified_report(path,suite,wanted,(),allowed_skips)
     root=ET.parse(path).getroot()
     result['test_seconds']={case.get('name'):float(case.get('time','0'))for case in root.iter('testcase')}
     return result
@@ -36,7 +37,8 @@ def complete_suite(lane,config,label,suite,seconds,module='core'):
     matches=[path for path in reports.glob('*.xml')if ET.parse(path).getroot().get('name')==suite]
     require(len(matches)==1,'Missing/duplicate actual native suite')
     target=lane.root/(label+'.xml');shutil.copy2(matches[0],target)
-    result=checked_report(target,suite,config['suite_cases'][suite])
+    result=checked_report(target,suite,config['suite_cases'][suite],
+                          config.get('suite_allowed_skips',{}).get(suite,()))
     result.update(events=classify_log(output),
                   per_draw_timing='UNESTABLISHED_UNLESS_ACTUAL_LOG_UID_AND_TEST_CONTEXT_ALLOW_PAIRING',
                   full_unfiltered_selector=selector)
@@ -50,7 +52,9 @@ def validate(lane):
     require(lane.name in config['lanes'],'Unknown candidate native lane')
     limits=config['lanes'][lane.name]
     candidate_unchanged(lane,'pre-native')
-    after_compile=limits['suite_seconds']+limits['registration_seconds']+limits.get('fuzzing_seconds',0)+\
+    grouped=lane.name in config.get('causal_groups',{})
+    discovery_seconds=limits.get('discovery_seconds',0) if grouped else 0
+    after_compile=discovery_seconds+limits['suite_seconds']+limits['registration_seconds']+limits.get('fuzzing_seconds',0)+\
         limits['reserve_seconds']
     compile_cap=min(limits['compile_max_seconds'],lane.deadline-time.time()-after_compile)
     require(compile_cap>0,'HOLD complete native acceptance cannot fit original clock')
@@ -60,7 +64,13 @@ def validate(lane):
         ['core/compile','core/Test/compile']
     lane.sbt('candidate-native-lint-import-compile',compile_tasks,compile_cap)
     clock_admission(time.time(),lane.deadline,after_compile)
-    if lane.name=='candidate-causal':
+    if grouped:
+        validate_causal_groups(config)
+        raw=lane.sbt('candidate-causal-complete-discovery',['show core/Test/definedTests'],discovery_seconds)
+        discovery=causal_discovery(raw,config['causal_suite_inventory'])
+        (lane.root/'candidate-causal-discovery.json').write_text(json.dumps(discovery,indent=2))
+        actual_discovery_controls(raw,config['causal_suite_inventory'],lane.root)
+        clock_admission(time.time(),lane.deadline,limits['suite_seconds']+limits['reserve_seconds'])
         try:return causal_package(lane,config,limits)
         finally:candidate_unchanged(lane,'final-native-causal')
     suite=complete_suite(lane,config,'candidate-full-native-suite',limits['suite'],limits['suite_seconds'])
@@ -122,26 +132,83 @@ def package_reports(paths,output):
     return result
 
 
+CAUSAL_PREFIX='com.microsoft.azure.synapse.ml.causal.'
+CAUSAL_GROUP_IDS=('candidate-causal-dml','candidate-causal-other',
+                  'candidate-causal-synthetic-control','candidate-causal-synthetic-did',
+                  'candidate-causal-cls')
+
+
+def validate_causal_groups(config):
+    groups=config['causal_groups']
+    require(set(groups)==set(CAUSAL_GROUP_IDS),'Exact five causal groups required')
+    inventory=config['causal_suite_inventory']
+    require(len(inventory)==15 and len(set(inventory))==15,'Exact fifteen causal suites required')
+    union=[suite for group in groups.values() for suite in group]
+    require(len(union)==15 and len(set(union))==15 and set(union)==set(inventory),
+            'Causal groups must have disjoint complete source inventory union')
+    for name,suites in groups.items():
+        require(suites and config['lanes'][name]['suites']==suites,'Causal lane group binding mismatch')
+        require(0<config['lanes'][name]['suite_seconds']<=1500,'Causal suite budget exceeds original')
+        require(0<config['lanes'][name]['discovery_seconds']<=60,'Causal discovery budget invalid')
+    return union
+
+
+def causal_discovery(raw,expected):
+    import re
+    # A strict dependency gate: complete native sbt show output is retained.
+    # No prior real definedTests format is claimed; unexpected shapes HOLD.
+    records=re.findall(r'\bTest\s+('+re.escape(CAUSAL_PREFIX)+r'[A-Za-z_$][A-Za-z0-9_.$]*)\s*:',raw)
+    all_mentions=re.findall(re.escape(CAUSAL_PREFIX)+r'[A-Za-z_$][A-Za-z0-9_.$]*',raw)
+    require(records and set(records)==set(all_mentions),'Unrecognized causal definedTests record')
+    require(len(records)==len(set(records)),'Duplicate causal definedTests record')
+    require(set(records)==set(expected),'Complete causal definedTests/source inventory mismatch')
+    return {'complete':True,'suiteIDs':sorted(records),'count':len(records),
+            'rawSHA256':hashlib.sha256(raw.encode()).hexdigest(),
+            'sourceInventory':sorted(expected),'scope':'Full causal discovery; no fits executed by this task'}
+
+
+def actual_discovery_controls(raw,expected,root):
+    causal_discovery(raw,expected)
+    import re
+    first=expected[0]
+    mutations={'missing':raw.replace(first,'com.example.NonCausalFixture'),
+               'new':raw+'\n[info] * Test '+CAUSAL_PREFIX+'UnexpectedFixture : subclass(false, org.scalatest.Suite)\n',
+               'duplicate':raw+'\n[info] * Test '+first+' : subclass(false, org.scalatest.Suite)\n',
+               'malformed':re.sub(r'\bTest(?=\s+'+re.escape(first)+r'\s*:)', 'Unrecognized',raw)}
+    results=[]
+    for name,changed in mutations.items():
+        try:causal_discovery(changed,expected)
+        except RuntimeError as error:results.append({'id':name,'rejected':True,'error':str(error)})
+        else:raise RuntimeError('Actual-output discovery mutation accepted: '+name)
+    result={'state':'ACTUAL_OUTPUT_DERIVED_DISCOVERY_CONTROLS_COMPLETE','rawSHA256':hashlib.sha256(raw.encode()).hexdigest(),
+            'positive':True,'negatives':results,'projectFitsRun':False}
+    (root/'candidate-causal-discovery-controls.json').write_text(json.dumps(result,indent=2))
+    return result
+
+
 def causal_package(lane,config,limits):
     reports=lane.source/'core/target/test-reports'
     prior=lane.root/'candidate-causal-prior-junit';prior.mkdir()
     for path in reports.glob('*.xml'):
         shutil.copy2(path,prior/path.name);path.unlink()
-    output=lane.sbt('candidate-entire-causal-package',
-                    ['core/testOnly com.microsoft.azure.synapse.ml.causal.**'],limits['suite_seconds'],expected=(0,1))
+    selected=config['causal_groups'][lane.name]
+    selector='core/testOnly '+' '.join(selected)
+    retained=lane.root/'candidate-causal-junit'
+    output=run_with_causal_snapshot(lane,reports,retained,limits['suite_seconds'],selector)
     exit_code=lane.records[-1]['exit']
-    paths=sorted(reports.glob('*.xml'))
-    retained=lane.root/'candidate-causal-junit';retained.mkdir()
-    for path in paths:shutil.copy2(path,retained/path.name)
+    paths=sorted(retained.glob('*.xml'))
     actual=package_reports(paths,output)
-    actual.update(selector='core/testOnly com.microsoft.azure.synapse.ml.causal.**',exit=exit_code,
+    require(set(actual['suites'])==set(selected),'Causal group suite report set mismatch')
+    actual.update(selector=selector,group=lane.name,requiredGroupSuites=selected,exit=exit_code,
+                  sourcePin=config['source_commit'],candidateFiles=config['candidate_files'],
                   events=classify_log(output),baselineAttribution={},
                   state='CAUSAL_RESULTS_RETAINED_ATTRIBUTION_OR_REVIEW_PENDING',fullProductValidation=False)
-    # Both exact DML suites must be present inside full CI as well; separate34 are not this job.
+    # The DML group retains both exact source-backed ID sets; other groups contain full non-DML suites.
     for suite in [config['lanes']['candidate-legacy']['suite'],config['lanes']['candidate-plural']['suite']]:
-        require(suite in actual['suites'],'Missing DML suite inside full causal CI')
-        require({row['name']for row in actual['suites'][suite]}==set(config['suite_cases'][suite]),
-                'Full causal CI DML IDs mismatch')
+        if suite in selected:
+            require(suite in actual['suites'],'Missing DML suite inside causal group')
+            require({row['name']for row in actual['suites'][suite]}==set(config['suite_cases'][suite]),
+                    'Causal group DML IDs mismatch')
     target=lane.root/'candidate-causal-result.json'
     try:
         failures=[suite for suite in actual['failures'] if suite not in
@@ -185,7 +252,7 @@ def causal_package(lane,config,limits):
                     'baselineFailureCount':len(list(doc.iter('failure')))+len(list(doc.iter('error'))),
                     'baselineSkipCount':len(list(doc.iter('skipped'))),'rawLog':label+'.log',
                     'events':classify_log(raw),'automaticWaiver':False}
-        actual['state']='CAUSAL_PACKAGE_COMPLETED_ROOT_RESULTS_REVIEW_REQUIRED'
+        actual['state']='CAUSAL_GROUP_COMPLETED_FULL_UNION_REVIEW_STILL_REQUIRED'
         require_package_success(actual,exit_code)
         return actual
     finally:
@@ -195,3 +262,40 @@ def causal_package(lane,config,limits):
 def require_package_success(actual,exit_code):
     require(exit_code==0 and not actual['failures'] and not actual['skips'] and actual['abortedSuites']==0,
             'Causal candidate failures/skips/aborts require results review; no automatic waiver')
+
+
+def reconcile_causal_groups(bundles,config):
+    """Post-collection data reader; never turns a missing/failed group into a waiver."""
+    validate_causal_groups(config)
+    require(set(bundles)==set(config['causal_groups']),'Missing or extra causal group evidence')
+    all_ids=[]
+    for name,bundle in bundles.items():
+        lane=bundle['laneResult'];result=bundle['result'];post=bundle['postSource']
+        discovery=bundle['discovery']
+        require(lane['lane']==name and lane['passed'] is True and
+                lane['full_validation_passed'] is True,'Causal group lane not complete')
+        require(post['passed'] is True and post['candidate']==config['candidate_files'] and
+                post['source_pin']==config['source_commit'],'Causal post-source proof mismatch')
+        require(discovery['complete'] is True and discovery['count']==15 and
+                discovery['suiteIDs']==sorted(config['causal_suite_inventory']),
+                'Causal complete discovery proof mismatch')
+        require(result['group']==name and set(result['suites'])==set(config['causal_groups'][name]) and
+                result['candidateFiles']==config['candidate_files'] and
+                result['sourcePin']==config['source_commit'],'Causal group identity mismatch')
+        require_package_success(result,result['exit'])
+        for suite,rows in result['suites'].items():
+            if suite in config['suite_cases']:
+                require({row['name']for row in rows}==set(config['suite_cases'][suite]),
+                        'Causal collected DML expected IDs mismatch')
+        from_rows=[(suite,row['name'])for suite,rows in result['suites'].items()for row in rows]
+        require(from_rows==[tuple(value)for value in result['caseIDs']],
+                'Causal case ledger/rows mismatch')
+        require(len(from_rows)==len(set(from_rows)),'Duplicate causal case within group')
+        all_ids.extend(from_rows)
+    require(len(all_ids)==len(set(all_ids)),'Duplicate causal case across groups')
+    require({suite for suite,_ in all_ids}==set(config['causal_suite_inventory']),
+            'Causal collected suite union is incomplete')
+    return {'state':'ALL_FIVE_CAUSAL_GROUPS_RECONCILED_REQUIRES_WHOLE_RESULTS_REVIEW',
+            'suiteIDs':sorted(config['causal_suite_inventory']),'caseIDs':all_ids,
+            'caseCount':len(all_ids),'suiteCount':15,'fullProductValidation':False,
+            'qualifiedAsGroupedCoverageNotMonolithicRun':True}
