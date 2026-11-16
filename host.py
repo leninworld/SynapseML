@@ -246,7 +246,7 @@ def main():
                                  "native-event-controls-setup", "native-event-controls-validate",
                                  "native-candidate-controls-setup", "native-candidate-controls-validate",
                                  "candidate-contract-setup/evidence", "candidate-contract-validate/evidence",
-                                 "docs-SSR", "scala-doc-controls"]
+                                 "docs-SSR", "scala-doc-controls", "fixture-namespace-setup", "fixture-namespace-validate"]
             proof_paths = []
             for directory in proof_directories:
                 target = runtime / directory

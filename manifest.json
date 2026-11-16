@@ -16,7 +16,7 @@
     "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
     "maximum_bytes": 19028608
   },
-  "revision": "2328-I3-CANDIDATE-I1-PROPOSED",
+  "revision": "2328-I3-CANDIDATE-R3-PROPOSED",
   "execution_enabled": true,
   "execution_approval_required": true,
   "source_commit": "45578f08e6bacf8475de0e92f1717e761d40f795",
@@ -101,7 +101,7 @@
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "101d9ce3f04bb34e91f6290765f833a3d0f37c2fd51757155fd7439d16ba1427",
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
     "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "fcf1fd5ae73f9974f053d78eda93de1924c029f728640823b65b5e961ae22e27",
-    "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "9f49cab270004f9c6f731d1a6a9d3e6915aa5f63e83263ba7368ff262628e139",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "b1dd18ff8a91cb1afc54ff4492d7b0aaec555f1823f7d16d2f40c73c79b03b46",
     "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/VerifyDoubleMLEstimator.scala": "64859654ffb438ffc69b113674d2c319aa1f2c38e83bc42e7f8497410c6d1e87",
     "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
     "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "187d47aa8446a2dd56eeb4b255f8b59d9a86e7f334fe31ce54aba7a35535009f"
@@ -209,7 +209,7 @@
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "101d9ce3f04bb34e91f6290765f833a3d0f37c2fd51757155fd7439d16ba1427",
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
     "candidate/core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "fcf1fd5ae73f9974f053d78eda93de1924c029f728640823b65b5e961ae22e27",
-    "candidate/core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "9f49cab270004f9c6f731d1a6a9d3e6915aa5f63e83263ba7368ff262628e139",
+    "candidate/core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "b1dd18ff8a91cb1afc54ff4492d7b0aaec555f1823f7d16d2f40c73c79b03b46",
     "candidate/core/src/test/scala/com/microsoft/azure/synapse/ml/causal/VerifyDoubleMLEstimator.scala": "64859654ffb438ffc69b113674d2c319aa1f2c38e83bc42e7f8497410c6d1e87",
     "candidate/docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
     "candidate/docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "187d47aa8446a2dd56eeb4b255f8b59d9a86e7f334fe31ce54aba7a35535009f",
@@ -229,15 +229,16 @@
     "docs_calibration.py": "d2e2524244f4ef1fee9d91fa26f746d2bfbc828c9db640c839e9cd3715186a26",
     "docs_contract.py": "dbf775d66a41f2d5acb3b0a6108ebfa4742945245aea8e8613bbc9479b036e23",
     "encoded_budget_controls.py": "bbae6595f483ea333a2a948e67d3f63fca57f964954dbb2de80cb7cf7d83b186",
-    "entry.py": "ef56c48294a592306e0388fef5315203e5f19df58f476edcb55fac69e6acd48e",
+    "entry.py": "7515d4024604d5aab0166a19000191f750d3f72aeb702fa98f51c73a6c12f2e5",
     "evidence_export.py": "0397ae26cbb8c21ee00f823ae55b97f19b67fc84efccf65308bd7c5fac6974ac",
     "fixture_data.py": "da2d0318be40418e1dc9bdd933ef63b4d2262aeac895aa005402847c71d9fa80",
+    "fixture_namespace_controls.py": "4ca0a3b53edf67577de56f5fb468f544884f801262bef50fbe689869a9ed7b4f",
     "format_checks.py": "56896ed5d7773b2d33d50fa1e2c477f0d8db2a364b7092b569cead340790f814",
     "g0_contract.py": "a751e45eaecdaf2de8de764add3df878d59ec40c20b493563b6402e9c67c10ef",
     "g0_controls.py": "70e9bb97bc10c518de71ea860161f18beb430e11593a2baa63cf3b16ecad11ab",
     "g0_lane.py": "321b4752932e1cdf9da273751b8ee6a5bc625018fbf33aa6c62b79f3875c6e1a",
     "generated_artifacts.py": "18080939a53766c6d3fd4f577f5c2dbfc5101d911605087962f12c82711c5af5",
-    "host.py": "abd63fb374bc6c6db512c3529c210a55a20e7990aee158d6564145dee5a25869",
+    "host.py": "e2927fc494e6b45002c0db28576332c5d5841eac757af87264eac2455f40c421",
     "installed_guard.py": "d4bfea2ee8d2e3703925da9e2d13f4c501d0f4580a2afe8486b4001def383ee4",
     "junit_reader.py": "fab74ec9c9389706d01f15bb1cbaa0f408a047cab0f299bad90c342aa08b9b71",
     "native_candidate_controls.py": "f486719489b6bc7c772816ff142c4fbda76d20469d920484b32a94ed0d45311a",
@@ -252,7 +253,7 @@
     "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
     "visual_assets.py": "8e319f389bb52e9de1471da64bdda8759dc319dc9f2c2258f474ee656fc0fe75",
     "website_check.py": "3e63ace9f556deef422b1a5a9533c448b3796e8d11434c35bdef46b3a70f570b",
-    "website_contract.py": "178a7573cbe91626ee4414e33b89817623405653207605f63c14474a1dcdd6d5",
+    "website_contract.py": "57fce9115ef3f6c22615cccb41fcf1441f1125c3c2bc1c3a0d52576ba2aae3d1",
     "website_generate.py": "0a1de9f21e874929992a2de5b18b060895d9ea348cde9e6a6365250d96ae1456",
     "workflow.yml": "83c0368982900f7eccd5e911a1c7648bb558f91f1e76527b563a44dd2a323005"
   },
@@ -388,7 +389,7 @@
     "docs-website"
   ],
   "baseline_source_guard_qualification": "64 adopted source blobs plus metadata-only absence guards for five new candidate paths; no extra source bodies.",
-  "candidate_patch_sha256": "6da47f8d17a8795b9ea104206b3a368a879e52652f4b764fd2288adf619382b2",
+  "candidate_patch_sha256": "31fda5c31430cfc211cec31e7887cf28f2643299d2111fe935c57c200fc6f8b8",
   "test_fixtures": {
     "url": "https://mmlspark.blob.core.windows.net/installers/datasets-2023-04-03.tgz",
     "hash_algorithm": "sha256",
@@ -417,7 +418,7 @@
       "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "101d9ce3f04bb34e91f6290765f833a3d0f37c2fd51757155fd7439d16ba1427",
       "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
       "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "fcf1fd5ae73f9974f053d78eda93de1924c029f728640823b65b5e961ae22e27",
-      "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "9f49cab270004f9c6f731d1a6a9d3e6915aa5f63e83263ba7368ff262628e139",
+      "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "b1dd18ff8a91cb1afc54ff4492d7b0aaec555f1823f7d16d2f40c73c79b03b46",
       "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/VerifyDoubleMLEstimator.scala": "64859654ffb438ffc69b113674d2c319aa1f2c38e83bc42e7f8497410c6d1e87",
       "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
       "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "187d47aa8446a2dd56eeb4b255f8b59d9a86e7f334fe31ce54aba7a35535009f"
@@ -434,7 +435,7 @@
       "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "c5fddf4ea800cda0b756bca6f7faecfcaad1ef747887c401341bfb71b2caa3ed",
       "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "a8f71556c6f86c91cf5fac9a9e25e7ff6e3fdaf9934385a0ae55f92218894af9"
     },
-    "patch_sha256": "6da47f8d17a8795b9ea104206b3a368a879e52652f4b764fd2288adf619382b2",
+    "patch_sha256": "31fda5c31430cfc211cec31e7887cf28f2643299d2111fe935c57c200fc6f8b8",
     "suite_cases": {
       "com.microsoft.azure.synapse.ml.causal.VerifyDoubleMLEstimator": [
         "Get treatment effects",

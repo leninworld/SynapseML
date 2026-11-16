@@ -155,8 +155,8 @@ class DoubleMLMultipleTreatmentsSuite extends TestBase {
 
   test("User prediction probability and rawPrediction confounders are retained") {
     val data = frame(2).withColumnRenamed("x", "prediction").withColumnRenamed("group", "probability")
-      .withColumn("rawPrediction", col("t0") + 0.1 * org.apache.spark.sql.functions.sin(col("rowId")))
-      .withColumn("y", col("y") + 0.8 * col("rawPrediction"))
+      .withColumn("rawPrediction", col("t0") + lit(0.1) * org.apache.spark.sql.functions.sin(col("rowId")))
+      .withColumn("y", col("y") + lit(0.8) * col("rawPrediction"))
     close(estimator(2).fit(data).getAvgTreatmentEffects, Array(1.0, 2.0), 0.05)
   }
 
@@ -173,7 +173,7 @@ class DoubleMLMultipleTreatmentsSuite extends TestBase {
 
   test("Confidence retains thirty plural draws without shrinking the bootstrap") {
     val data = frame(2).withColumn("y", col("y") +
-      0.02 * org.apache.spark.sql.functions.sin(col("rowId") * 0.73))
+      lit(0.02) * org.apache.spark.sql.functions.sin(col("rowId") * 0.73))
     val model = estimator(2).setMaxIter(30).fit(data)
     assert(model.getRawTreatmentEffectRows.length == 30)
     assert(model.getRawTreatmentEffectsByIteration.length == 60)

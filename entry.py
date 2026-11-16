@@ -26,6 +26,8 @@ def main():
         controls(root / ('g0-controls-' + phase), packet)
         from candidate_contract_controls import controls as candidate_controls
         candidate_controls(lane, 'candidate-contract-' + phase)
+        from fixture_namespace_controls import controls as namespace_controls
+        namespace_controls(lane, 'fixture-namespace-' + phase)
         from native_events import controls as event_controls
         event_controls(root / ('native-event-controls-' + phase))
         from native_candidate_controls import controls as native_controls
@@ -48,7 +50,7 @@ def main():
         from candidate_contract import apply_candidate, candidate_unchanged
         apply_candidate(lane)
         if name.startswith('candidate-'):
-            lane.command('standard-test-fixtures', ['python', str(packet/'fixture_data.py'),
+            lane.command('acquire-standard-test-fixtures', ['python', str(packet/'fixture_data.py'),
                          str(packet), str(root), str(deadline)], 180, cwd=packet)
             fixtures = json.loads((root/'standard-test-fixtures.json').read_text())
             require(fixtures['complete'] is True, 'Incomplete standard test fixtures')
