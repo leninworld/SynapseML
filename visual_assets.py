@@ -1,5 +1,7 @@
 """UNRUN bounded private HTML/static-asset closure. Never serves or opens a browser."""
 from html.parser import HTMLParser
+import hashlib
+import os
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -8,7 +10,8 @@ import urllib.parse
 import zipfile
 from docs_contract import require, sha
 
-MAX_BYTES = 24 * 1024**2
+MAX_BYTES = 36 * 1024**2  # Expanded read/decode ceiling: NEW admission required.
+MAX_ZIP_BYTES = 24 * 1024**2  # Compressed ZIP transport ceiling, not the old raw gate.
 MAX_FILES = 2048
 MAX_FILE_BYTES = 8 * 1024**2
 
@@ -188,12 +191,180 @@ def export(build, pages, out, executed_html=None):
                  'browserStarted': False, 'publicUpload': False,
                  'previewRequiresPrivacyReview': True}
     (out / 'docs-visual-assets.json').write_text(json.dumps(inventory, indent=2))
-    with zipfile.ZipFile(out / 'docs-visual-assets.zip', 'x', zipfile.ZIP_DEFLATED) as archive:
-        for name, (path, _, override) in sorted(selected.items()):
-            archive.writestr(name, override if override is not None else path.read_bytes())
+    inventory['compression'] = {'method': 'ZIP_DEFLATED', 'level': 9,
+                                'compressedLimitBytes': MAX_ZIP_BYTES,
+                                'expandedLimitBytes': MAX_BYTES,
+                                'losslessVerificationRequired': True,
+                                'ratioMeasured': False}
+    inventory['publicUpload'] = True
+    inventory['publicUploadQualification'] = 'Intended public Actions evidence; not emitted until unchanged whole-export preflight.'
+    (out / 'docs-visual-assets.json').write_text(json.dumps(inventory, indent=2))
+    write_verified_zip(selected, out, inventory)
     # Preserve available evidence before refusing an incomplete offline closure.
     require(not unbound, 'ACTIVE_EXTERNAL_ASSET_CLOSURE_UNBOUND_NO_BROWSER')
     return inventory
+
+
+class CappedZipWriter:
+    """Bound every ZIP write/central-directory rewrite before touching disk."""
+    def __init__(self, stream, cap):
+        self.stream, self.cap = stream, cap
+
+    def write(self, data):
+        require(self.stream.tell() + len(data) <= self.cap, 'VISUAL_COMPRESSED_ZIP_CAP')
+        return self.stream.write(data)
+
+    def __getattr__(self, name):
+        return getattr(self.stream, name)
+
+
+def verify_zip(path, inventory):
+    """Data-only lossless verification; never execute or extract archive members."""
+    require(path.is_file() and not path.is_symlink() and
+            path.stat().st_size <= MAX_ZIP_BYTES, 'VISUAL_COMPRESSED_ZIP_CAP')
+    expected = inventory['files']
+    require(len(expected) <= MAX_FILES and
+            sum(row['bytes'] for row in expected.values()) <= MAX_BYTES,
+            'VISUAL_DECODE_EXPANDED_CAP')
+    with zipfile.ZipFile(path) as archive:
+        infos = archive.infolist()
+        require(len(infos) == len(expected) and len(infos) <= MAX_FILES,
+                'VISUAL_DECODE_FILE_COUNT')
+        names = [info.filename for info in infos]
+        require(len(set(names)) == len(names) and set(names) == set(expected),
+                'VISUAL_DECODE_NAMES')
+        measured = 0
+        for info in infos:
+            name = info.filename
+            require(not PurePosixPath(name).is_absolute() and
+                    '..' not in PurePosixPath(name).parts and '\\' not in name,
+                    'VISUAL_DECODE_PATH')
+            require(not info.is_dir() and not (info.flag_bits & 1) and
+                    stat.S_IFMT(info.external_attr >> 16) == stat.S_IFREG and
+                    info.compress_type == zipfile.ZIP_DEFLATED,
+                    'VISUAL_DECODE_TYPE')
+            row = expected[name]
+            require(info.file_size == row['bytes'] and info.file_size <= MAX_FILE_BYTES,
+                    'VISUAL_DECODE_LEAF_SIZE')
+            digest, count = hashlib.sha256(), 0
+            with archive.open(info) as source:
+                while True:
+                    chunk = source.read(65536)
+                    if not chunk:
+                        break
+                    count += len(chunk)
+                    measured += len(chunk)
+                    require(count <= row['bytes'] and count <= MAX_FILE_BYTES and
+                            measured <= MAX_BYTES, 'VISUAL_DECODE_STREAM_CAP')
+                    digest.update(chunk)
+            require(count == row['bytes'] and digest.hexdigest() == row['sha256'],
+                    'VISUAL_DECODE_HASH')
+    require(measured == inventory['bytes'], 'VISUAL_DECODE_TOTAL')
+    return {'verifiedFiles': len(expected), 'verifiedExpandedBytes': measured,
+            'zipBytes': path.stat().st_size, 'zipSHA256': sha(path.read_bytes()),
+            'everyDecodedByteHashMatched': True, 'extractedOrExecuted': False}
+
+
+def write_verified_zip(selected, out, inventory):
+    partial = out / 'docs-visual-assets.zip.partial'
+    try:
+        with partial.open('xb') as stream:
+            with zipfile.ZipFile(CappedZipWriter(stream, MAX_ZIP_BYTES), 'w',
+                                 compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+                for name, (path, _, override) in sorted(selected.items()):
+                    info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+                    info.external_attr = 0o100600 << 16
+                    archive.writestr(info, override if override is not None else path.read_bytes(),
+                                     compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+        proof = verify_zip(partial, inventory)
+        final = out / 'docs-visual-assets.zip'
+        require(not final.exists(), 'VISUAL_ZIP_DESTINATION_EXISTS')
+        partial.rename(final)
+        inventory['compression'].update(proof)
+        inventory['compression']['ratioMeasured'] = True
+        inventory['compression']['zipOverExpandedRatio'] = proof['zipBytes'] / max(1, inventory['bytes'])
+    except Exception as error:
+        inventory['complete'] = False
+        inventory['compression']['failureClass'] = type(error).__name__
+        inventory['compression']['failure'] = str(error)
+        inventory['compression']['partialBytes'] = partial.stat().st_size if partial.exists() else 0
+        inventory['compression']['finalZipCreated'] = False
+        (out / 'docs-visual-assets.json').write_text(json.dumps(inventory, indent=2))
+        raise
+    (out / 'docs-visual-assets.json').write_text(json.dumps(inventory, indent=2))
+
+
+def compression_controls():
+    """Future same-Docker real-file controls, not executed by authoring."""
+    import tempfile
+    results = {}
+    with tempfile.TemporaryDirectory() as name:
+        root = Path(name)
+        def make(label, random):
+            build, out = root / label / 'build', root / label / 'out'
+            (build / 'assets').mkdir(parents=True)
+            out.mkdir()
+            pages = [build / 'book.html', build / 'quick.html']
+            for page in pages:
+                page.write_text('<html><head></head><body>Owned lossless control</body></html>')
+            for index in range(4):
+                with (build / 'assets' / str(index)).open('xb') as stream:
+                    for _ in range(96):
+                        stream.write(os.urandom(65536) if random else b'x' * 65536)
+            return build, pages, out
+        build, pages, out = make('compressible', False)
+        good = export(build, pages, out)
+        require(good['bytes'] > MAX_ZIP_BYTES and good['compression']['zipBytes'] < MAX_ZIP_BYTES,
+                'VISUAL_COMPRESSION_REAL_BENEFIT_CONTROL')
+        require(verify_zip(out / 'docs-visual-assets.zip', good)['everyDecodedByteHashMatched'],
+                'VISUAL_COMPRESSION_ROUNDTRIP')
+        results['over24MiBExpandedLosslessSuccess'] = True
+        bad_hash = json.loads(json.dumps(good))
+        bad_hash['files'][next(iter(bad_hash['files']))]['sha256'] = '0' * 64
+        try:
+            verify_zip(out / 'docs-visual-assets.zip', bad_hash)
+        except RuntimeError as error:
+            require(str(error) == 'VISUAL_DECODE_HASH', 'VISUAL_WRONG_HASH_CONTROL')
+        else:
+            raise RuntimeError('VISUAL_WRONG_HASH_ACCEPTED')
+        results['wrongDecodedHashRejected'] = True
+        # Real high-entropy bytes exceed compressed24MiB while expanded36MiB fits.
+        build, pages, out = make('incompressible', True)
+        try:
+            export(build, pages, out)
+        except RuntimeError as error:
+            require(str(error) == 'VISUAL_COMPRESSED_ZIP_CAP', 'VISUAL_WRONG_ZIP_CAP_CONTROL')
+        else:
+            raise RuntimeError('VISUAL_COMPRESSED_OVERSIZE_ACCEPTED')
+        receipt = json.loads((out / 'docs-visual-assets.json').read_text())
+        require(not receipt['complete'] and not (out / 'docs-visual-assets.zip').exists() and
+                receipt['compression']['partialBytes'] <= MAX_ZIP_BYTES,
+                'VISUAL_COMPRESSED_FAILURE_RECEIPT')
+        results['incompressibleCompressedCapRefused'] = True
+        # Exercise decoder traversal and expanded-byte refusal using real ZIP metadata.
+        evil = root / 'traversal.zip'
+        with zipfile.ZipFile(evil, 'x', compression=zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr('../escape', b'owned')
+        inv = {'bytes': 5, 'files': {'../escape': {'bytes': 5, 'sha256': sha(b'owned')}}}
+        try:
+            verify_zip(evil, inv)
+        except RuntimeError as error:
+            require(str(error) == 'VISUAL_DECODE_PATH', 'VISUAL_WRONG_TRAVERSAL_CONTROL')
+        else:
+            raise RuntimeError('VISUAL_TRAVERSAL_ACCEPTED')
+        results['traversalRejected'] = True
+        over = json.loads(json.dumps(good))
+        over['files'][next(iter(over['files']))]['bytes'] = MAX_BYTES + 1
+        try:
+            verify_zip(root / 'compressible/out/docs-visual-assets.zip', over)
+        except RuntimeError as error:
+            require(str(error) == 'VISUAL_DECODE_EXPANDED_CAP', 'VISUAL_WRONG_EXPANDED_CONTROL')
+        else:
+            raise RuntimeError('VISUAL_EXPANDED_OVERFLOW_ACCEPTED')
+        results['expandedOverflowRejected'] = True
+    return {'cases': results, 'caseCount': len(results), 'allPassed': True,
+            'producer': 'real stdlib ZIP/filesystem, synthetic data only',
+            'productionCompressionRatioMeasured': False}
 
 
 def fixture():
@@ -234,7 +405,7 @@ def fixture():
     # Bounded real files, never a raised limit or a mocked stat result.
     for label, sizes, flag in [
             ('leaf', [MAX_FILE_BYTES + 1], 'oneFileBytes'),
-            ('aggregate', [7 * 1024**2] * 4, 'aggregateBytes'),
+            ('aggregate', [7 * 1024**2] * 6, 'aggregateBytes'),
             ('count', [1] * 2045, 'fileCount')]:
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)
@@ -268,4 +439,4 @@ def fixture():
                     MAX_DIAGNOSTIC_BYTES, 'VISUAL_CONTROL_METADATA_CAP:' + label)
             cap_controls.append(label)
     return {'positive': 1, 'externalNegative': 1, 'relativeFontClosure': True,
-            'realFilesystemCapNegatives': cap_controls, 'projectCode': False}
+            'realFilesystemCapNegatives': cap_controls, 'projectCode': False, 'compressionControls': compression_controls()}

@@ -16,7 +16,7 @@
     "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
     "maximum_bytes": 19028608
   },
-  "revision": "2328-I3-CANDIDATE-R5-AFFECTED-PROPOSED",
+  "revision": "2328-I3-NEW-VISUAL-RESOURCE-ADMISSION-PROPOSED",
   "execution_enabled": true,
   "execution_approval_required": true,
   "source_commit": "45578f08e6bacf8475de0e92f1717e761d40f795",
@@ -136,72 +136,6 @@
   },
   "workflow_path": ".github/workflows/validate-dml-multiple-treatments-2328.yml",
   "lanes": {
-    "candidate-legacy": {
-      "memory_gib": 12,
-      "cpus": 3,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 12,
-      "network_gib": 24,
-      "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 1,
-      "pre_environment_remaining_seconds": 2000,
-      "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
-    },
-    "candidate-causal-dml": {
-      "memory_gib": 12,
-      "cpus": 3,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 12,
-      "network_gib": 24,
-      "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 1,
-      "pre_environment_remaining_seconds": 2700,
-      "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
-    },
-    "candidate-causal-other": {
-      "memory_gib": 12,
-      "cpus": 3,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 12,
-      "network_gib": 24,
-      "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 1,
-      "pre_environment_remaining_seconds": 2700,
-      "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
-    },
-    "candidate-causal-synthetic-control": {
-      "memory_gib": 12,
-      "cpus": 3,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 12,
-      "network_gib": 24,
-      "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 1,
-      "pre_environment_remaining_seconds": 2700,
-      "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
-    },
-    "candidate-causal-synthetic-did": {
-      "memory_gib": 12,
-      "cpus": 3,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 12,
-      "network_gib": 24,
-      "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 1,
-      "pre_environment_remaining_seconds": 2700,
-      "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
-    },
-    "candidate-causal-cls": {
-      "memory_gib": 12,
-      "cpus": 3,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 12,
-      "network_gib": 24,
-      "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 1,
-      "pre_environment_remaining_seconds": 2700,
-      "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
-    },
     "docs-website": {
       "memory_gib": 12,
       "cpus": 3,
@@ -215,7 +149,7 @@
     }
   },
   "packet_sha256": {
-    ".github/workflows/validate-dml-multiple-treatments-2328.yml": "b26bc6a1859af5b57f20d8c1d9cb7a8820a6b67b43643d19f336471a6eb0e6b6",
+    ".github/workflows/validate-dml-multiple-treatments-2328.yml": "423f26f90000fcb850329ef993d33f6970b3fa6a9b168d7f4d134975ed6563f4",
     "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
     "baseline-shipping-black.failures.json": "ea886ac2620016b6c0853dbb05cfbf7bde148743dc5d7b18daf59fd21044ae85",
     "bootstrap.py": "0123c26fa0ad2be9917d0f8d1ff0b2967f2bbed51e5bbac3d6911626642a0277",
@@ -272,16 +206,16 @@
     "scala-junit-shape-fixture.xml": "869b1d49ece33f101f3c559f5b3539619cc2e9496c13dfcd05c8272cfe60b7b9",
     "validation_d0.py": "c5f425d43c0d93a2ff53d0f0ece45833adf91468be5a46ecf4b1babfce083ef3",
     "validation_runtime.py": "1f2f5402153bfc06f1c5719dcbdd1773eaf7d4cd5c525bc0b94ffcf529a15573",
-    "visual_assets.py": "2c56a838deb7fa8c52b0b2a93bee242ad389573a86ad5833628188b2ba31c9db",
+    "visual_assets.py": "455516a8de190dca257081466206dc980f8db2606a1ef057db65ecef4cac066c",
     "website_check.py": "3e63ace9f556deef422b1a5a9533c448b3796e8d11434c35bdef46b3a70f570b",
     "website_contract.py": "1a542dc93ad763cc0d306c18d6b2f5a79aac589a1e91c1b0f93218db1d2bdc58",
     "website_generate.py": "0a1de9f21e874929992a2de5b18b060895d9ea348cde9e6a6365250d96ae1456",
-    "workflow.yml": "b26bc6a1859af5b57f20d8c1d9cb7a8820a6b67b43643d19f336471a6eb0e6b6"
+    "workflow.yml": "423f26f90000fcb850329ef993d33f6970b3fa6a9b168d7f4d134975ed6563f4"
   },
   "attempt_policy": {
     "history": "UNKNOWN",
     "ordinary_allowance": "UNAVAILABLE",
-    "proposed_exception": "PROPOSED one diagnosed affected-stage exception: seven separately bounded jobs (full legacy, five disjoint complete causal groups, full website plus finite visual-export prerequisite metadata). Reuse five actual R4 source-identical passed lanes. History UNKNOWN; no rerun/dispatch/serialized fallback/counter reset.",
+    "proposed_exception": "PROPOSED user-requested lossless compression correction, not automatic attempt/RQ1 waiver; explicit whole review and root/native admission required. Old runs consumed/historyUNKNOWN; no fallback.",
     "approved": true,
     "no_reruns": true
   },
@@ -422,14 +356,14 @@
       "fullNotebookStepCapSeconds": 1500,
       "evidenceCleanupReserveSeconds": 240,
       "r4MeasuredProductionBuildSeconds": 135.99983170399997,
-      "assetVolume": "UNKNOWN; whole-tree stat-only inventory and exact cap diagnostics before refusal, no blind budget increase"
+      "assetVolume": "Actual R5 fullassets+4HTML35,562,254B/2022files; maxleaf1,665,342B. PROPOSED lossless ZIP24MiB transport with separately adjudicated36MiB expanded closure, conditional fullreference/privacy closure; leaf8MiB/count2048/rawexport63MiB/encoded58MiB/collect64MiB unchanged."
     },
     "queueCountsAgainstRunCreatedClock": true,
     "capacityArbiter": "Hosted scheduler plus actual per-host fresh gates, no fictitious reservation; no serialized fallback",
     "allEightJobsOneDiagnosedException": false,
     "historicalCount": "UNKNOWN",
-    "sevenAffectedJobsOneProposedException": true,
-    "furtherGroupVolumeQualification": "Source-grounded isolation of cross-suite INFO initializers; actual R4 flood message still unknown. Each INFO-suite volume unmeasured. Existing64MiB stream/63MiB raw export/58MiB encoded/64MiB collection per job and512MiB aggregate caps remain. No logger/source edits or filtering.",
+    "sevenAffectedJobsOneProposedException": false,
+    "furtherGroupVolumeQualification": "R5grouped-source investigation/results remain historical consumed provenance only. Current NEWproposed scope is ONE full docs-website job: existing64MiBstream/63MiBrawexport/58MiBencoded/64MiBcollection limits retained; no group/test/log filtering or repeatedcausallanes.",
     "r4SourceReadAddendum": {
       "priorClosedCount": 64,
       "newCount": 28,
@@ -437,7 +371,9 @@
       "cumulativeCount": 92,
       "cumulativeBytes": 1162703,
       "noReset": true
-    }
+    },
+    "newVisualAdmissionQualification": "NOT APPROVED. RQ1parked; user requested compression analysis; exact compressed/expanded admission and one corrective attempt require actual wholeClaude/root/native adjudication. One newjob3000target3600absolute fromactualnewrun.created_at; no oldclock/state import.",
+    "singleWebsiteJobNewAdmissionProposed": true
   },
   "full_validation_acceptance": {
     "baseline_only": false,
@@ -469,12 +405,6 @@
       "unrelated credentialed quick examples"
     ],
     "currentAffectedLanes": [
-      "candidate-legacy",
-      "candidate-causal-dml",
-      "candidate-causal-other",
-      "candidate-causal-synthetic-control",
-      "candidate-causal-synthetic-did",
-      "candidate-causal-cls",
       "docs-website"
     ],
     "rootFuzzingInheritedIgnore": {
@@ -509,7 +439,26 @@
       ],
       "condition": "Every candidate postimage remains identical; helper/manifest changes independently shown not to change those product checks. Not a claim that R4 whole run passed."
     },
-    "visualMeasurementQualification": "Whole asset stat inventory and cap diagnostics establish at most a finite prerequisite measurement. No visual-closure, screenshot or full-product pass if exporter cap remains."
+    "visualMeasurementQualification": "Whole asset stat inventory and cap diagnostics establish at most a finite prerequisite measurement. No visual-closure, screenshot or full-product pass if exporter cap remains.",
+    "priorR5Reuse": {
+      "run": 43810147890,
+      "head": "14cca4cb9b50906d13048f0878cb02596dafa210",
+      "candidatePatchSHA256": "e5a6704f193b343f59af2dfa2ba637548c85ce6bfb9c2c5e059e4f52b38ad3f0",
+      "sixPassedLaneIDs": [
+        "candidate-legacy",
+        "candidate-causal-dml",
+        "candidate-causal-other",
+        "candidate-causal-synthetic-control",
+        "candidate-causal-synthetic-did",
+        "candidate-causal-cls"
+      ],
+      "fullCausalSuites": 15,
+      "fullCausalUniqueCases": 103,
+      "failures": 0,
+      "skips": 0,
+      "aborts": 0,
+      "qualification": "Actual R5 sixpassed lanes and qualified R4 fivepassed lanes on exactunchanged e5a tenpostimages retained; websitevisualfailed, styledbrowserreviewstillpending. No fullfeature green claim."
+    }
   },
   "source_object_count": 92,
   "dataset": {
@@ -522,12 +471,6 @@
     "redistribute": false
   },
   "workflow_lanes": [
-    "candidate-legacy",
-    "candidate-causal-dml",
-    "candidate-causal-other",
-    "candidate-causal-synthetic-control",
-    "candidate-causal-synthetic-did",
-    "candidate-causal-cls",
     "docs-website"
   ],
   "baseline_source_guard_qualification": "92 adopted pinned source blobs:64closed+28source-grounded causal output investigation addendum; prior counters/phases preserved. Five absent new-feature-path guards remain separate.",
@@ -880,5 +823,18 @@
   "candidate_python": {
     "execution_authorized": true,
     "pytest_version": "9.2.0"
+  },
+  "visual_compression_proposal": {
+    "method": "ZIP_DEFLATED",
+    "level": 9,
+    "compressed_zip_cap": 25165824,
+    "expanded_closure_cap": 37748736,
+    "original_raw_gate": 25165824,
+    "all_assets_retained": true,
+    "all_decoded_sha256_must_match": true,
+    "production_ratio": "UNKNOWN",
+    "new_controls_unrun": 5,
+    "controls_existing_retained": true,
+    "admission_qualification": "Expanded36MiB and compressed24MiB are distinct from original raw24MiB; require actual wholeClaude/root interpretation of current user compression request and RQ1. This manifest is not authority."
   }
 }
