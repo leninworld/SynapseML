@@ -11,11 +11,117 @@ import json
 import os
 from pathlib import Path
 import sysconfig
+import types
+import unittest
+import time
 
 from candidate_generated_artifacts import wheel_modules
 from candidate_python_contract import require_collection_order
 from candidate_wheel_identity import verify as verify_wheel_identity
 from validation_runtime import require
+
+OLD_SHA = "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8"
+ADDED = "        if cls.owns_spark_context:\n            cls.addClassCleanup(cls.spark.stop)\n"
+REMOVED = (
+    "    @classmethod\n    def tearDownClass(cls):\n"
+    "        if getattr(cls, \"owns_spark_context\", False) and hasattr(cls, \"spark\"):\n"
+    "            cls.spark.stop()\n\n"
+)
+
+
+def lifecycle_controls(target, test_path, manifest, output):
+    """Exercise actual setUpClass through unittest, before the full nine test methods."""
+    from pyspark import SparkContext
+    from pyspark.sql import SparkSession
+
+    require(SparkContext._active_spark_context is None, "Cleanup controls need a fresh process")
+    source = Path(test_path).read_text()
+    require(source.count(ADDED) == 1, "Cleanup insertion differs")
+    before = source.replace(ADDED, "").replace(
+        "    @staticmethod\n    def estimator():", REMOVED + "    @staticmethod\n    def estimator():"
+    )
+    require(hashlib.sha256(before.encode()).hexdigest() == OLD_SHA,
+            "Reconstructed baseline is not the exact published pre-fix test")
+    module = types.ModuleType("synapseml_exact_before_cleanup_control")
+    exec(compile(before, "<exact-published-before-cleanup>", "exec"), module.__dict__)
+    root = Path(output)
+    root.mkdir()
+    bad = dict(manifest)
+    bad["python_modules"] = dict(manifest["python_modules"])
+    bad["python_modules"][sorted(bad["python_modules"])[0]] = "0" * 64
+    bad_path = root / "controlled-python-provenance-mismatch.json"
+    bad_path.write_text(json.dumps(bad, indent=2))
+    original_env = os.environ.get("SYNAPSEML_DML_ARTIFACT_MANIFEST")
+    require(original_env is not None, "Missing actual installed artifact manifest")
+    outcomes = []
+
+    def fail_before_first_fit():
+        raise RuntimeError("CONTROLLED_CLEANUP_INITIAL_FIT_FAILURE")
+
+    def run_case(base, label, provenance_failure, borrowed, expect_stopped):
+        require(SparkContext._active_spark_context is None, "Prior control leaked a context")
+        started = time.monotonic()
+        shared = None
+        probe = type("CleanupFailureProbe", (base,), {
+            "estimator": staticmethod(fail_before_first_fit),
+            "test_probe": lambda self: self.fail("Setup failure did not occur"),
+        })
+        try:
+            if borrowed:
+                shared = SparkSession.builder.master("local[2]").appName(
+                    "cleanup-shared-context-control"
+                ).config("spark.jars", ",".join(r["path"] for r in manifest["jars"])).getOrCreate()
+                os.environ.pop("SYNAPSEML_DML_ARTIFACT_MANIFEST", None)
+            else:
+                os.environ["SYNAPSEML_DML_ARTIFACT_MANIFEST"] = (
+                    str(bad_path) if provenance_failure else original_env
+                )
+            result = unittest.TestResult()
+            unittest.TestSuite([probe("test_probe")]).run(result)
+            require(result.testsRun == 0 and len(result.errors) == 1 and not result.failures,
+                    "Control did not fail exactly once in setUpClass")
+            reason = result.errors[0][1]
+            expected = ("Installed branch Python module mismatch" if provenance_failure
+                        else "CONTROLLED_CLEANUP_INITIAL_FIT_FAILURE")
+            require(expected in reason, "Setup failed for an unrelated reason: " + reason[-1200:])
+            require(probe.owns_spark_context is (not borrowed), "Wrong context ownership")
+            stopped = SparkContext._active_spark_context is None
+            require(stopped is expect_stopped, "Cleanup outcome differs: " + label)
+            if borrowed:
+                require(SparkContext._active_spark_context is shared.sparkContext
+                        and shared.sparkContext._jsc is not None,
+                        "Borrowed shared context was stopped or replaced")
+            elif not expect_stopped:
+                require(SparkContext._active_spark_context is probe.spark.sparkContext,
+                        "Baseline did not leak its own context")
+            outcomes.append({"case": label, "expectedSetupFailure": expected,
+                             "ownsContext": probe.owns_spark_context,
+                             "contextStopped": stopped, "testsRun": result.testsRun,
+                             "setupErrors": len(result.errors), "realSpark": True,
+                             "seconds": time.monotonic() - started})
+        finally:
+            # These contexts are created only by this isolated hosted control.
+            if SparkSession._instantiatedSession is not None:
+                SparkSession._instantiatedSession.stop()
+            if SparkContext._active_spark_context is not None:
+                SparkContext._active_spark_context.stop()
+            require(SparkSession._instantiatedSession is None
+                    and SparkContext._active_spark_context is None,
+                    "Control teardown left session or context state")
+            os.environ["SYNAPSEML_DML_ARTIFACT_MANIFEST"] = original_env
+
+    run_case(module.DoubleMLMultipleTreatmentsTests, "published-before-owned-fit-failure", False, False, False)
+    run_case(target, "candidate-owned-provenance-failure", True, False, True)
+    run_case(target, "candidate-owned-fit-failure", False, False, True)
+    run_case(target, "candidate-borrowed-fit-failure", False, True, False)
+    require(SparkContext._active_spark_context is None
+            and SparkSession._instantiatedSession is None, "Control teardown leaked Spark")
+    record = {"baselineSHA256": OLD_SHA, "candidateSHA256": hashlib.sha256(source.encode()).hexdigest(),
+              "cases": outcomes, "caseCount": len(outcomes), "realInstalledDependencies": True,
+              "scientificFitsStillRequired": True}
+    (root / "cleanup-controls-result.json").write_text(json.dumps(record, indent=2))
+    return record
+
 
 STATE = {}
 
@@ -145,6 +251,16 @@ def pytest_sessionfinish(session, exitstatus):
             require(len(STATE["classes"]) == 1 and all(
                 getattr(cls, "installed_artifact_provenance_verified", False) is True
                 for cls in STATE["classes"]), "Authored setUpClass did not verify installed artifacts")
+            from pyspark import SparkContext
+            require(SparkContext._active_spark_context is None,
+                    "Successful authored suite leaked its owned Spark context")
+            STATE["cleanup_controls"] = lifecycle_controls(
+                next(iter(STATE["classes"])), next(iter(STATE["test_sources"])),
+                STATE["manifest"],
+                Path(config["session_result"]).parent / "spark-cleanup-controls")
+            require(STATE["cleanup_controls"]["caseCount"] == 4, "Missing actual cleanup controls")
+            evidence["cleanup_controls"] = STATE["cleanup_controls"]
+            evidence["normal_owned_cleanup_verified"] = True
         else:
             spark = STATE["spark"]
             require(spark.sparkContext.applicationId == STATE["application_id"], "Generated SDK replaced context")

@@ -284,7 +284,7 @@ def upstream_python(lane, role, artifact, subpath, source_sha):
     shutil.copy2(upstream_report, root / "actual-upstream.xml")
     if role == "handwritten":
         require(lane.manifest["candidate_files"][TEST_PATH] ==
-                "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
+                "ce5391a0e64bd2c8175cde8234965ae15971bb652f3b635ea0204e2967a84141",
                 "Handwritten subtest count source changed")
     # Exact frozen handwritten source: 3 models x 7 getters + 2 offset roles.
     # Pytest 9.2 includes successful unittest subtests in the suite total.

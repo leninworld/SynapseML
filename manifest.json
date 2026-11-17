@@ -16,11 +16,11 @@
     "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
     "maximum_bytes": 19028608
   },
-  "revision": "2856-FOUR-FEEDBACK-THREE-NATIVE-PROPOSED",
+  "revision": "2856-SPARK-CLASS-CLEANUP-I4-PROPOSED",
   "execution_enabled": true,
   "execution_approval_required": true,
   "source_commit": "2982f5a9b198fc3c35e601187887e18b57634faa",
-  "validation_branch": "validate-dml-review-2856-i3",
+  "validation_branch": "validate-dml-review-2856-cleanup-i4",
   "target_seconds": 3000,
   "absolute_seconds": 3600,
   "baseline_files": {
@@ -128,13 +128,13 @@
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "3ad12f95007d555dfc635c47b980765488728420a5e4e9e9da2a095f974b2478",
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "267e060d5b07aefef267fc4c3cf738df813a4ee95620a9893f0464ee1d7b0a17",
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
-    "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
+    "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "ce5391a0e64bd2c8175cde8234965ae15971bb652f3b635ea0204e2967a84141",
     "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "ef1bb659ab46ab2278c724bbdf41f563e3eef12d5284e1eff1b92f92a2a70592",
     "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/VerifyDoubleMLEstimator.scala": "64859654ffb438ffc69b113674d2c319aa1f2c38e83bc42e7f8497410c6d1e87",
     "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
     "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "187d47aa8446a2dd56eeb4b255f8b59d9a86e7f334fe31ce54aba7a35535009f"
   },
-  "workflow_path": ".github/workflows/validate-dml-review-2856-i3.yml",
+  "workflow_path": ".github/workflows/validate-dml-review-2856-cleanup-i4.yml",
   "lanes": {
     "candidate-legacy": {
       "memory_gib": 12,
@@ -171,6 +171,7 @@
     }
   },
   "packet_sha256": {
+    ".github/workflows/validate-dml-review-2856-cleanup-i4.yml": "d5ef60d167ad4ba75ca527b817df59073e4eb2bb7a939dbe80542bbf78d71ff8",
     "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
     "baseline-shipping-black.failures.json": "ea886ac2620016b6c0853dbb05cfbf7bde148743dc5d7b18daf59fd21044ae85",
     "bootstrap.py": "0123c26fa0ad2be9917d0f8d1ff0b2967f2bbed51e5bbac3d6911626642a0277",
@@ -180,7 +181,7 @@
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "3ad12f95007d555dfc635c47b980765488728420a5e4e9e9da2a095f974b2478",
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "267e060d5b07aefef267fc4c3cf738df813a4ee95620a9893f0464ee1d7b0a17",
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
-    "candidate/core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
+    "candidate/core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "ce5391a0e64bd2c8175cde8234965ae15971bb652f3b635ea0204e2967a84141",
     "candidate/core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "ef1bb659ab46ab2278c724bbdf41f563e3eef12d5284e1eff1b92f92a2a70592",
     "candidate/core/src/test/scala/com/microsoft/azure/synapse/ml/causal/VerifyDoubleMLEstimator.scala": "64859654ffb438ffc69b113674d2c319aa1f2c38e83bc42e7f8497410c6d1e87",
     "candidate/docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
@@ -189,8 +190,8 @@
     "candidate_contract_controls.py": "8a13cc0276103c8063be764a10d74033ed681a78f0d59f961dbb57a16bef88fa",
     "candidate_docs_lane.py": "d0494f86e063226af132342bf29179546c117a96bde04e745d284b0aaae62ffa",
     "candidate_generated_artifacts.py": "6034ac45d4d36ea3f10d29e50de3985f3934550bbc49e09cb31ab3d822074e5d",
-    "candidate_installed_lane.py": "4d6efe0fe303d9f8de9638496fa5c89a8fc109d9568f397fb5d7b39192dc465e",
-    "candidate_installed_plugin.py": "3393881626ed7792812c4467cb761b0d58e47a42fe4c5278bb41bf799f5e8030",
+    "candidate_installed_lane.py": "bbd9f19a02c580d44addb81646e6b4216d957d2c88d75251420e9c5a83a27491",
+    "candidate_installed_plugin.py": "d9feca84dfa62a0c68ea44217f4f79034d107754ee0915abe96ecfcb0eb965c1",
     "candidate_python_contract.py": "e1e4ab2b5c615e369910261580eebfd1150ee48ad365553ee574b3dddaca82ae",
     "candidate_wheel_identity.py": "14bd3e694dc4c42b10869f5a5cec3d2ae74fdedd2ac769ca15416d403b441ab4",
     "causal_diagnostic_controls.py": "f5167d9a92dc4da25cec5952447d7771039e55f4ad3a9b1b3bdf95758de7ef6d",
@@ -203,7 +204,7 @@
     "docs_calibration.py": "d2e2524244f4ef1fee9d91fa26f746d2bfbc828c9db640c839e9cd3715186a26",
     "docs_contract.py": "dbf775d66a41f2d5acb3b0a6108ebfa4742945245aea8e8613bbc9479b036e23",
     "encoded_budget_controls.py": "bbae6595f483ea333a2a948e67d3f63fca57f964954dbb2de80cb7cf7d83b186",
-    "entry.py": "5d5436808c9d867e6e946eb7ae2f097bfd6a1c262d3b613af58453e7fd0cd137",
+    "entry.py": "a2fd00506c0c0d13eae205ba309e11ea792c990795d93432e40010671b6df8f6",
     "evidence_export.py": "24f1714e16df6a7a04fcf700b93ac8eadd99ea978146f46108fc4ea015e9d6a3",
     "fixture_data.py": "da2d0318be40418e1dc9bdd933ef63b4d2262aeac895aa005402847c71d9fa80",
     "fixture_namespace_controls.py": "4ca0a3b53edf67577de56f5fb468f544884f801262bef50fbe689869a9ed7b4f",
@@ -212,7 +213,7 @@
     "g0_controls.py": "70e9bb97bc10c518de71ea860161f18beb430e11593a2baa63cf3b16ecad11ab",
     "g0_lane.py": "321b4752932e1cdf9da273751b8ee6a5bc625018fbf33aa6c62b79f3875c6e1a",
     "generated_artifacts.py": "18080939a53766c6d3fd4f577f5c2dbfc5101d911605087962f12c82711c5af5",
-    "host.py": "902777bf36101d4e9ebc4726cbbb950c1f01bd50125642ac66439c2f31684000",
+    "host.py": "ae44ee059d7aa0ed99cf9089f53169f3ce83febc65262b0a7f6531a063a7946a",
     "installed_guard.py": "d4bfea2ee8d2e3703925da9e2d13f4c501d0f4580a2afe8486b4001def383ee4",
     "junit_reader.py": "248dc20fe82ac4675c291d864f35a9dd3197771fe3b898daa5c5274d9675a083",
     "native_candidate_controls.py": "5f4cbcf2279f9d773b8f67a333e9a3d7661881c59a28eff7a33494ec7c923598",
@@ -231,15 +232,14 @@
     "website_check.py": "3e63ace9f556deef422b1a5a9533c448b3796e8d11434c35bdef46b3a70f570b",
     "website_contract.py": "1a542dc93ad763cc0d306c18d6b2f5a79aac589a1e91c1b0f93218db1d2bdc58",
     "website_generate.py": "0a1de9f21e874929992a2de5b18b060895d9ea348cde9e6a6365250d96ae1456",
-    "workflow.yml": "eeb77b0ae8b0dfd679c53f726913f263174429efc588ea5b470ac432905b5a1c",
-    ".github/workflows/validate-dml-review-2856-i3.yml": "eeb77b0ae8b0dfd679c53f726913f263174429efc588ea5b470ac432905b5a1c"
+    "workflow.yml": "d5ef60d167ad4ba75ca527b817df59073e4eb2bb7a939dbe80542bbf78d71ff8"
   },
   "attempt_policy": {
-    "history": "At least18 prior cohorts including I1 run44109115966 and I2 run44128124454; exact count UNKNOWN; all previous failures preserved",
+    "history": "At least19 prior attempts; includes I3 run44135619861 completed. Exact total UNKNOWN; all failures retained.",
     "ordinary_allowance": "UNAVAILABLE",
     "feedback_ceiling": 25,
     "count_closure": "NOT_ESTABLISHED",
-    "proposed_exception": "ONE additional exact installed-only whole lane needs new user count/public grant. I3 is not ordinal3/25. Slow cold setup can HOLD before tests and still consume this exception.",
+    "proposed_exception": "ONE new exact installed-only validation requires explicit user exception while historical total is unreconciled; no ordinary authority inferred.",
     "approved": true,
     "no_reruns": true
   },
@@ -548,7 +548,7 @@
     "candidate-installed"
   ],
   "baseline_source_guard_qualification": "92 adopted pinned source blobs:64closed+28source-grounded causal output investigation addendum; prior counters/phases preserved. Five absent new-feature-path guards remain separate.",
-  "candidate_patch_sha256": "0320a40bd2905de540c2f9ae48200fab29fa77ec9271266a325d9d82c28fe208",
+  "candidate_patch_sha256": "0b1b0e7e36a5e8f1e460e27d59eb44682eeb3f2258f648d580f193e0ea0289f3",
   "test_fixtures": {
     "url": "https://mmlspark.blob.core.windows.net/installers/datasets-2023-04-03.tgz",
     "hash_algorithm": "sha256",
@@ -936,11 +936,11 @@
   },
   "source_tree": "9be1d37def77bd316d9b0f47d107174623f93b57",
   "common_clock": {
-    "origin": "Actual workflow.created_at, identical across all three jobs including queue",
+    "origin": "Actual workflow.created_at for this one installed job including queue",
     "active_stop_seconds": 3000,
     "cleanup_evidence_only_ceiling_seconds": 3600,
     "per_job_clock_reset_allowed": false,
-    "max_parallel": 3,
+    "max_parallel": 1,
     "no_other_workflow_concurrent": true
   },
   "retained_evidence_qualification": {
@@ -963,14 +963,14 @@
       "103 cases passed on current master",
       "old JAR/wheel reused as current-head artifact"
     ],
-    "sourceIntegration": "Original local d17 integration completed with published dffcd; current source worktree has four privately repaired files. Runtime uses fresh ephemeral exactd17 source plus current ten postimages; no new local source acquisition authorized by this packet."
+    "sourceIntegration": "Runtime uses exact2982 plus frozen ten overlay. Public feature9bf2 has9same postimages and prior handwritten source; cleanup differs only there. Original45578 evidence remains historical."
   },
   "candidate_feature_parent_patch_sha256": "e5a6704f193b343f59af2dfa2ba637548c85ce6bfb9c2c5e059e4f52b38ad3f0",
-  "candidate_patch_identity_qualification": "SHA identifies four-feedback repair diff relative to published dffcd; exact full ten-file overlay bound independently by candidate_files. Not a claim of a newly generated full d17 patch.",
+  "candidate_patch_identity_qualification": "SHA identifies cleanup-only repair relative to published9bf2; full ten overlay bound independently by candidate_files. No source feature behavior changed.",
   "feedback_execution": {
     "reviewPR": 2856,
-    "reviewID": 5933617593,
-    "publishedSourceParent": "dffcd50978506158580d7effd7a3401b234f4cb9",
+    "reviewID": 5944395440,
+    "publishedSourceParent": "9bf2b98823fbcf2baf4101e42a0136dbc251d5b2",
     "implementationSourceBase": "2982f5a9b198fc3c35e601187887e18b57634faa",
     "newScalaTestNames": [
       "MLP nuisance layers remain caller-owned across parallel plural draws",
@@ -983,7 +983,7 @@
       "Nuisance weight columns are remapped without enabling weighted plural estimation"
     ],
     "fullInstalledHandwrittenSeconds": 600,
-    "baselineRedRuntime": false,
+    "baselineRedRuntime": "PROPOSED exact e566 class reconstructed/SHA verified before real unittest failure control; not yet run",
     "baselineOldCodeFailureEvidence": "Static recorded reasoning only, never a recorded red run",
     "newNativeLightGBMFit": "NOT RUN; delegated real LR regression proves remapping only",
     "censorCol": "Unsupported",
@@ -994,22 +994,29 @@
       "test_ambiguous_jvm_route_rejects_statistics_after_copy_and_reload",
       "test_auxiliary_glr_offset_both_roles_preserve_caller_parameters"
     ],
-    "privateSourceFreezeSHA256": "51794171356265fd5c6124121943a41b2f02ee5890fa3e811e296542ff0c54e0",
+    "privateSourceFreezeSHA256": "e19ebf975206283f94ddfe0acf13c0523a3046f76715513b49c98946b8b8076f",
     "pricingReceiptSHA256": "b466771323471b936a294d03689cdcf621bc6d1ae2365487bdc8a564fdf53f5a",
-    "pricingSourcePointerQualification": "Numeric receipt prior source pointers are historical authoring provenance; current final source identity is privateSourceFreezeSHA256 and candidate_files. Final source changes do not add tests/fits beyond priced8Scala+2Python."
+    "pricingSourcePointerQualification": "Actual I3 handwritten145.99s/generated103.18s/rootcompile264.85s, same resources/dependencies. Add four serial realSpark setup-failure controls within unchanged handwritten600s ceiling. New control time unmeasured; actual time/memory/clock guards bind, failure stops without retry."
   },
   "feedback_installed_recovery": {
-    "priorRun": "https://github.com/leninworld/SynapseML/actions/runs/44128124454",
-    "priorDiagnosticCommit": "519c0d89af2cba8939f6ea8baab98ad85eac8257",
-    "priorRunConclusion": "FAILURE",
+    "priorRun": "https://github.com/leninworld/SynapseML/actions/runs/44135619861",
+    "priorDiagnosticCommit": "542533b88bafecd313493874688c01431d5ef71a",
+    "priorRunConclusion": "SUCCESS",
     "reusedOnly": [
       "candidate-legacy:10legacy+1registration+10rootFuzz/1inheritedignore",
       "candidate-causal-dml:32plural+10legacy/0skips"
     ],
-    "sourcePostimagesUnchanged": true,
+    "sourcePostimagesUnchanged": false,
     "installedRerunScope": "Full compile/Testcompile/14styles/Black/build/install/full9authored+2generated/actualorigin/postsourcechecks. No test omitted.",
     "I2HandwrittenQualified": "Actual9methods passed+23subtests/XMLtests32; oldchecker failed afterward; generated2 andpostsourcecheck notrun. Notgreeninstalled.",
-    "newControls": "Samepytest9.2 isolated actual2subtestsuccess+realfailedsubtest and5specificXMLmutationrejections beforeexpensivebuild; frozene566 binds23.",
-    "noFreshScalaPassClaim": true
+    "newControls": "After full9 methods and normal owned-context cleanup, before generated consumer, real unittest/publicSpark invokes exactbefore class and candidate: baseline owned-fit failure leaks; candidate owned provenance/fit failures stop; candidate borrowed failure preserves shared context. Normal full9 suite must stop its owned context. Original realpytest/XML/wheel controls retained; new exact source hash binds same23subtests.",
+    "noFreshScalaPassClaim": true,
+    "sourceChange": "ONLY handwritten test cleanup differs;9other production/Scala/doc postimages unchanged; never claim all10 unchanged.",
+    "actualMarkers": {
+      "lane": "LANE2856CLEANUPI4=",
+      "host": "HOST2856CLEANUPI4="
+    },
+    "freshAuthoredProcessPreserved": true,
+    "controlsCaseSecondsRecorded": true
   }
 }

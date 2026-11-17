@@ -93,5 +93,5 @@ def main():
         finally:
             result['steps']=lane.records
             (root/('setup-result.json' if phase=='setup' else 'lane-result.json')).write_text(json.dumps(result,indent=2))
-            print('LANE2328I3='+json.dumps(result),flush=True)
+            print('LANE2856CLEANUPI4='+json.dumps(result),flush=True)
 if __name__=='__main__':main()

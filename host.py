@@ -271,12 +271,12 @@ def main():
             lane_lines = []
             for log in sorted(root.glob("*-container-run.log")):
                 lane_lines.extend(line for line in log.read_text(errors="replace").splitlines()
-                                  if line.startswith("LANE2328I3="))
+                                  if line.startswith("LANE2856CLEANUPI4="))
             def terminal_lines(planned):
                 final = {**result, "evidence_export": planned}
                 if not (planned["complete"] and planned["critical_complete"]):
                     final["passed"] = False
-                return [*lane_lines, "HOST2328I3=" + json.dumps(final)]
+                return [*lane_lines, "HOST2856CLEANUPI4=" + json.dumps(final)]
             result["evidence_export"] = export_evidence(
                 root, selected, absolute, terminal_lines=terminal_lines)
             if not (result["evidence_export"]["complete"] and
@@ -288,7 +288,7 @@ def main():
         finally:
             # Even failed cleanup, collection, or an expired export deadline
             # must leave an unambiguous terminal host receipt in the job log.
-            print("HOST2328I3=" + json.dumps(result), flush=True)
+            print("HOST2856CLEANUPI4=" + json.dumps(result), flush=True)
     require(result["passed"] and result["owned_stop_verified"], "Full lane failed")
 
 
