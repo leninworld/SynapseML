@@ -32,8 +32,10 @@ def require_collection_order(names, expected_first):
             "Focused regressions are not first in the actual full collection")
 
 
-def report(path, names, class_name, expected_failures=()):
+def report(path, names, class_name, expected_failures=(), expected_subtests=0):
     """Require a complete pytest JUnit document, exact cases, and no ignored failures."""
+    require(type(expected_subtests) is int and 0 <= expected_subtests <= 100, "Invalid expected subtest count")
+    require(expected_subtests == 0 or len(names) > 0, "Subtests require named methods")
     path = Path(path)
     require(path.is_file() and path.stat().st_size <= 2 * 1024**2, "Missing/oversize pytest report")
     root = ET.fromstring(path.read_bytes())
@@ -50,9 +52,10 @@ def report(path, names, class_name, expected_failures=()):
     require(not list(root.iter("skipped")) and not list(root.iter("error")), "Skipped/error pytest case")
     failed = {case.get("name") for case in cases if list(case.findall("failure"))}
     require(failed == set(expected_failures), "Unexpected pytest failures")
+    require(expected_subtests == 0 or len(suites) == 1, "Subtest counts require one complete suite")
     for suite in suites:
         own = list(suite.findall("testcase"))
-        require(int(suite.get("tests", "-1")) == len(own), "Wrong pytest total")
+        require(int(suite.get("tests", "-1")) == len(own) + expected_subtests, "Wrong pytest total")
         require(int(suite.get("failures", "-1")) == sum(bool(c.findall("failure")) for c in own),
                 "Wrong pytest failure total")
         require(int(suite.get("errors", "-1")) == 0 and int(suite.get("skipped", "-1")) == 0,
@@ -62,7 +65,9 @@ def report(path, names, class_name, expected_failures=()):
                     for case in cases if case.get("name") in failed for f in case.findall("failure")),
                 "Intentional failure has wrong cause")
     return {"class": class_name, "names": actual_names, "count": len(cases),
-            "failures": sorted(failed), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+            "failures": sorted(failed), "expected_subtests": expected_subtests,
+            "reported_suite_total": sum(int(x.get("tests", "-1")) for x in suites),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
 
 
 def fixture_controls(directory):

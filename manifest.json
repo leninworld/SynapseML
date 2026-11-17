@@ -20,7 +20,7 @@
   "execution_enabled": true,
   "execution_approval_required": true,
   "source_commit": "2982f5a9b198fc3c35e601187887e18b57634faa",
-  "validation_branch": "validate-dml-review-2856-i2",
+  "validation_branch": "validate-dml-review-2856-i3",
   "target_seconds": 3000,
   "absolute_seconds": 3600,
   "baseline_files": {
@@ -134,7 +134,7 @@
     "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
     "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "187d47aa8446a2dd56eeb4b255f8b59d9a86e7f334fe31ce54aba7a35535009f"
   },
-  "workflow_path": ".github/workflows/validate-dml-review-2856-i2.yml",
+  "workflow_path": ".github/workflows/validate-dml-review-2856-i3.yml",
   "lanes": {
     "candidate-legacy": {
       "memory_gib": 12,
@@ -189,9 +189,9 @@
     "candidate_contract_controls.py": "8a13cc0276103c8063be764a10d74033ed681a78f0d59f961dbb57a16bef88fa",
     "candidate_docs_lane.py": "d0494f86e063226af132342bf29179546c117a96bde04e745d284b0aaae62ffa",
     "candidate_generated_artifacts.py": "6034ac45d4d36ea3f10d29e50de3985f3934550bbc49e09cb31ab3d822074e5d",
-    "candidate_installed_lane.py": "b4b91d1e6e96a171c769d673f7295170a023771a84a3032113beaddc8675c771",
+    "candidate_installed_lane.py": "4d6efe0fe303d9f8de9638496fa5c89a8fc109d9568f397fb5d7b39192dc465e",
     "candidate_installed_plugin.py": "3393881626ed7792812c4467cb761b0d58e47a42fe4c5278bb41bf799f5e8030",
-    "candidate_python_contract.py": "7c6499b9ab7f03376afad51b95f608da92969d6071b3abedc803563a955f9356",
+    "candidate_python_contract.py": "e1e4ab2b5c615e369910261580eebfd1150ee48ad365553ee574b3dddaca82ae",
     "candidate_wheel_identity.py": "14bd3e694dc4c42b10869f5a5cec3d2ae74fdedd2ac769ca15416d403b441ab4",
     "causal_diagnostic_controls.py": "f5167d9a92dc4da25cec5952447d7771039e55f4ad3a9b1b3bdf95758de7ef6d",
     "causal_diagnostics.py": "bbea4f2a138db84214b22866c730dc1e23758118ed42f25bcd2506c041b1fd7f",
@@ -231,20 +231,20 @@
     "website_check.py": "3e63ace9f556deef422b1a5a9533c448b3796e8d11434c35bdef46b3a70f570b",
     "website_contract.py": "1a542dc93ad763cc0d306c18d6b2f5a79aac589a1e91c1b0f93218db1d2bdc58",
     "website_generate.py": "0a1de9f21e874929992a2de5b18b060895d9ea348cde9e6a6365250d96ae1456",
-    "workflow.yml": "8fe80f3b94dfa9706a0648a4a95399a12fe82fae1872ff37d5c23cf409ed853c",
-    ".github/workflows/validate-dml-review-2856-i2.yml": "8fe80f3b94dfa9706a0648a4a95399a12fe82fae1872ff37d5c23cf409ed853c"
+    "workflow.yml": "eeb77b0ae8b0dfd679c53f726913f263174429efc588ea5b470ac432905b5a1c",
+    ".github/workflows/validate-dml-review-2856-i3.yml": "eeb77b0ae8b0dfd679c53f726913f263174429efc588ea5b470ac432905b5a1c"
   },
   "attempt_policy": {
-    "history": "At least17 previous cohorts including failed I1 run44109115966; exact count UNKNOWN; all prior attempts preserved",
+    "history": "At least18 prior cohorts including I1 run44109115966 and I2 run44128124454; exact count UNKNOWN; all previous failures preserved",
     "ordinary_allowance": "UNAVAILABLE",
     "feedback_ceiling": 25,
     "count_closure": "NOT_ESTABLISHED",
-    "proposed_exception": "ONE additional corrected full cohort requires a new explicit user count exception and exact public-packet grant. I2 is a branch label, not ordinal2/25. Slow cold setup can HOLD before tests and still consume this exception.",
+    "proposed_exception": "ONE additional exact installed-only whole lane needs new user count/public grant. I3 is not ordinal3/25. Slow cold setup can HOLD before tests and still consume this exception.",
     "approved": true,
     "no_reruns": true
   },
   "dependency_closure_status": "Fresh full environment per each of three jobs; no venue cache claimed. Existing hash-bound standard public fixture archive retained. No website or notebook execution in this cohort.",
-  "artifact_version": "0.0.1-i2856-feedback-i2-SNAPSHOT",
+  "artifact_version": "0.0.1-i2856-feedback-i3-SNAPSHOT",
   "resource_price": {
     "basis": "Actual native G0 measurements plus complete-scope helper forecasts; not sum of maximum per-step caps",
     "native_lanes": {
@@ -545,8 +545,6 @@
     "redistribute": false
   },
   "workflow_lanes": [
-    "candidate-legacy",
-    "candidate-causal-dml",
     "candidate-installed"
   ],
   "baseline_source_guard_qualification": "92 adopted pinned source blobs:64closed+28source-grounded causal output investigation addendum; prior counters/phases preserved. Five absent new-feature-path guards remain separate.",
@@ -999,5 +997,19 @@
     "privateSourceFreezeSHA256": "51794171356265fd5c6124121943a41b2f02ee5890fa3e811e296542ff0c54e0",
     "pricingReceiptSHA256": "b466771323471b936a294d03689cdcf621bc6d1ae2365487bdc8a564fdf53f5a",
     "pricingSourcePointerQualification": "Numeric receipt prior source pointers are historical authoring provenance; current final source identity is privateSourceFreezeSHA256 and candidate_files. Final source changes do not add tests/fits beyond priced8Scala+2Python."
+  },
+  "feedback_installed_recovery": {
+    "priorRun": "https://github.com/leninworld/SynapseML/actions/runs/44128124454",
+    "priorDiagnosticCommit": "519c0d89af2cba8939f6ea8baab98ad85eac8257",
+    "priorRunConclusion": "FAILURE",
+    "reusedOnly": [
+      "candidate-legacy:10legacy+1registration+10rootFuzz/1inheritedignore",
+      "candidate-causal-dml:32plural+10legacy/0skips"
+    ],
+    "sourcePostimagesUnchanged": true,
+    "installedRerunScope": "Full compile/Testcompile/14styles/Black/build/install/full9authored+2generated/actualorigin/postsourcechecks. No test omitted.",
+    "I2HandwrittenQualified": "Actual9methods passed+23subtests/XMLtests32; oldchecker failed afterward; generated2 andpostsourcecheck notrun. Notgreeninstalled.",
+    "newControls": "Samepytest9.2 isolated actual2subtestsuccess+realfailedsubtest and5specificXMLmutationrejections beforeexpensivebuild; frozene566 binds23.",
+    "noFreshScalaPassClaim": true
   }
 }

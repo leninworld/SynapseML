@@ -1,7 +1,7 @@
 name: Validate DML review feedback
 on:
   push:
-    branches: [validate-dml-review-2856-i2]
+    branches: [validate-dml-review-2856-i3]
 permissions:
   contents: read
   actions: read
@@ -12,9 +12,9 @@ jobs:
   candidate:
     strategy:
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 1
       matrix:
-        lane: [candidate-legacy, candidate-causal-dml, candidate-installed]
+        lane: [candidate-installed]
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:

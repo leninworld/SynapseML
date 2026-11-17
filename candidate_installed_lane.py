@@ -66,6 +66,109 @@ def source_identity(lane, label):
     return {"candidate_files": files, "status_sha256": hashlib.sha256(raw.encode()).hexdigest()}
 
 
+def subtest_dependency_controls(lane, root):
+    """Real isolated pinned-pytest accounting before expensive project builds."""
+    import xml.etree.ElementTree as ET
+    control = root / "real-subtest-controls"
+    control.mkdir()
+    ini = control / "pytest.ini"
+    ini.write_text("[pytest]\n")
+    conftest = control / "conftest.py"
+    conftest.write_text(
+        "import hashlib,json,os,pytest\nfrom pathlib import Path\n"
+        "def pytest_sessionfinish(session,exitstatus):\n"
+        "    config=session.config\n"
+        "    record=dict(version=pytest.__version__,rootdir=str(config.rootpath.resolve()),"
+        "configfile=str(config.inipath.resolve()),ini_sha256=hashlib.sha256(config.inipath.read_bytes()).hexdigest(),"
+        "autoload_disabled=os.environ.get('PYTEST_DISABLE_PLUGIN_AUTOLOAD')=='1',"
+        "consumer_absent=not config.pluginmanager.hasplugin('candidate_installed_plugin'),"
+        "cache_absent=not config.pluginmanager.hasplugin('cacheprovider'),exitstatus=int(exitstatus))\n"
+        "    Path(os.environ['SYNAPSEML_SUBTEST_CONTROL_RECEIPT']).write_text(json.dumps(record))\n")
+    test = control / "test_real_subtest_accounting.py"
+    test.write_text("import unittest\nclass SubtestFixture(unittest.TestCase):\n"
+                    "    def test_subtests(self):\n"
+                    "        for i in range(2):\n"
+                    "            with self.subTest(i=i):\n"
+                    "                self.assertTrue(True)\n")
+
+    def run_control(label, source, junit, exit_code):
+        receipt = control / (label + "-configuration.json")
+        updates = {"PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1", "PYTEST_ADDOPTS": "",
+                   "SYNAPSEML_SUBTEST_CONTROL_RECEIPT": str(receipt)}
+        saved = {name: os.environ.get(name) for name in updates}
+        consumer = os.environ.pop("SYNAPSEML_CANDIDATE_CONSUMER_CONFIG", None)
+        os.environ.update(updates)
+        try:
+            lane.command(label, ["python", "-m", "pytest", "-q", "-p", "no:cacheprovider",
+                                 "-c", str(ini), "--rootdir=" + str(control),
+                                 "--junitxml=" + str(junit), str(source)],
+                         20, expected=(exit_code,), cwd=control)
+        finally:
+            for name, value in saved.items():
+                if value is None:
+                    os.environ.pop(name, None)
+                else:
+                    os.environ[name] = value
+            if consumer is not None:
+                os.environ["SYNAPSEML_CANDIDATE_CONSUMER_CONFIG"] = consumer
+        require(receipt.is_file(), "Missing actual subtest configuration receipt")
+        actual = json.loads(receipt.read_text())
+        require(actual["version"] == lane.manifest["candidate_python"]["pytest_version"],
+                "Wrong subtest-control pytest version")
+        require(actual["rootdir"] == str(control.resolve()) and actual["configfile"] == str(ini.resolve())
+                and actual["ini_sha256"] == sha(ini), "Project or unexpected subtest-control configuration")
+        require(actual["autoload_disabled"] and actual["consumer_absent"] and actual["cache_absent"]
+                and actual["exitstatus"] == exit_code, "Subtest control isolation differs")
+        return actual
+
+    junit = control / "real-subtest-positive.xml"
+    positive_config = run_control("real-pytest-subtest-accounting", test, junit, 0)
+    accepted = report(junit, ("test_subtests",), "SubtestFixture", expected_subtests=2)
+    negatives = []
+    reasons = {"wrong-total-low": "Wrong pytest total", "wrong-total-high": "Wrong pytest total",
+               "hidden-failure": "Unexpected pytest failures", "hidden-error": "Skipped/error pytest case",
+               "hidden-skip": "Skipped/error pytest case"}
+    for label, expected_reason in reasons.items():
+        tree = ET.fromstring(junit.read_bytes())
+        suite = tree if tree.tag == "testsuite" else tree.find("testsuite")
+        if label.startswith("wrong-total"):
+            suite.set("tests", "2" if label.endswith("low") else "4")
+        else:
+            tag = {"hidden-failure": "failure", "hidden-error": "error", "hidden-skip": "skipped"}[label]
+            ET.SubElement(suite.find("testcase"), tag)
+        target = control / ("real-subtest-" + label + ".xml")
+        target.write_bytes(ET.tostring(tree))
+        try:
+            report(target, ("test_subtests",), "SubtestFixture", expected_subtests=2)
+        except RuntimeError as error:
+            require(str(error) == expected_reason, "Wrong subtest-control rejection: " + label)
+            negatives.append({"case": label, "reason": str(error), "xmlSHA256": sha(target)})
+        else:
+            raise RuntimeError("Accepted invalid real-subtest report: " + label)
+    failure_test = control / "test_real_subtest_failure.py"
+    failure_test.write_text(test.read_text().replace("self.assertTrue(True)", "self.assertTrue(i == 0)"))
+    failure_xml = control / "real-subtest-failure.xml"
+    failure_config = run_control("real-pytest-failed-subtest-accounting", failure_test, failure_xml, 1)
+    require(failure_xml.is_file(), "Missing actual failed-subtest XML")
+    failure_tree = ET.fromstring(failure_xml.read_bytes())
+    failure_suites = [failure_tree] if failure_tree.tag == "testsuite" else list(failure_tree)
+    require(failure_suites and sum(int(x.get("failures", "0")) for x in failure_suites) >= 1,
+            "Actual failed-subtest XML has no failure total")
+    try:
+        report(failure_xml, ("test_subtests",), "SubtestFixture", expected_subtests=2)
+    except RuntimeError as error:
+        require(str(error) in ("Unexpected pytest failures", "Exact pytest case names differ",
+                              "Wrong pytest total", "Wrong pytest failure total"),
+                "Wrong actual failed-subtest rejection")
+        negatives.append({"case": "actual-failed-subtest", "reason": str(error),
+                          "xmlSHA256": sha(failure_xml)})
+    else:
+        raise RuntimeError("Accepted actual failed subtest")
+    return {"positive": accepted, "negativeCases": negatives, "expectedSubtests": 2,
+            "positiveConfiguration": positive_config, "failureConfiguration": failure_config,
+            "projectTestsRun": False, "realDependency": True}
+
+
 def dependency_controls(lane):
     root = lane.root / "candidate-python-controls"
     root.mkdir()
@@ -143,7 +246,8 @@ def dependency_controls(lane):
         outcomes.append({"label": label, "expected_exit": exit_code, "report": accepted,
                          "collectionOrderControls": order_controls,
                          "hook_receipt_sha256": sha(config["session_result"])})
-    result = {"state": "EARLY_REAL_DEPENDENCY_CONTROLS", "projectTestsRun": False,
+    subtests = subtest_dependency_controls(lane, root)
+    result = {"state": "EARLY_REAL_DEPENDENCY_CONTROLS", "projectTestsRun": False, "subtests": subtests,
               "XML": xml, "wheelIdentity": wheel_identity, "wheelControls": 2, "actualPytestControls": outcomes, "versions": versions}
     (lane.root / "candidate-python-early-controls.json").write_text(json.dumps(result, indent=2))
 
@@ -178,7 +282,14 @@ def upstream_python(lane, role, artifact, subpath, source_sha):
                  600 if role == "handwritten" else 360)
     require(upstream_report.is_file(), "Upstream testPython did not write its report")
     shutil.copy2(upstream_report, root / "actual-upstream.xml")
-    accepted = report(root / "actual-upstream.xml", names, class_name)
+    if role == "handwritten":
+        require(lane.manifest["candidate_files"][TEST_PATH] ==
+                "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
+                "Handwritten subtest count source changed")
+    # Exact frozen handwritten source: 3 models x 7 getters + 2 offset roles.
+    # Pytest 9.2 includes successful unittest subtests in the suite total.
+    accepted = report(root / "actual-upstream.xml", names, class_name,
+                      expected_subtests=23 if role == "handwritten" else 0)
     session = json.loads(Path(config["session_result"]).read_text())
     require(session["complete"] and session["role"] == role and not session.get("controlOnly", False),
             "Installed consumer session incomplete")
