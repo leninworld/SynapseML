@@ -12,9 +12,9 @@ jobs:
   candidate:
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 1
       matrix:
-        lane: [candidate-legacy, candidate-causal-dml, candidate-installed, docs-website]
+        lane: [docs-website]
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:

@@ -16,7 +16,7 @@
     "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
     "maximum_bytes": 19028608
   },
-  "revision": "2328-D17-FOUR-JOB-EXECUTION-PROPOSED",
+  "revision": "2328-D17-WEBSITE-RECOVERY-I2-PROPOSED",
   "execution_enabled": true,
   "execution_approval_required": true,
   "source_commit": "d17f57e314517e4b413cda3cdcd86e7ad15ddb04",
@@ -136,39 +136,6 @@
   },
   "workflow_path": ".github/workflows/validate-dml-multiple-treatments-2328.yml",
   "lanes": {
-    "candidate-legacy": {
-      "memory_gib": 12,
-      "cpus": 3,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 12,
-      "network_gib": 24,
-      "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 1,
-      "pre_environment_remaining_seconds": 2000,
-      "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
-    },
-    "candidate-causal-dml": {
-      "memory_gib": 12,
-      "cpus": 3,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 12,
-      "network_gib": 24,
-      "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 1,
-      "pre_environment_remaining_seconds": 2700,
-      "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
-    },
-    "candidate-installed": {
-      "memory_gib": 12,
-      "cpus": 3,
-      "minimum_start_disk_gib": 64,
-      "initial_available_gib": 12,
-      "network_gib": 24,
-      "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 1,
-      "pre_environment_remaining_seconds": 2400,
-      "resource_basis": "Actual native G0 measured5.05GiB anon+kernel and~218s compile/~246s solve; candidate scope/largeN gated on exact whole approved plan and live runtime measurements; no upstream heap parity claim."
-    },
     "docs-website": {
       "memory_gib": 12,
       "cpus": 3,
@@ -182,7 +149,7 @@
     }
   },
   "packet_sha256": {
-    ".github/workflows/validate-dml-multiple-treatments-2328.yml": "96862f02417c8176d5c9af89f9f6152d72ae77502c5610fb161ca8328d683c8e",
+    ".github/workflows/validate-dml-multiple-treatments-2328.yml": "4df76c8692ff4c2b8c759fc5dc2838ae25f002de1efc6524ffe1f4a9120e8a52",
     "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
     "baseline-shipping-black.failures.json": "ea886ac2620016b6c0853dbb05cfbf7bde148743dc5d7b18daf59fd21044ae85",
     "bootstrap.py": "0123c26fa0ad2be9917d0f8d1ff0b2967f2bbed51e5bbac3d6911626642a0277",
@@ -243,12 +210,12 @@
     "website_check.py": "3e63ace9f556deef422b1a5a9533c448b3796e8d11434c35bdef46b3a70f570b",
     "website_contract.py": "1a542dc93ad763cc0d306c18d6b2f5a79aac589a1e91c1b0f93218db1d2bdc58",
     "website_generate.py": "0a1de9f21e874929992a2de5b18b060895d9ea348cde9e6a6365250d96ae1456",
-    "workflow.yml": "96862f02417c8176d5c9af89f9f6152d72ae77502c5610fb161ca8328d683c8e"
+    "workflow.yml": "4df76c8692ff4c2b8c759fc5dc2838ae25f002de1efc6524ffe1f4a9120e8a52"
   },
   "attempt_policy": {
     "history": "UNKNOWN",
     "ordinary_allowance": "UNAVAILABLE",
-    "proposed_exception": "One new d17 current-base runtime attempt under November13 delegation; exact packet review/root/native admission pending. No ordinary credit restored; all prior consumed attempts/historyUNKNOWN preserved.",
+    "proposed_exception": "Proposed single diagnosed website-only correction after d17 run44006383230; prior website failed before npm/build on stale nested sidebar SHA. Three successful d17 native jobs retained, not rerun or waived. Historical count UNKNOWN and all prior consumed runs preserved; exact results/execution review, root agreement and native admission required. No automatic next attempt.",
     "approved": true,
     "no_reruns": true
   },
@@ -406,16 +373,13 @@
       "cumulativeBytes": 1162703,
       "noReset": true
     },
-    "newVisualAdmissionQualification": "Lossless website limits reused unchanged from actual RQ-A; this new d17 four-job attempt still requires exact whole-packet/root/native admission. Shared actualworkflow.created_at+3000 active/+3600cleanup includingqueue; no oldclock import.",
-    "singleWebsiteJobNewAdmissionProposed": false,
-    "fourAffectedJobsOneProposedException": true,
+    "newVisualAdmissionQualification": "Unchanged actual approved lossless website caps and full build/tests. New diagnosed website-only admission PROPOSED; no old clock or automatic exception grant.",
+    "singleWebsiteJobNewAdmissionProposed": true,
+    "fourAffectedJobsOneProposedException": false,
     "currentAffectedJobs": [
-      "candidate-legacy",
-      "candidate-causal-dml",
-      "candidate-installed",
       "docs-website"
     ],
-    "maximumParallel": 4
+    "maximumParallel": 1
   },
   "full_validation_acceptance": {
     "baseline_only": false,
@@ -437,9 +401,6 @@
       "unrelated credentialed quick examples"
     ],
     "currentAffectedLanes": [
-      "candidate-legacy",
-      "candidate-causal-dml",
-      "candidate-installed",
       "docs-website"
     ],
     "rootFuzzingInheritedIgnore": {
@@ -509,7 +470,17 @@
       "candidate-causal-dml",
       "candidate-installed",
       "docs-website"
-    ]
+    ],
+    "retainedCurrentD17Native": {
+      "run": 44006383230,
+      "head": "f2ab80f0c9496068cd616d2147fd51678f58f041",
+      "jobs": {
+        "candidate-legacy": 133782651808,
+        "candidate-causal-dml": 133782652625,
+        "candidate-installed": 133782652196
+      },
+      "qualification": "Actual SUCCESS statuses and root hash-verified evidence retained, subject whole results acceptance. Required current-head components are not waived or claimed rerun by this website-only plan."
+    }
   },
   "source_object_count": 92,
   "dataset": {
@@ -522,9 +493,6 @@
     "redistribute": false
   },
   "workflow_lanes": [
-    "candidate-legacy",
-    "candidate-causal-dml",
-    "candidate-installed",
     "docs-website"
   ],
   "baseline_source_guard_qualification": "92 adopted pinned source blobs:64closed+28source-grounded causal output investigation addendum; prior counters/phases preserved. Five absent new-feature-path guards remain separate.",
@@ -872,7 +840,7 @@
     "package-lock.json": "1069bda5e22a6e1b2186521bc9f2edd0464648e061f08d57602fcfb480546c7b",
     "docusaurus.config.js": "df129376b138f88bcd215e5f17bad463892194d003264f65b94c685453baa133",
     "legacyMarkdownPreprocessor.js": "db04845fe661e4aaef47e14a165d4882b90ad55c0e9b54eac315368311b81f0e",
-    "sidebars.js": "3f152c591ab13a67d4ae57021ada8a133afd6674bef35b2b92a4610e9555ff60"
+    "sidebars.js": "462cb174c1dac1d4ea890c3d506a5d1b2da42e49bbb1fb943e84ba6b50e1b08b"
   },
   "candidate_python": {
     "execution_authorized": true,
@@ -893,11 +861,11 @@
   },
   "source_tree": "20d1dd7de03f2b344bbe6f64ec76e8983e7f020c",
   "common_clock": {
-    "origin": "Actual workflow.created_at, identical across all four jobs including queue",
+    "origin": "Actual new website workflow.created_at including queue; no prior run time credit",
     "active_stop_seconds": 3000,
     "cleanup_evidence_only_ceiling_seconds": 3600,
     "per_job_clock_reset_allowed": false,
-    "max_parallel": 4,
+    "max_parallel": 1,
     "no_other_workflow_concurrent": true
   },
   "retained_evidence_qualification": {
@@ -920,6 +888,14 @@
       "103 cases passed on current master",
       "old JAR/wheel reused as current-head artifact"
     ],
-    "sourceIntegration": "Local fetch/worktree deferred to results-accepted finalpublication packet; no local source acquisition in this validation."
+    "sourceIntegration": "Local fetch/worktree deferred to results-accepted finalpublication packet; no local source acquisition in this validation.",
+    "d17NativeRun": 44006383230,
+    "d17NativeCommit": "f2ab80f0c9496068cd616d2147fd51678f58f041",
+    "d17NativeJobs": {
+      "candidate-legacy": 133782651808,
+      "candidate-installed": 133782652196,
+      "candidate-causal-dml": 133782652625
+    },
+    "d17NativeStatus": "Actual Actions SUCCESS; semantic evidence acceptance is separately root/results-review bound, not inferred by this proposed manifest."
   }
 }
