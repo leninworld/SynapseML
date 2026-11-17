@@ -156,15 +156,20 @@ private[causal] object DoubleMLMultipleTreatmentTraining {
     }
   }
 
-  private def prediction(model: Estimator[_ <: Model[_]], label: String,
-                         inputs: Array[String], train: DataFrame, test: DataFrame,
-                         residual: String): DataFrame = {
+  private def copyForPrediction(model: Estimator[_ <: Model[_]]): Estimator[_ <: Model[_]] = {
     val copied = model.copy(model.extractParamMap())
     copied match {
       case classifier: MultilayerPerceptronClassifier if classifier.isDefined(classifier.layers) =>
         classifier.setLayers(classifier.getLayers.clone())
       case _ =>
     }
+    copied
+  }
+
+  private def prediction(model: Estimator[_ <: Model[_]], label: String,
+                         inputs: Array[String], train: DataFrame, test: DataFrame,
+                         residual: String): DataFrame = {
+    val copied = copyForPrediction(model)
     val prefix = Identifiable.randomUID("dml_nuisance")
     val predictionCol = prefix + "_prediction"
     val probabilityCol = prefix + "_probability"

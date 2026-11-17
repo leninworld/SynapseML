@@ -20,7 +20,7 @@
   "execution_enabled": true,
   "execution_approval_required": true,
   "source_commit": "2982f5a9b198fc3c35e601187887e18b57634faa",
-  "validation_branch": "validate-dml-review-2856-i1",
+  "validation_branch": "validate-dml-review-2856-i2",
   "target_seconds": 3000,
   "absolute_seconds": 3600,
   "baseline_files": {
@@ -126,7 +126,7 @@
     "core/src/main/python/synapse/ml/causal/DoubleMLModel.py": "a3c6ebf85a7f877d128d5194f243c0fc30d764cb75064e3305ded788b9541aa3",
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLEstimator.scala": "0b43a14e4760d67dae18360dcb98845e76a4c6d352f98178341684c3acdc465c",
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "3ad12f95007d555dfc635c47b980765488728420a5e4e9e9da2a095f974b2478",
-    "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "39ca94dbc4c3d974e2ca4209b46a0296f955c80229cc4fb39852ccc76265188e",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "267e060d5b07aefef267fc4c3cf738df813a4ee95620a9893f0464ee1d7b0a17",
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
     "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
     "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "ef1bb659ab46ab2278c724bbdf41f563e3eef12d5284e1eff1b92f92a2a70592",
@@ -134,7 +134,7 @@
     "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
     "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "187d47aa8446a2dd56eeb4b255f8b59d9a86e7f334fe31ce54aba7a35535009f"
   },
-  "workflow_path": ".github/workflows/validate-dml-review-2856.yml",
+  "workflow_path": ".github/workflows/validate-dml-review-2856-i2.yml",
   "lanes": {
     "candidate-legacy": {
       "memory_gib": 12,
@@ -171,7 +171,6 @@
     }
   },
   "packet_sha256": {
-    ".github/workflows/validate-dml-review-2856.yml": "9193fcf119f9173698fd4a69014e362321db26d4aca5d7a775dbd49df81f1f86",
     "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
     "baseline-shipping-black.failures.json": "ea886ac2620016b6c0853dbb05cfbf7bde148743dc5d7b18daf59fd21044ae85",
     "bootstrap.py": "0123c26fa0ad2be9917d0f8d1ff0b2967f2bbed51e5bbac3d6911626642a0277",
@@ -179,7 +178,7 @@
     "candidate/core/src/main/python/synapse/ml/causal/DoubleMLModel.py": "a3c6ebf85a7f877d128d5194f243c0fc30d764cb75064e3305ded788b9541aa3",
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLEstimator.scala": "0b43a14e4760d67dae18360dcb98845e76a4c6d352f98178341684c3acdc465c",
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "3ad12f95007d555dfc635c47b980765488728420a5e4e9e9da2a095f974b2478",
-    "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "39ca94dbc4c3d974e2ca4209b46a0296f955c80229cc4fb39852ccc76265188e",
+    "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "267e060d5b07aefef267fc4c3cf738df813a4ee95620a9893f0464ee1d7b0a17",
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
     "candidate/core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
     "candidate/core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "ef1bb659ab46ab2278c724bbdf41f563e3eef12d5284e1eff1b92f92a2a70592",
@@ -232,19 +231,20 @@
     "website_check.py": "3e63ace9f556deef422b1a5a9533c448b3796e8d11434c35bdef46b3a70f570b",
     "website_contract.py": "1a542dc93ad763cc0d306c18d6b2f5a79aac589a1e91c1b0f93218db1d2bdc58",
     "website_generate.py": "0a1de9f21e874929992a2de5b18b060895d9ea348cde9e6a6365250d96ae1456",
-    "workflow.yml": "9193fcf119f9173698fd4a69014e362321db26d4aca5d7a775dbd49df81f1f86"
+    "workflow.yml": "8fe80f3b94dfa9706a0648a4a95399a12fe82fae1872ff37d5c23cf409ed853c",
+    ".github/workflows/validate-dml-review-2856-i2.yml": "8fe80f3b94dfa9706a0648a4a95399a12fe82fae1872ff37d5c23cf409ed853c"
   },
   "attempt_policy": {
-    "history": "At least16 previous cohorts; exact count UNKNOWN; every prior attempt preserved",
+    "history": "At least17 previous cohorts including failed I1 run44109115966; exact count UNKNOWN; all prior attempts preserved",
     "ordinary_allowance": "UNAVAILABLE",
     "feedback_ceiling": 25,
     "count_closure": "NOT_ESTABLISHED",
-    "proposed_exception": "ONE exact reviewed diagnostic cohort requires explicit user count exception and exact public-packet grant before publication/execution. This label I1 is not runtime ordinal1/25.",
+    "proposed_exception": "ONE additional corrected full cohort requires a new explicit user count exception and exact public-packet grant. I2 is a branch label, not ordinal2/25. Slow cold setup can HOLD before tests and still consume this exception.",
     "approved": true,
     "no_reruns": true
   },
   "dependency_closure_status": "Fresh full environment per each of three jobs; no venue cache claimed. Existing hash-bound standard public fixture archive retained. No website or notebook execution in this cohort.",
-  "artifact_version": "0.0.1-i2856-feedback-i1-SNAPSHOT",
+  "artifact_version": "0.0.1-i2856-feedback-i2-SNAPSHOT",
   "resource_price": {
     "basis": "Actual native G0 measurements plus complete-scope helper forecasts; not sum of maximum per-step caps",
     "native_lanes": {
@@ -550,7 +550,7 @@
     "candidate-installed"
   ],
   "baseline_source_guard_qualification": "92 adopted pinned source blobs:64closed+28source-grounded causal output investigation addendum; prior counters/phases preserved. Five absent new-feature-path guards remain separate.",
-  "candidate_patch_sha256": "3a3d6915b9b11d8bdae9b1bd04034a2f1b08f753ea0fa3d7970c3c8d79ac2260",
+  "candidate_patch_sha256": "0320a40bd2905de540c2f9ae48200fab29fa77ec9271266a325d9d82c28fe208",
   "test_fixtures": {
     "url": "https://mmlspark.blob.core.windows.net/installers/datasets-2023-04-03.tgz",
     "hash_algorithm": "sha256",
@@ -576,7 +576,7 @@
       "core/src/main/python/synapse/ml/causal/DoubleMLModel.py": "a3c6ebf85a7f877d128d5194f243c0fc30d764cb75064e3305ded788b9541aa3",
       "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLEstimator.scala": "0b43a14e4760d67dae18360dcb98845e76a4c6d352f98178341684c3acdc465c",
       "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "3ad12f95007d555dfc635c47b980765488728420a5e4e9e9da2a095f974b2478",
-      "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "39ca94dbc4c3d974e2ca4209b46a0296f955c80229cc4fb39852ccc76265188e",
+      "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "267e060d5b07aefef267fc4c3cf738df813a4ee95620a9893f0464ee1d7b0a17",
       "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
       "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
       "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "ef1bb659ab46ab2278c724bbdf41f563e3eef12d5284e1eff1b92f92a2a70592",
@@ -596,7 +596,7 @@
       "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "c5fddf4ea800cda0b756bca6f7faecfcaad1ef747887c401341bfb71b2caa3ed",
       "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "a8f71556c6f86c91cf5fac9a9e25e7ff6e3fdaf9934385a0ae55f92218894af9"
     },
-    "patch_sha256": "3a3d6915b9b11d8bdae9b1bd04034a2f1b08f753ea0fa3d7970c3c8d79ac2260",
+    "patch_sha256": "0320a40bd2905de540c2f9ae48200fab29fa77ec9271266a325d9d82c28fe208",
     "suite_cases": {
       "com.microsoft.azure.synapse.ml.causal.VerifyDoubleMLEstimator": [
         "Get treatment effects",
@@ -996,7 +996,7 @@
       "test_ambiguous_jvm_route_rejects_statistics_after_copy_and_reload",
       "test_auxiliary_glr_offset_both_roles_preserve_caller_parameters"
     ],
-    "privateSourceFreezeSHA256": "4b2808c432153a880322a3f3da8bd01647bcf08d52d68c0c9fd77ce85d0d6cba",
+    "privateSourceFreezeSHA256": "51794171356265fd5c6124121943a41b2f02ee5890fa3e811e296542ff0c54e0",
     "pricingReceiptSHA256": "b466771323471b936a294d03689cdcf621bc6d1ae2365487bdc8a564fdf53f5a",
     "pricingSourcePointerQualification": "Numeric receipt prior source pointers are historical authoring provenance; current final source identity is privateSourceFreezeSHA256 and candidate_files. Final source changes do not add tests/fits beyond priced8Scala+2Python."
   }
