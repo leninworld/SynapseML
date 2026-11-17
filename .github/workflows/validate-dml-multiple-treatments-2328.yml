@@ -12,8 +12,9 @@ jobs:
   candidate:
     strategy:
       fail-fast: false
+      max-parallel: 4
       matrix:
-        lane: [docs-website]
+        lane: [candidate-legacy, candidate-causal-dml, candidate-installed, docs-website]
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -24,7 +25,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: microsoft/SynapseML
-          ref: 45578f08e6bacf8475de0e92f1717e761d40f795
+          ref: d17f57e314517e4b413cda3cdcd86e7ad15ddb04
           path: source
           persist-credentials: false
       - name: Full candidate lane in bounded native Docker
