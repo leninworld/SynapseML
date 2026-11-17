@@ -26,22 +26,25 @@ def checked_report(path,suite,wanted,allowed_skips=()):
     return result
 
 
-def complete_suite(lane,config,label,suite,seconds,module='core'):
+def complete_suite(lane,config,label,suite,seconds,module='core',cases=None):
     reports=lane.source/('target/test-reports' if module=='root' else module+'/target/test-reports')
     prior=lane.root/(label+'-prior-junit');prior.mkdir()
     for path in reports.glob('*.xml'):
         shutil.copy2(path,prior/path.name)
         path.unlink()  # Only this owned ephemeral report directory; preserve raw prior bytes first.
     selector=('root/testOnly ' if module=='root' else module+'/testOnly ')+suite
+    if cases is not None:
+        selector += ' -- ' + ' '.join('-t '+json.dumps(name) for name in cases)
     output=lane.sbt(label,[selector],seconds)
     matches=[path for path in reports.glob('*.xml')if ET.parse(path).getroot().get('name')==suite]
     require(len(matches)==1,'Missing/duplicate actual native suite')
     target=lane.root/(label+'.xml');shutil.copy2(matches[0],target)
-    result=checked_report(target,suite,config['suite_cases'][suite],
+    result=checked_report(target,suite,config['suite_cases'][suite] if cases is None else cases,
                           config.get('suite_allowed_skips',{}).get(suite,()))
     result.update(events=classify_log(output),
                   per_draw_timing='UNESTABLISHED_UNLESS_ACTUAL_LOG_UID_AND_TEST_CONTEXT_ALLOW_PAIRING',
-                  full_unfiltered_selector=selector)
+                  full_unfiltered_selector=selector if cases is None else None,
+                  actual_selector=selector,filteredEarlyCases=cases)
     (lane.root/(label+'-selection.json')).write_text(json.dumps(result,indent=2))
     return result
 
@@ -54,7 +57,8 @@ def validate(lane):
     candidate_unchanged(lane,'pre-native')
     grouped=lane.name in config.get('causal_groups',{})
     discovery_seconds=limits.get('discovery_seconds',0) if grouped else 0
-    after_compile=discovery_seconds+limits['suite_seconds']+limits['registration_seconds']+limits.get('fuzzing_seconds',0)+\
+    early_seconds=limits.get('feedback_early_seconds',0)
+    after_compile=early_seconds+discovery_seconds+limits['suite_seconds']+limits['registration_seconds']+limits.get('fuzzing_seconds',0)+\
         limits['reserve_seconds']
     compile_cap=min(limits['compile_max_seconds'],lane.deadline-time.time()-after_compile)
     require(compile_cap>0,'HOLD complete native acceptance cannot fit original clock')
@@ -70,7 +74,18 @@ def validate(lane):
         discovery=causal_discovery(raw,config['causal_suite_inventory'])
         (lane.root/'candidate-causal-discovery.json').write_text(json.dumps(discovery,indent=2))
         actual_discovery_controls(raw,config['causal_suite_inventory'],lane.root)
-        clock_admission(time.time(),lane.deadline,limits['suite_seconds']+limits['reserve_seconds'])
+        clock_admission(time.time(),lane.deadline,after_compile-discovery_seconds)
+    if lane.name == 'candidate-causal-dml':
+        early=config['feedback_early']
+        api=complete_suite(lane,config,'feedback-numeric-metadata-api',early['suite'],
+                           early['api_seconds'],cases=early['api_cases'])
+        focused=complete_suite(lane,config,'feedback-real-public-fit-regressions',early['suite'],
+                               early['fit_seconds'],cases=early['fit_cases'])
+        (lane.root/'feedback-early-result.json').write_text(json.dumps(
+            {'api':api,'focused':focused,'scope':'Early exact cases; full suites remain required',
+             'baselineRun':False,'oldCodeFailureEvidence':'Recorded static reasoning only'},indent=2))
+        clock_admission(time.time(),lane.deadline,after_compile-discovery_seconds-early_seconds)
+    if grouped:
         try:return causal_package(lane,config,limits)
         finally:candidate_unchanged(lane,'final-native-causal')
     suite=complete_suite(lane,config,'candidate-full-native-suite',limits['suite'],limits['suite_seconds'])

@@ -3,11 +3,16 @@
 
 package com.microsoft.azure.synapse.ml.causal
 
+import com.microsoft.azure.synapse.ml.core.schema.CategoricalUtilities
 import com.microsoft.azure.synapse.ml.core.test.base.TestBase
-import org.apache.spark.ml.classification.LogisticRegression
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.regression.LinearRegression
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.ml.attribute.{BinaryAttribute, NominalAttribute, NumericAttribute}
+import org.apache.spark.ml.classification.{LogisticRegression, MultilayerPerceptronClassifier}
+import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.ml.linalg.Vector
+import org.apache.spark.ml.param.{Param, ParamMap}
+import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.ml.regression.{GeneralizedLinearRegression, LinearRegression, LinearRegressionModel, Regressor}
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.functions.{col, lit}
 import org.apache.spark.sql.types.{DoubleType, LongType, StringType, StructField, StructType}
 
@@ -433,4 +438,184 @@ class DoubleMLMultipleTreatmentsSuite extends TestBase {
       }
     }
   }
+
+  test("MLP nuisance layers remain caller-owned across parallel plural draws") {
+    val layers = Array(1, 4, 2)
+    val before = layers.clone()
+    val outcome = new MultilayerPerceptronClassifier().setLayers(layers)
+      .setMaxIter(5).setSeed(41L).setBlockSize(32)
+    val data = frame(2).drop("rowId").withColumn("y", (col("y") > 0).cast("integer"))
+    val model = estimator(2).setOutcomeModel(outcome).setMaxIter(3).setParallelism(2).fit(data)
+    assert(layers.sameElements(before))
+    assert(outcome.getLayers.sameElements(before))
+    assert(outcome.getLayers eq layers)
+    assert(model.getFittedTreatmentCols.sameElements(names(2)))
+    assert(model.getRawTreatmentEffectRows.length == 3)
+    assert(model.getAvgTreatmentEffects.length == 2)
+    assert(model.getAvgTreatmentEffects.forall(java.lang.Double.isFinite))
+  }
+
+  test("Every plural statistic rejects an ambiguous fitted route including copied and reloaded models") {
+    val fitted = estimator(2).setMaxIter(2).fit(frame(2))
+    def getters(model: DoubleMLModel): Seq[() => Any] = Seq(
+      () => model.getRawTreatmentEffectCount, () => model.getRawTreatmentEffectsByIteration,
+      () => model.getRawTreatmentEffectRows, () => model.getFittedTreatmentCols,
+      () => model.getAvgTreatmentEffects, () => model.getPValues, () => model.getConfidenceIntervals)
+    getters(fitted).foreach(_())
+    val validCopy = fitted.copy(ParamMap.empty)
+    val validPath = Files.createTempDirectory(tmpDir, "plural-valid-route-").resolve("model").toString
+    fitted.write.overwrite().save(validPath)
+    Seq(validCopy, DoubleMLModel.load(validPath)).foreach(model => getters(model).foreach(_()))
+    fitted.setTreatmentCol("t0")
+    val ambiguousPath = Files.createTempDirectory(tmpDir, "plural-ambiguous-route-").resolve("model").toString
+    fitted.write.overwrite().save(ambiguousPath)
+    Seq(fitted, fitted.copy(ParamMap.empty), DoubleMLModel.load(ambiguousPath)).foreach { model =>
+      getters(model).foreach { getter =>
+        assert(intercept[IllegalStateException](getter()).getMessage == missing)
+      }
+    }
+  }
+
+  test("Real indexed treatment columns are rejected by public fit without rejecting categorical confounders") {
+    val data = frame(2)
+    val first = new StringIndexer().setInputCol("group").setOutputCol("indexed0").fit(data).transform(data)
+      .drop("group")
+    val bothInput = first.withColumn("otherGroup", (col("rowId") % 3).cast("string"))
+    val both = new StringIndexer().setInputCol("otherGroup").setOutputCol("indexed1")
+      .fit(bothInput).transform(bothInput).drop("otherGroup")
+    for (treatments <- Seq(Array("t0", "indexed0"), Array("indexed0", "indexed1"))) {
+      val error = intercept[IllegalArgumentException](estimator(2).setTreatmentCols(treatments).fit(both))
+      assert(error.getMessage ==
+        "requirement failed: Treatment column 'indexed0' is categorical; multiple treatments must be continuous")
+    }
+    val confounder = new StringIndexer().setInputCol("group").setOutputCol("indexedGroup")
+      .fit(data).transform(data).drop("group")
+    assert(estimator(2).fit(confounder).getAvgTreatmentEffects.forall(java.lang.Double.isFinite))
+  }
+
+  test("Treatment metadata API accepts numeric types and rejects nominal binary and SynapseML categories") {
+    val data = frame(2)
+    Seq("integer", "long", "double").foreach { kind =>
+      DoubleMLMultipleTreatmentTraining.validate(estimator(2), data.withColumn("t0", col("t0").cast(kind)))
+    }
+    val binaryNumbers = data.withColumn("t0", (col("rowId") % 2).cast("integer"))
+    DoubleMLMultipleTreatmentTraining.validate(estimator(2), binaryNumbers)
+    val numeric = data.withColumn("t0", col("t0").as("t0", NumericAttribute.defaultAttr.toMetadata()))
+    DoubleMLMultipleTreatmentTraining.validate(estimator(2), numeric)
+    val nominal = data.withColumn("t0",
+      col("t0").as("t0", NominalAttribute.defaultAttr.withNumValues(3).toMetadata()))
+    val binary = data.withColumn("t0", col("t0").as("t0", BinaryAttribute.defaultAttr.toMetadata()))
+    val synapse = CategoricalUtilities.setLevels(binaryNumbers, "t0", Array(0, 1))
+    Seq(nominal, binary, synapse).foreach { categorical =>
+      assert(intercept[IllegalArgumentException] {
+        DoubleMLMultipleTreatmentTraining.validate(estimator(2), categorical)
+      }.getMessage ==
+        "requirement failed: Treatment column 't0' is categorical; multiple treatments must be continuous")
+    }
+  }
+
+  test("Real GLR offset auxiliaries survive literal aliases in both nuisance roles without caller mutation") {
+    for (role <- Seq("treatment", "outcome"); offset <- Seq("off.set", "off`set")) {
+      val data = frame(2).withColumnRenamed("x", "prediction").withColumnRenamed("group", "probability")
+        .withColumn("rawPrediction", lit(0.1) * org.apache.spark.sql.functions.sin(col("rowId")))
+        .withColumn(offset, lit(0.2) * org.apache.spark.sql.functions.sin(col("rowId") * 0.23))
+      val nuisance = new GeneralizedLinearRegression().setFamily("gaussian").setLink("identity")
+        .setRegParam(0).setMaxIter(10).setOffsetCol(offset)
+      val before = nuisance.extractParamMap().toSeq.toSet
+      val e = estimator(2)
+      if (role == "treatment") e.setTreatmentModel(nuisance) else e.setOutcomeModel(nuisance)
+      val model = e.fit(data)
+      assert(model.getFittedTreatmentCols.sameElements(names(2)))
+      assert(model.getAvgTreatmentEffects.length == 2)
+      assert(model.getAvgTreatmentEffects.forall(java.lang.Double.isFinite))
+      assert(nuisance.getOffsetCol == offset)
+      assert(nuisance.extractParamMap().toSeq.toSet == before)
+    }
+  }
+
+  test("Auxiliary resolution preserves case empty and unset semantics and rejects missing or target inputs") {
+    val data = frame(2).withColumn("offset", lit(0.2) * org.apache.spark.sql.functions.sin(col("rowId") * 0.23))
+    val previous = spark.conf.get("spark.sql.caseSensitive", "false")
+    def outcome(offset: String): GeneralizedLinearRegression =
+      new GeneralizedLinearRegression().setFamily("gaussian").setLink("identity").setOffsetCol(offset)
+    try {
+      spark.conf.set("spark.sql.caseSensitive", "false")
+      assert(estimator(2).setOutcomeModel(outcome("OFFSET")).fit(data)
+        .getAvgTreatmentEffects.forall(java.lang.Double.isFinite))
+      spark.conf.set("spark.sql.caseSensitive", "true")
+      assert(intercept[IllegalArgumentException] {
+        estimator(2).setOutcomeModel(outcome("OFFSET")).fit(data)
+      }.getMessage == "requirement failed: Auxiliary column 'OFFSET' from offsetCol does not exist")
+      assert(intercept[IllegalArgumentException] {
+        estimator(2).setOutcomeModel(outcome("absent")).fit(data)
+      }.getMessage == "requirement failed: Auxiliary column 'absent' from offsetCol does not exist")
+      for (column <- Seq("y", "t0"); role <- Seq("treatment", "outcome")) {
+        val e = estimator(2)
+        if (role == "treatment") e.setTreatmentModel(outcome(column)) else e.setOutcomeModel(outcome(column))
+        assert(intercept[IllegalArgumentException](e.fit(data)).getMessage ==
+          s"requirement failed: Auxiliary parameter 'offsetCol' must not reference " +
+            s"outcome or treatment column '$column'")
+      }
+      for (nuisance <- Seq(outcome(""), new GeneralizedLinearRegression().setFamily("gaussian"))) {
+        val before = nuisance.extractParamMap().toSeq.toSet
+        assert(estimator(2).setOutcomeModel(nuisance).fit(data)
+          .getAvgTreatmentEffects.forall(java.lang.Double.isFinite))
+        assert(nuisance.extractParamMap().toSeq.toSet == before)
+      }
+    } finally {
+      spark.conf.set("spark.sql.caseSensitive", previous)
+    }
+  }
+
+  test("Supported validation and initial-score inputs are remapped for a real delegated regression fit") {
+    val data = frame(2).withColumn("validation", col("rowId") % 3 === 0)
+      .withColumn("initialScore", org.apache.spark.sql.functions.sin(col("rowId") * 0.31))
+    for (role <- Seq("treatment", "outcome")) {
+      val nuisance = new TestableAuxiliaryInputRegressor().setValidationIndicatorCol("validation")
+        .setInitScoreCol("initialScore").setTag("x")
+      val before = nuisance.extractParamMap().toSeq.toSet
+      val e = estimator(2)
+      if (role == "treatment") e.setTreatmentModel(nuisance) else e.setOutcomeModel(nuisance)
+      val model = e.fit(data)
+      assert(model.getAvgTreatmentEffects.forall(java.lang.Double.isFinite))
+      assert(model.getFittedTreatmentCols.sameElements(names(2)))
+      assert(nuisance.extractParamMap().toSeq.toSet == before)
+    }
+  }
+
+  test("Nuisance weight columns are remapped without enabling weighted plural estimation") {
+    val data = frame(2).withColumn("nuisanceWeight",
+      lit(1.0) + lit(0.1) * org.apache.spark.sql.functions.sin(col("rowId") * 0.47))
+    for (role <- Seq("treatment", "outcome")) {
+      val nuisance = new GeneralizedLinearRegression().setFamily("gaussian").setWeightCol("nuisanceWeight")
+      val before = nuisance.extractParamMap().toSeq.toSet
+      val e = estimator(2)
+      if (role == "treatment") e.setTreatmentModel(nuisance) else e.setOutcomeModel(nuisance)
+      assert(e.fit(data).getAvgTreatmentEffects.forall(java.lang.Double.isFinite))
+      assert(nuisance.getWeightCol == "nuisanceWeight")
+      assert(nuisance.extractParamMap().toSeq.toSet == before)
+    }
+    assert(intercept[IllegalArgumentException](estimator(2).setWeightCol("nuisanceWeight").fit(data))
+      .getMessage == "requirement failed: weightCol is not supported for multiple treatments")
+  }
+}
+
+/** Input-remapping contract only: delegates to real Spark LR, not a native LightGBM proof. */
+private[causal] class TestableAuxiliaryInputRegressor(override val uid: String)
+  extends Regressor[Vector, TestableAuxiliaryInputRegressor, LinearRegressionModel] {
+  def this() = this(Identifiable.randomUID("auxiliaryInputRegressor"))
+  val validationIndicatorCol = new Param[String](this, "validationIndicatorCol", "validation input")
+  val initScoreCol = new Param[String](this, "initScoreCol", "initial score input")
+  val tag = new Param[String](this, "tag", "unrelated scalar string")
+  def setValidationIndicatorCol(value: String): this.type = set(validationIndicatorCol, value)
+  def setInitScoreCol(value: String): this.type = set(initScoreCol, value)
+  def setTag(value: String): this.type = set(tag, value)
+  override protected def train(dataset: Dataset[_]): LinearRegressionModel = {
+    require(dataset.columns.contains($(validationIndicatorCol)), "validation input was not remapped")
+    require(dataset.columns.contains($(initScoreCol)), "initial-score input was not remapped")
+    require($(tag) == "x", "unrelated string parameter was rewritten")
+    new LinearRegression().setRegParam(0).setTol(1e-10).setLabelCol(getLabelCol)
+      .setFeaturesCol(getFeaturesCol).setPredictionCol(getPredictionCol).fit(dataset)
+  }
+  override def copy(extra: ParamMap): TestableAuxiliaryInputRegressor = defaultCopy(extra)
 }

@@ -21,7 +21,8 @@ import tempfile
 import unittest
 
 from pyspark import SparkContext
-from pyspark.ml.regression import LinearRegression
+from pyspark.ml.regression import GeneralizedLinearRegression, LinearRegression
+from pyspark.sql import functions as F
 from pyspark.sql import SparkSession
 
 from synapse.ml.causal.DoubleMLEstimator import DoubleMLEstimator
@@ -301,3 +302,66 @@ class DoubleMLMultipleTreatmentsTests(unittest.TestCase):
                 "fitted treatment columns and width",
             ):
                 loaded.getConfidenceIntervals()
+
+    def test_ambiguous_jvm_route_rejects_statistics_after_copy_and_reload(self):
+        ambiguous = self.plural.copy({})
+        ambiguous._java_obj.setTreatmentCol("t0")
+        copied = ambiguous.copy({})
+        with tempfile.TemporaryDirectory(prefix="double-ml-ambiguous-") as directory:
+            path = str(Path(directory) / "model")
+            ambiguous.write().overwrite().save(path)
+            loaded = DoubleMLModel.load(path)
+            for model in [ambiguous, copied, loaded]:
+                getters = [
+                    model.getRawTreatmentEffectsByIteration,
+                    model.getRawTreatmentEffectRows,
+                    model.getFittedTreatmentCols,
+                    model.getAvgTreatmentEffects,
+                    model.getPValues,
+                    model.getConfidenceIntervals,
+                    model._java_obj.getRawTreatmentEffectCount,
+                ]
+                for getter in getters:
+                    with self.subTest(getter=str(getter)):
+                        with self.assertRaisesRegex(
+                            Exception,
+                            "Plural treatment statistics are not available on this model",
+                        ):
+                            getter()
+        # Generated Python raw-Param getters are parameter introspection, not JVM statistics.
+        self.assert_statistics_equal(self.plural.copy({}), self.plural)
+
+    def test_auxiliary_glr_offset_both_roles_preserve_caller_parameters(self):
+        for role, offset in [("treatment", "off.set"), ("outcome", "off`set")]:
+            with self.subTest(role=role, offset=offset):
+                data = self.data.withColumn(
+                    offset, F.lit(0.2) * F.sin(F.col("rowId") * 0.23)
+                )
+                nuisance = (
+                    GeneralizedLinearRegression()
+                    .setFamily("gaussian")
+                    .setLink("identity")
+                    .setRegParam(0.0)
+                    .setMaxIter(10)
+                    .setOffsetCol(offset)
+                )
+                nuisance._transfer_params_to_java()
+                before = dict(nuisance.extractParamMap())
+                java_before = nuisance._java_obj.extractParamMap().toString()
+                estimator = self.estimator()
+                if role == "treatment":
+                    estimator.setTreatmentModel(nuisance)
+                else:
+                    estimator.setOutcomeModel(nuisance)
+                model = estimator.fit(data)
+                self.assertEqual(model.getFittedTreatmentCols(), ["t0", "t1"])
+                self.assertEqual(len(model.getAvgTreatmentEffects()), 2)
+                self.assertTrue(
+                    all(math.isfinite(v) for v in model.getAvgTreatmentEffects())
+                )
+                self.assertEqual(nuisance.getOffsetCol(), offset)
+                self.assertEqual(nuisance._java_obj.getOffsetCol(), offset)
+                self.assertEqual(dict(nuisance.extractParamMap()), before)
+                self.assertEqual(
+                    nuisance._java_obj.extractParamMap().toString(), java_before
+                )

@@ -94,10 +94,11 @@ def controls(root,packet,config):
         document=ET.Element('testsuite',name=suite,tests=str(len(names)),failures='0',errors='0')
         for name in names:ET.SubElement(document,'testcase',name=name,time='0.1')
         path=root/('package-'+str(index)+'.xml');path.write_bytes(ET.tostring(document));package_paths.append(path)
-    summary='[info] Total number of tests run: 34\n[info] Suites: completed 2, aborted 0\n'
+    case_count=sum(len(config['suite_cases'][suite]) for suite in [config['lanes']['candidate-legacy']['suite'],config['lanes']['candidate-plural']['suite']])
+    summary=f'[info] Total number of tests run: {case_count}\n[info] Suites: completed 2, aborted 0\n'
     actual=package_reports(package_paths,summary);require_package_success(actual,0)
     completed.append('whole-package-summary-positive')
-    reject(lambda:package_reports(package_paths,summary.replace('run: 34','run: 33')))
+    reject(lambda:package_reports(package_paths,summary.replace('run: '+str(case_count),'run: '+str(case_count-1))))
     completed.append('whole-package-wrong-case-total')
     reject(lambda:package_reports(package_paths,summary.replace('completed 2','completed 1')))
     completed.append('whole-package-wrong-suite-total')

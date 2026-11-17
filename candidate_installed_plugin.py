@@ -13,6 +13,7 @@ from pathlib import Path
 import sysconfig
 
 from candidate_generated_artifacts import wheel_modules
+from candidate_python_contract import require_collection_order
 from candidate_wheel_identity import verify as verify_wheel_identity
 from validation_runtime import require
 
@@ -96,6 +97,9 @@ def pytest_collection_modifyitems(session, config, items):
             {item.name for item in items} == set(expected["names"]), "Wrong actual upstream collection")
     require(all(item.cls is not None and item.cls.__name__ == expected["class"] for item in items),
             "Wrong collected Python class")
+    if "expected_first_names" in expected:
+        first = list(expected["expected_first_names"])
+        require_collection_order([item.name for item in items], first)
     STATE["nodeids"] = [item.nodeid for item in items]
     STATE["classes"] = {item.cls for item in items}
     STATE["test_sources"] = {str(Path(str(item.path)).resolve()) for item in items}
@@ -126,6 +130,7 @@ def pytest_sessionfinish(session, exitstatus):
         return
     evidence = {"role": config["role"], "pytest_exit": int(exitstatus),
                 "actual_nodeids": STATE.get("nodeids", []),
+                "expected_first_names": config.get("expected_first_names", []),
                 "actual_test_sources": sorted(STATE.get("test_sources", [])),
                 "complete": False}
     try:

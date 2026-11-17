@@ -14,8 +14,8 @@ import time
 
 from candidate_generated_artifacts import artifact_manifest, wheel_modules, MODULES
 from candidate_python_contract import (
-    report, fixture_controls, HANDWRITTEN_CLASS, HANDWRITTEN_NAMES,
-    GENERATED_CLASS, GENERATED_NAMES,
+    report, fixture_controls, HANDWRITTEN_CLASS, HANDWRITTEN_NAMES, EARLY_NAMES,
+    GENERATED_CLASS, GENERATED_NAMES, require_collection_order,
 )
 from format_checks import azure_black
 from validation_runtime import require
@@ -99,12 +99,16 @@ def dependency_controls(lane):
     outcomes = []
     for label, value, exit_code in (("positive", "True", 0), ("negative", "False", 1)):
         test = root / ("test_dependency_" + label + ".py")
-        test.write_text("import unittest\nclass DependencyFixture(unittest.TestCase):\n"
-                        "    def test_early(self):\n        self.assertTrue(" + value + ")\n")
-        config = {"role": "dependency", "class": "DependencyFixture", "names": ["test_early"],
+        control_names = HANDWRITTEN_NAMES if exit_code == 0 else ("test_early",)
+        test.write_text("import unittest\nclass DependencyFixture(unittest.TestCase):\n" +
+                        "".join("    def "+name+"(self):\n        self.assertTrue("+value+")\n"
+                                for name in control_names))
+        config = {"role": "dependency", "class": "DependencyFixture", "names": control_names,
                   "source_root": str(lane.source), "candidate_files": lane.manifest["candidate_files"],
                   "test_sha256": sha(test), "expected_exit": exit_code,
                   "session_result": str(root / (label + "-hooks.json"))}
+        if exit_code == 0:
+            config["expected_first_names"] = EARLY_NAMES
         path = root / (label + "-config.json")
         path.write_text(json.dumps(config, indent=2))
         junit = root / (label + ".xml")
@@ -112,12 +116,32 @@ def dependency_controls(lane):
             lane.command("real-pytest-" + label,
                          ["python", "-m", "pytest", "-q", "--junitxml=" + str(junit), str(test)],
                          45, expected=(exit_code,), cwd=root)
-        accepted = report(junit, ("test_early",), "DependencyFixture",
+        accepted = report(junit, control_names, "DependencyFixture",
                           ("test_early",) if exit_code else ())
         hooks = json.loads(Path(config["session_result"]).read_text())
         require(hooks["complete"] and hooks["controlOnly"] and not hooks["installedArtifactClaim"],
                 "Actual pytest hooks did not complete as control-only")
+        order_controls = None
+        if exit_code == 0:
+            actual_names = [node.rsplit("::", 1)[-1] for node in hooks["actual_nodeids"]]
+            require(set(actual_names) == set(HANDWRITTEN_NAMES) and len(actual_names) == 9,
+                    "Real nine-method order fixture collection differs")
+            require_collection_order(actual_names, EARLY_NAMES)
+            swapped = list(actual_names)
+            swapped[0], swapped[1] = swapped[1], swapped[0]
+            require(set(swapped) == set(actual_names) and len(swapped) == len(actual_names),
+                    "Order negative changed membership")
+            try:
+                require_collection_order(swapped, EARLY_NAMES)
+            except RuntimeError as error:
+                require(str(error) == "Focused regressions are not first in the actual full collection",
+                        "Wrong order-control rejection")
+            else:
+                raise RuntimeError("Swapped real collection order was accepted")
+            order_controls = {"positiveActualNames": actual_names, "negativeSameSetSwapped": swapped,
+                              "positiveAccepted": True, "negativeRejected": True}
         outcomes.append({"label": label, "expected_exit": exit_code, "report": accepted,
+                         "collectionOrderControls": order_controls,
                          "hook_receipt_sha256": sha(config["session_result"])})
     result = {"state": "EARLY_REAL_DEPENDENCY_CONTROLS", "projectTestsRun": False,
               "XML": xml, "wheelIdentity": wheel_identity, "wheelControls": 2, "actualPytestControls": outcomes, "versions": versions}
@@ -134,6 +158,8 @@ def upstream_python(lane, role, artifact, subpath, source_sha):
               "test_sha256": source_sha, "observed_manifest": str(root / "actual-artifacts.json"),
               "session_result": str(root / "actual-session.json"),
               "generated_source_copy": str(root / "actual-generated-test.py")}
+    if role == "handwritten":
+        config["expected_first_names"] = EARLY_NAMES
     path = root / "config.json"
     path.write_text(json.dumps(config, indent=2))
     upstream_report = lane.source / "target/python-test-results-synapseml-core.xml"
@@ -149,7 +175,7 @@ def upstream_python(lane, role, artifact, subpath, source_sha):
         lane.sbt("upstream-core-testPython-" + role,
                  ['set core / pythonSubTestPath := Some("' + subpath + '")',
                   "set core / pythonIgnoreTestPath := None", "core/testPython"],
-                 480 if role == "handwritten" else 360)
+                 600 if role == "handwritten" else 360)
     require(upstream_report.is_file(), "Upstream testPython did not write its report")
     shutil.copy2(upstream_report, root / "actual-upstream.xml")
     accepted = report(root / "actual-upstream.xml", names, class_name)
@@ -200,18 +226,18 @@ def validate(lane):
     require(Path(fixture["dataset_dir"]).resolve() == Path(lane.datasets_home).resolve() and
             Path(lane.datasets_home).is_dir(), "SBT datasetDir binding differs from fixture receipt")
     before = source_identity(lane, "candidate-installed-source-before")
-    remaining(lane, 2425)
+    remaining(lane, 2545)
     dependency_controls(lane)
     reference = lane.packet / "baseline-shipping-black.failures.json"
     require(sha(reference) == BLACK_REFERENCE_SHA, "Retained G0 Black evidence changed")
     shutil.copy2(reference, lane.root / reference.name)
     azure_black(lane, "candidate", exclude_docs=True)
-    remaining(lane, 2270)
+    remaining(lane, 2390)
     lane.sbt("candidate-root-compile-testcompile-styles",
              ["compile", "Test / compile", "scalastyle", "Test / scalastyle"], 600)
-    remaining(lane, 1670)
+    remaining(lane, 1790)
     artifact = artifact_manifest(lane)
-    remaining(lane, 1080)
+    remaining(lane, 1200)
     handwritten = upstream_python(
         lane, "handwritten", artifact, "causal/test_double_ml_multiple_treatments.py",
         lane.manifest["candidate_files"][TEST_PATH])

@@ -15,12 +15,21 @@ HANDWRITTEN_NAMES = (
     "test_python_setter_does_not_change_jvm_order_until_transfer",
     "test_width_corruption_and_fit_exclusivity_are_not_silently_accepted",
     "test_param_map_and_loaded_model_same_width_rename",
+    "test_ambiguous_jvm_route_rejects_statistics_after_copy_and_reload",
+    "test_auxiliary_glr_offset_both_roles_preserve_caller_parameters",
 )
+EARLY_NAMES = ("test_ambiguous_jvm_route_rejects_statistics_after_copy_and_reload",
+               "test_auxiliary_glr_offset_both_roles_preserve_caller_parameters")
 GENERATED_CLASS = "VerifyDoubleMLEstimator"
 GENERATED_NAMES = (
     "test_DoubleMLEstimator_constructor_0",
     "test_DoubleMLEstimator_constructor_1",
 )
+
+
+def require_collection_order(names, expected_first):
+    require(list(names[:len(expected_first)]) == list(expected_first),
+            "Focused regressions are not first in the actual full collection")
 
 
 def report(path, names, class_name, expected_failures=()):
@@ -61,13 +70,13 @@ def fixture_controls(directory):
     directory = Path(directory)
     directory.mkdir()
     source = ET.Element("testsuites")
-    suite = ET.SubElement(source, "testsuite", tests="7", failures="0", errors="0", skipped="0")
+    suite = ET.SubElement(source, "testsuite", tests=str(len(HANDWRITTEN_NAMES)), failures="0", errors="0", skipped="0")
     for name in HANDWRITTEN_NAMES:
         ET.SubElement(suite, "testcase", name=name, classname="fixture." + HANDWRITTEN_CLASS)
     positive = directory / "positive.xml"
     positive.write_bytes(ET.tostring(source))
     report(positive, HANDWRITTEN_NAMES, HANDWRITTEN_CLASS)
-    controls = ["positive-seven"]
+    controls = ["positive-exact-authored"]
     labels = ("missing", "duplicate", "skip", "failure", "error", "wrong-class",
               "wrong-total", "extra-name", "empty")
     for label in labels:
@@ -76,17 +85,17 @@ def fixture_controls(directory):
         first = test_suite.find("testcase")
         if label == "missing":
             test_suite.remove(first)
-            test_suite.set("tests", "6")
+            test_suite.set("tests", str(len(HANDWRITTEN_NAMES)-1))
         elif label == "duplicate":
             test_suite.append(copy.deepcopy(first))
-            test_suite.set("tests", "8")
+            test_suite.set("tests", str(len(HANDWRITTEN_NAMES)+1))
         elif label in ("skip", "failure", "error"):
             ET.SubElement(first, {"skip": "skipped"}.get(label, label), message="AssertionError control")
             test_suite.set({"skip": "skipped", "failure": "failures", "error": "errors"}[label], "1")
         elif label == "wrong-class":
             first.set("classname", "fixture.Other")
         elif label == "wrong-total":
-            test_suite.set("tests", "8")
+            test_suite.set("tests", str(len(HANDWRITTEN_NAMES)+1))
         elif label == "extra-name":
             first.set("name", "test_unrelated")
         else:

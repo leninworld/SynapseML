@@ -55,7 +55,7 @@ def main():
     deadline = created + manifest["target_seconds"]
     absolute = created + manifest["absolute_seconds"]
     require(time.time() < deadline, "Original workflow target expired including queue")
-    root = Path(os.environ["RUNNER_TEMP"]) / ("synapse2328-i3-" + run_id + "-" + lane)
+    root = Path(os.environ["RUNNER_TEMP"]) / ("synapse2856-feedback-i1-" + run_id + "-" + lane)
     require(not root.exists(), "Existing run directory; no automatic replay")
     root.mkdir()
     runtime, capacity = root / "runtime", root / "capacity"
@@ -167,13 +167,13 @@ def main():
                     any(value.endswith("@" + image.split("@", 1)[1])
                         for value in metadata["RepoDigests"]),
                     "Image identity mismatch")
-        tag = "synapse2328-i3-validation:" + run_id
+        tag = "synapse2856-feedback-i1-validation:" + run_id
         command("image-build", ["docker", "build", "--network=none", "--tag", tag,
                                 "--file", str(packet / "Dockerfile"), str(packet)], 180)
         memory = str(manifest["lanes"][lane]["memory_gib"]) + "g"
         phases = ["setup", "validate"]
         for phase in phases:
-            own = "synapse2328-i3-" + run_id + "-" + lane + "-" + phase
+            own = "synapse2856-feedback-i1-" + run_id + "-" + lane + "-" + phase
             owned.append(own)
             command(phase + "-container-create", [
             "docker", "create", "--name", own, "--user", "1001:1001", "--read-only",

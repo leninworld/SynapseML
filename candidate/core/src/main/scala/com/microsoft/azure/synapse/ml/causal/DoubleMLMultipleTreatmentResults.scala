@@ -22,7 +22,7 @@ trait DoubleMLMultipleTreatmentResults extends DoubleMLParams with HasTreatmentC
   def setFittedTreatmentCols(value: Array[String]): this.type = set(fittedTreatmentCols, value.clone())
 
   private def requirePluralStatistics(): Unit = {
-    if (!isDefined(rawTreatmentEffectsByIteration) || !isDefined(rawTreatmentEffectCount) ||
+    if (isDefined(treatmentCol) || !isDefined(rawTreatmentEffectsByIteration) || !isDefined(rawTreatmentEffectCount) ||
       !isDefined(fittedTreatmentCols) || !isDefined(treatmentCols)) {
       throw new IllegalStateException("Plural treatment statistics are not available on this model")
     }

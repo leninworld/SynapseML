@@ -16,11 +16,11 @@
     "hash": "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd",
     "maximum_bytes": 19028608
   },
-  "revision": "2328-D17-WEBSITE-RECOVERY-I2-PROPOSED",
+  "revision": "2856-FOUR-FEEDBACK-THREE-NATIVE-PROPOSED",
   "execution_enabled": true,
   "execution_approval_required": true,
-  "source_commit": "d17f57e314517e4b413cda3cdcd86e7ad15ddb04",
-  "validation_branch": "validate-dml-multiple-treatments-2328-i1",
+  "source_commit": "2982f5a9b198fc3c35e601187887e18b57634faa",
+  "validation_branch": "validate-dml-review-2856-i1",
   "target_seconds": 3000,
   "absolute_seconds": 3600,
   "baseline_files": {
@@ -125,42 +125,64 @@
   "candidate_files": {
     "core/src/main/python/synapse/ml/causal/DoubleMLModel.py": "a3c6ebf85a7f877d128d5194f243c0fc30d764cb75064e3305ded788b9541aa3",
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLEstimator.scala": "0b43a14e4760d67dae18360dcb98845e76a4c6d352f98178341684c3acdc465c",
-    "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "9c72da02c50819163c860eedd81d38e9237ef4354213cada6e72d198fb6263ae",
-    "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "be690a7cf93c990f6ee757f30361d9740149806953d81eabe1cbcc8d79a1ee01",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "3ad12f95007d555dfc635c47b980765488728420a5e4e9e9da2a095f974b2478",
+    "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "39ca94dbc4c3d974e2ca4209b46a0296f955c80229cc4fb39852ccc76265188e",
     "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
-    "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "c1ba48c4b8aac7c7eea684a90ddcc1120821dafcd6eeb252281d296d431afe6e",
-    "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "b1dd18ff8a91cb1afc54ff4492d7b0aaec555f1823f7d16d2f40c73c79b03b46",
+    "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
+    "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "ef1bb659ab46ab2278c724bbdf41f563e3eef12d5284e1eff1b92f92a2a70592",
     "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/VerifyDoubleMLEstimator.scala": "64859654ffb438ffc69b113674d2c319aa1f2c38e83bc42e7f8497410c6d1e87",
     "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
     "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "187d47aa8446a2dd56eeb4b255f8b59d9a86e7f334fe31ce54aba7a35535009f"
   },
-  "workflow_path": ".github/workflows/validate-dml-multiple-treatments-2328.yml",
+  "workflow_path": ".github/workflows/validate-dml-review-2856.yml",
   "lanes": {
-    "docs-website": {
+    "candidate-legacy": {
       "memory_gib": 12,
       "cpus": 3,
       "minimum_start_disk_gib": 64,
       "initial_available_gib": 12,
       "network_gib": 24,
       "planning_nonreclaimable_gib": 10,
-      "spark_driver_gib": 4,
-      "pre_environment_remaining_seconds": 2400,
+      "spark_driver_gib": 1,
+      "pre_environment_remaining_seconds": 2000,
       "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
+    },
+    "candidate-causal-dml": {
+      "memory_gib": 12,
+      "cpus": 3,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 12,
+      "network_gib": 24,
+      "planning_nonreclaimable_gib": 10,
+      "spark_driver_gib": 1,
+      "pre_environment_remaining_seconds": 2760,
+      "resource_basis": "Retained actual R4 native/build/control measurements and source-grounded suite isolation forecast. Group-specific complete peak/runtime remain unmeasured; actual fresh host/disk/memory/original-clock guards bind, no reserved scheduler capacity or upstream heap parity claimed."
+    },
+    "candidate-installed": {
+      "memory_gib": 12,
+      "cpus": 3,
+      "minimum_start_disk_gib": 64,
+      "initial_available_gib": 12,
+      "network_gib": 24,
+      "planning_nonreclaimable_gib": 10,
+      "spark_driver_gib": 1,
+      "pre_environment_remaining_seconds": 2520,
+      "resource_basis": "Actual native G0 measured5.05GiB anon+kernel and~218s compile/~246s solve; candidate scope/largeN gated on exact whole approved plan and live runtime measurements; no upstream heap parity claim."
     }
   },
   "packet_sha256": {
-    ".github/workflows/validate-dml-multiple-treatments-2328.yml": "4df76c8692ff4c2b8c759fc5dc2838ae25f002de1efc6524ffe1f4a9120e8a52",
+    ".github/workflows/validate-dml-review-2856.yml": "9193fcf119f9173698fd4a69014e362321db26d4aca5d7a775dbd49df81f1f86",
     "Dockerfile": "917efe10e1802c4e83ed9e22f96095286ec6abb76b0c773cac21b779dc39f698",
     "baseline-shipping-black.failures.json": "ea886ac2620016b6c0853dbb05cfbf7bde148743dc5d7b18daf59fd21044ae85",
     "bootstrap.py": "0123c26fa0ad2be9917d0f8d1ff0b2967f2bbed51e5bbac3d6911626642a0277",
     "bounded_capture.py": "6a3d6dc0983f550cf9e971be73ed6b4083128ba5d713fa567483bf37cd59c2cd",
     "candidate/core/src/main/python/synapse/ml/causal/DoubleMLModel.py": "a3c6ebf85a7f877d128d5194f243c0fc30d764cb75064e3305ded788b9541aa3",
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLEstimator.scala": "0b43a14e4760d67dae18360dcb98845e76a4c6d352f98178341684c3acdc465c",
-    "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "9c72da02c50819163c860eedd81d38e9237ef4354213cada6e72d198fb6263ae",
-    "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "be690a7cf93c990f6ee757f30361d9740149806953d81eabe1cbcc8d79a1ee01",
+    "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "3ad12f95007d555dfc635c47b980765488728420a5e4e9e9da2a095f974b2478",
+    "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "39ca94dbc4c3d974e2ca4209b46a0296f955c80229cc4fb39852ccc76265188e",
     "candidate/core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
-    "candidate/core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "c1ba48c4b8aac7c7eea684a90ddcc1120821dafcd6eeb252281d296d431afe6e",
-    "candidate/core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "b1dd18ff8a91cb1afc54ff4492d7b0aaec555f1823f7d16d2f40c73c79b03b46",
+    "candidate/core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
+    "candidate/core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "ef1bb659ab46ab2278c724bbdf41f563e3eef12d5284e1eff1b92f92a2a70592",
     "candidate/core/src/test/scala/com/microsoft/azure/synapse/ml/causal/VerifyDoubleMLEstimator.scala": "64859654ffb438ffc69b113674d2c319aa1f2c38e83bc42e7f8497410c6d1e87",
     "candidate/docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
     "candidate/docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "187d47aa8446a2dd56eeb4b255f8b59d9a86e7f334fe31ce54aba7a35535009f",
@@ -168,9 +190,9 @@
     "candidate_contract_controls.py": "8a13cc0276103c8063be764a10d74033ed681a78f0d59f961dbb57a16bef88fa",
     "candidate_docs_lane.py": "d0494f86e063226af132342bf29179546c117a96bde04e745d284b0aaae62ffa",
     "candidate_generated_artifacts.py": "6034ac45d4d36ea3f10d29e50de3985f3934550bbc49e09cb31ab3d822074e5d",
-    "candidate_installed_lane.py": "9afaf53ba58238795e958a2f349e15ef325a16da7b40a13b63f20b81c7e2754e",
-    "candidate_installed_plugin.py": "0c729e8c2d5d251562e2785883758a463f469ef11f8dc93e2a305f27fe44e416",
-    "candidate_python_contract.py": "f9ac7104cf66a3a17ef709e06f5a118abfd7afa190d52c383478f3cd9fbea38b",
+    "candidate_installed_lane.py": "b4b91d1e6e96a171c769d673f7295170a023771a84a3032113beaddc8675c771",
+    "candidate_installed_plugin.py": "3393881626ed7792812c4467cb761b0d58e47a42fe4c5278bb41bf799f5e8030",
+    "candidate_python_contract.py": "7c6499b9ab7f03376afad51b95f608da92969d6071b3abedc803563a955f9356",
     "candidate_wheel_identity.py": "14bd3e694dc4c42b10869f5a5cec3d2ae74fdedd2ac769ca15416d403b441ab4",
     "causal_diagnostic_controls.py": "f5167d9a92dc4da25cec5952447d7771039e55f4ad3a9b1b3bdf95758de7ef6d",
     "causal_diagnostics.py": "bbea4f2a138db84214b22866c730dc1e23758118ed42f25bcd2506c041b1fd7f",
@@ -191,11 +213,11 @@
     "g0_controls.py": "70e9bb97bc10c518de71ea860161f18beb430e11593a2baa63cf3b16ecad11ab",
     "g0_lane.py": "321b4752932e1cdf9da273751b8ee6a5bc625018fbf33aa6c62b79f3875c6e1a",
     "generated_artifacts.py": "18080939a53766c6d3fd4f577f5c2dbfc5101d911605087962f12c82711c5af5",
-    "host.py": "e2927fc494e6b45002c0db28576332c5d5841eac757af87264eac2455f40c421",
+    "host.py": "902777bf36101d4e9ebc4726cbbb950c1f01bd50125642ac66439c2f31684000",
     "installed_guard.py": "d4bfea2ee8d2e3703925da9e2d13f4c501d0f4580a2afe8486b4001def383ee4",
     "junit_reader.py": "248dc20fe82ac4675c291d864f35a9dd3197771fe3b898daa5c5274d9675a083",
-    "native_candidate_controls.py": "4aae1407530936acd41f72f1d11e9e8710022e34aa8dd2c75db5140974e65fa3",
-    "native_candidate_lane.py": "764ca0e9a94a4f9531867befb407f33df3b32874a262adf224d1f20fe2d6910b",
+    "native_candidate_controls.py": "5f4cbcf2279f9d773b8f67a333e9a3d7661881c59a28eff7a33494ec7c923598",
+    "native_candidate_lane.py": "f429c5f32320595ca226cba93d03ecfea3d0a3ac24d28c56bfb5a3cda07ebc7c",
     "native_events.py": "a18dc65fca13d6d667e9b88485c027dd35cb092d9905ae9534e58e98c5b60f7e",
     "notebook_run.py": "16cc6f15b7c8fe13c217146f19a0c9c4778d901e8cacd55af67efb635e6efe66",
     "projection_checks.py": "50dddba6bf4a93a0ffbd3f5f3f92fada36a9b995ac249b66a2e29b3e1d5b65ad",
@@ -210,17 +232,19 @@
     "website_check.py": "3e63ace9f556deef422b1a5a9533c448b3796e8d11434c35bdef46b3a70f570b",
     "website_contract.py": "1a542dc93ad763cc0d306c18d6b2f5a79aac589a1e91c1b0f93218db1d2bdc58",
     "website_generate.py": "0a1de9f21e874929992a2de5b18b060895d9ea348cde9e6a6365250d96ae1456",
-    "workflow.yml": "4df76c8692ff4c2b8c759fc5dc2838ae25f002de1efc6524ffe1f4a9120e8a52"
+    "workflow.yml": "9193fcf119f9173698fd4a69014e362321db26d4aca5d7a775dbd49df81f1f86"
   },
   "attempt_policy": {
-    "history": "UNKNOWN",
+    "history": "At least16 previous cohorts; exact count UNKNOWN; every prior attempt preserved",
     "ordinary_allowance": "UNAVAILABLE",
-    "proposed_exception": "Proposed single diagnosed website-only correction after d17 run44006383230; prior website failed before npm/build on stale nested sidebar SHA. Three successful d17 native jobs retained, not rerun or waived. Historical count UNKNOWN and all prior consumed runs preserved; exact results/execution review, root agreement and native admission required. No automatic next attempt.",
+    "feedback_ceiling": 25,
+    "count_closure": "NOT_ESTABLISHED",
+    "proposed_exception": "ONE exact reviewed diagnostic cohort requires explicit user count exception and exact public-packet grant before publication/execution. This label I1 is not runtime ordinal1/25.",
     "approved": true,
     "no_reruns": true
   },
-  "dependency_closure_status": "Fresh full environment per job, actual imports/solved closure retained; G0 measured versions are evidence, not an available cache. Standard public test fixtures hash-bound in four test jobs only; exactCSV hash-bound in notebook job only.",
-  "artifact_version": "0.0.1-i2328-i3-SNAPSHOT",
+  "dependency_closure_status": "Fresh full environment per each of three jobs; no venue cache claimed. Existing hash-bound standard public fixture archive retained. No website or notebook execution in this cohort.",
+  "artifact_version": "0.0.1-i2856-feedback-i1-SNAPSHOT",
   "resource_price": {
     "basis": "Actual native G0 measurements plus complete-scope helper forecasts; not sum of maximum per-step caps",
     "native_lanes": {
@@ -238,7 +262,7 @@
       },
       "candidate-causal-dml": {
         "suite": "FULL_DECLARED_SUITE_LIST_NOT_CASE_FILTER",
-        "case_count": "ACTUAL_COLLECTED_IDS_REQUIRED",
+        "case_count": 42,
         "suite_seconds": 1500,
         "registration_seconds": 0,
         "fuzzing_seconds": 0,
@@ -252,7 +276,8 @@
           "com.microsoft.azure.synapse.ml.causal.VerifyDoubleMLEstimator",
           "com.microsoft.azure.synapse.ml.causal.DoubleMLMultipleTreatmentsSuite"
         ],
-        "discovery_seconds": 60
+        "discovery_seconds": 60,
+        "feedback_early_seconds": 480
       },
       "candidate-causal-other": {
         "suite": "FULL_DECLARED_SUITE_LIST_NOT_CASE_FILTER",
@@ -333,9 +358,9 @@
       }
     },
     "installed_route": {
-      "postEnvironmentPostFixtureMinimumSeconds": 2425,
+      "postEnvironmentPostFixtureMinimumSeconds": 2545,
       "sharedFixtureForecastSeconds": 60,
-      "full_scope": "Full root build/styles/Black, codegen, core/testPython seven handwritten plus two generated constructors and real installed persistence; no frozen released-package fallback",
+      "full_scope": "Full root build/styles/Black/codegen/fresh artifacts; ONE full9 handwritten collection with new2 first, then2 generated constructors with persistence; no duplicate class fixture or released-package fallback",
       "C2AdditionalRealPipControlMaximumSeconds": 45
     },
     "docs": {
@@ -373,27 +398,57 @@
       "cumulativeBytes": 1162703,
       "noReset": true
     },
-    "newVisualAdmissionQualification": "Unchanged actual approved lossless website caps and full build/tests. New diagnosed website-only admission PROPOSED; no old clock or automatic exception grant.",
-    "singleWebsiteJobNewAdmissionProposed": true,
-    "fourAffectedJobsOneProposedException": false,
+    "newVisualAdmissionQualification": "Lossless website limits reused unchanged from actual RQ-A; this new d17 four-job attempt still requires exact whole-packet/root/native admission. Shared actualworkflow.created_at+3000 active/+3600cleanup includingqueue; no oldclock import.",
+    "singleWebsiteJobNewAdmissionProposed": false,
+    "fourAffectedJobsOneProposedException": true,
     "currentAffectedJobs": [
-      "docs-website"
+      "candidate-legacy",
+      "candidate-causal-dml",
+      "candidate-installed"
     ],
-    "maximumParallel": 1
+    "maximumParallel": 3,
+    "feedbackPricing": {
+      "newScalaTests": 8,
+      "newPythonTests": 2,
+      "DmlFullUnique": 42,
+      "apiEarlySeconds": 60,
+      "fitEarlySeconds": 420,
+      "fullSuiteSecondsUnchanged": 1500,
+      "postCompileSeconds": 2280,
+      "compileMaxSecondsUnchanged": 600,
+      "compileCapFormula": "min(600, actualRemaining-2280)",
+      "labEvidenceReserveUnchanged": 120,
+      "installedGates": [
+        2545,
+        2390,
+        1790,
+        1200,
+        600
+      ],
+      "installedEarlySeconds": 0,
+      "installedFullHandwrittenSeconds": 600,
+      "generatedSecondsUnchanged": 360,
+      "newFitCosts": "UNMEASURED; source-based conservative pricing, actual late admission HOLD, no gate lowered",
+      "dmlPreEnvironmentIncreasedFrom2700": 2760,
+      "dmlQualifiedFullCapForecastSeconds": 2980,
+      "forecastMarginSeconds": 20,
+      "installedQualifiedForecastSeconds": 2982,
+      "installedForecastMarginSeconds": 18
+    }
   },
   "full_validation_acceptance": {
     "baseline_only": false,
     "legacyCases": 10,
-    "newScalaCases": 24,
-    "handwrittenPythonCases": 7,
+    "newScalaCases": 32,
+    "handwrittenPythonCases": 9,
     "generatedConstructors": 2,
-    "fullCausalPackage": "34 cases plus exact15-suite definedTests inventory on d17f;69 non-DML cases retained from tested45578 R5 fourgroups. Never103 currentmaster cases.",
+    "fullCausalPackage": "42 unique current candidate cases: legacy10 + plural32; exact15-suite discovery unchanged. ProbeRegressor is not a Suite. Other69 causal cases retained qualified old-base only; no current111 or103 claim.",
     "rootFuzzingTestCases": 10,
     "pipelineRegistrationCases": 1,
     "quickExamples": "Qualified retained R4 Python/Scala all4fences, executed on45578-built artifacts; not d17 runtime evidence.",
     "notebook": "Qualified retained R4 all15cells, originalB20/pluralB30, calibrations, executed on45578-built artifacts; not d17 runtime evidence.",
-    "website": "Full WebsiteChannel/node/optimizedbuild/both affectedroutes/exported visualassets",
-    "finalScreenshot": "No new capture required by strict decision; three priorwebsite images qualified private evidence only; no public use authorized.",
+    "website": "Qualified retained accepted I2 result, not a newly executed repair lane.",
+    "finalScreenshot": "ONE old45578 Scala JPEG separately approved and already uploaded (root-confirmed23be8ae identity); qualified tested45578/default-dark/horizontal-scroll only. Other two images remain private; long notebook uncertified/private. No new repair capture.",
     "notRun": [
       "liveAzure",
       "WASBS connector",
@@ -401,7 +456,9 @@
       "unrelated credentialed quick examples"
     ],
     "currentAffectedLanes": [
-      "docs-website"
+      "candidate-legacy",
+      "candidate-causal-dml",
+      "candidate-installed"
     ],
     "rootFuzzingInheritedIgnore": {
       "executedRequired": 10,
@@ -433,7 +490,7 @@
         "docs-scala",
         "docs-notebook"
       ],
-      "condition": "Every candidate postimage remains identical; helper/manifest changes independently shown not to change those product checks. Not a claim that R4 whole run passed."
+      "condition": "HISTORICAL45578/e5a only. Four current repair postimages differ; this is NOT current repair runtime proof. Retained docs scope separately bound, no old native/installed pass inherited."
     },
     "visualMeasurementQualification": "Whole asset stat inventory and cap diagnostics establish at most a finite prerequisite measurement. No visual-closure, screenshot or full-product pass if exporter cap remains.",
     "priorR5Reuse": {
@@ -453,7 +510,7 @@
       "failures": 0,
       "skips": 0,
       "aborts": 0,
-      "qualification": "Actual R5 sixpassed lanes and qualified R4 fivepassed lanes on exactunchanged e5a tenpostimages retained; websitevisualfailed, styledbrowserreviewstillpending. No fullfeature green claim."
+      "qualification": "HISTORICAL45578/e5a R5 native and qualified R4 docs results only; four current repair postimages differ, so NOT current repair proof. Later accepted I2 website evidence separately identified; earlier styled-browser-pending descriptor is historical, not current state."
     },
     "historicalOriginalEightRequiredLanes": [
       "candidate-legacy",
@@ -468,18 +525,13 @@
     "requiredCurrentHeadLanes": [
       "candidate-legacy",
       "candidate-causal-dml",
-      "candidate-installed",
-      "docs-website"
+      "candidate-installed"
     ],
-    "retainedCurrentD17Native": {
-      "run": 44006383230,
-      "head": "f2ab80f0c9496068cd616d2147fd51678f58f041",
-      "jobs": {
-        "candidate-legacy": 133782651808,
-        "candidate-causal-dml": 133782652625,
-        "candidate-installed": 133782652196
-      },
-      "qualification": "Actual SUCCESS statuses and root hash-verified evidence retained, subject whole results acceptance. Required current-head components are not waived or claimed rerun by this website-only plan."
+    "retainedWebsiteReuse": {
+      "run": 44019215363,
+      "head": "e95e7327caf0a9700a2ea5bad456c75f3e8261df",
+      "bridgeSHA256": "1678063e45d9a75ace799eb2e61bbec0e7c54e574997c807a0d16f88d46dd251",
+      "qualification": "Five website baseline/nested inputs, both docs postimages and eight rendering helpers identical. No new repair website PASS or screenshot claim."
     }
   },
   "source_object_count": 92,
@@ -493,10 +545,12 @@
     "redistribute": false
   },
   "workflow_lanes": [
-    "docs-website"
+    "candidate-legacy",
+    "candidate-causal-dml",
+    "candidate-installed"
   ],
   "baseline_source_guard_qualification": "92 adopted pinned source blobs:64closed+28source-grounded causal output investigation addendum; prior counters/phases preserved. Five absent new-feature-path guards remain separate.",
-  "candidate_patch_sha256": "e5a6704f193b343f59af2dfa2ba637548c85ce6bfb9c2c5e059e4f52b38ad3f0",
+  "candidate_patch_sha256": "3a3d6915b9b11d8bdae9b1bd04034a2f1b08f753ea0fa3d7970c3c8d79ac2260",
   "test_fixtures": {
     "url": "https://mmlspark.blob.core.windows.net/installers/datasets-2023-04-03.tgz",
     "hash_algorithm": "sha256",
@@ -517,15 +571,15 @@
   },
   "candidate_native": {
     "state": "EXACT_NATIVE_CANDIDATE_SCOPE_PARENT_EXECUTION_FLAG_GOVERNS",
-    "source_commit": "d17f57e314517e4b413cda3cdcd86e7ad15ddb04",
+    "source_commit": "2982f5a9b198fc3c35e601187887e18b57634faa",
     "candidate_files": {
       "core/src/main/python/synapse/ml/causal/DoubleMLModel.py": "a3c6ebf85a7f877d128d5194f243c0fc30d764cb75064e3305ded788b9541aa3",
       "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLEstimator.scala": "0b43a14e4760d67dae18360dcb98845e76a4c6d352f98178341684c3acdc465c",
-      "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "9c72da02c50819163c860eedd81d38e9237ef4354213cada6e72d198fb6263ae",
-      "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "be690a7cf93c990f6ee757f30361d9740149806953d81eabe1cbcc8d79a1ee01",
+      "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentResults.scala": "3ad12f95007d555dfc635c47b980765488728420a5e4e9e9da2a095f974b2478",
+      "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentTraining.scala": "39ca94dbc4c3d974e2ca4209b46a0296f955c80229cc4fb39852ccc76265188e",
       "core/src/main/scala/com/microsoft/azure/synapse/ml/causal/HasTreatmentCols.scala": "dfc3f41bc426afc73aa3376bde42f854e042139dab0a0f2ab47068b33c101c41",
-      "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "c1ba48c4b8aac7c7eea684a90ddcc1120821dafcd6eeb252281d296d431afe6e",
-      "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "b1dd18ff8a91cb1afc54ff4492d7b0aaec555f1823f7d16d2f40c73c79b03b46",
+      "core/src/test/python/synapsemltest/causal/test_double_ml_multiple_treatments.py": "e566433f3c6074ea1389d8f8fc354043757901a0e3072b6102f64669fbec28f8",
+      "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/DoubleMLMultipleTreatmentsSuite.scala": "ef1bb659ab46ab2278c724bbdf41f563e3eef12d5284e1eff1b92f92a2a70592",
       "core/src/test/scala/com/microsoft/azure/synapse/ml/causal/VerifyDoubleMLEstimator.scala": "64859654ffb438ffc69b113674d2c319aa1f2c38e83bc42e7f8497410c6d1e87",
       "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "561100f9bee680a89178a0a736116d539999a52b88314bd20f5593ae03375e11",
       "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "187d47aa8446a2dd56eeb4b255f8b59d9a86e7f334fe31ce54aba7a35535009f"
@@ -542,7 +596,7 @@
       "docs/Explore Algorithms/Causal Inference/Quickstart - Measure Causal Effects.ipynb": "c5fddf4ea800cda0b756bca6f7faecfcaad1ef747887c401341bfb71b2caa3ed",
       "docs/Quick Examples/estimators/causal/_causalInferenceDML.md": "a8f71556c6f86c91cf5fac9a9e25e7ff6e3fdaf9934385a0ae55f92218894af9"
     },
-    "patch_sha256": "e5a6704f193b343f59af2dfa2ba637548c85ce6bfb9c2c5e059e4f52b38ad3f0",
+    "patch_sha256": "3a3d6915b9b11d8bdae9b1bd04034a2f1b08f753ea0fa3d7970c3c8d79ac2260",
     "suite_cases": {
       "com.microsoft.azure.synapse.ml.causal.VerifyDoubleMLEstimator": [
         "Get treatment effects",
@@ -580,7 +634,15 @@
         "Plural Wald p values follow independent SD formula and not Monte Carlo standard error",
         "Flat rows names and caller arrays have defensive copies",
         "Same width rename and corrupted width flat length and missing route fail explicitly",
-        "Copy and model reload preserve causal statistics not just passthrough transforms"
+        "Copy and model reload preserve causal statistics not just passthrough transforms",
+        "MLP nuisance layers remain caller-owned across parallel plural draws",
+        "Every plural statistic rejects an ambiguous fitted route including copied and reloaded models",
+        "Real indexed treatment columns are rejected by public fit without rejecting categorical confounders",
+        "Treatment metadata API accepts numeric types and rejects nominal binary and SynapseML categories",
+        "Real GLR offset auxiliaries survive literal aliases in both nuisance roles without caller mutation",
+        "Auxiliary resolution preserves case empty and unset semantics and rejects missing or target inputs",
+        "Supported validation and initial-score inputs are remapped for a real delegated regression fit",
+        "Nuisance weight columns are remapped without enabling weighted plural estimation"
       ],
       "com.microsoft.azure.synapse.ml.core.test.pipeline.PipelineTestCoverageSuite": [
         "Every test suite is claimed by a leg of the UnitTests matrix"
@@ -614,7 +676,7 @@
       },
       "candidate-plural": {
         "suite": "com.microsoft.azure.synapse.ml.causal.DoubleMLMultipleTreatmentsSuite",
-        "case_count": 24,
+        "case_count": 32,
         "suite_seconds": 1500,
         "registration_seconds": 0,
         "reserve_seconds": 240,
@@ -652,7 +714,8 @@
           "com.microsoft.azure.synapse.ml.causal.VerifyDoubleMLEstimator",
           "com.microsoft.azure.synapse.ml.causal.DoubleMLMultipleTreatmentsSuite"
         ],
-        "discovery_seconds": 60
+        "discovery_seconds": 60,
+        "feedback_early_seconds": 480
       },
       "candidate-causal-other": {
         "suite": "FULL_DECLARED_SUITE_LIST_NOT_CASE_FILTER",
@@ -764,7 +827,7 @@
     "runtimeAuthority": "Uses outer manifest.execution_enabled and already-applied lane.candidate, not a separate candidate flag toggle.",
     "rootFuzzingSelector": "root/testOnly com.microsoft.azure.synapse.ml.core.test.fuzzing.FuzzingTest",
     "eventClassifier": "native_events.classify_log(text), summarize(lane) in entry finally for every job; controls(root) in early D0",
-    "causalAttribution": "On actual non-DML causal failures, pristine readonly /source copy at exact d17f, separatetarget/build paths, same originalclock; compile480+300persuite+240reserve required. If insufficient, HOLD/unattributed failure, never newclock/waiver. Malformed/absent abortedsuite XML is INCOMPLETE raw evidence, neverabsence.",
+    "causalAttribution": "On actual non-DML causal failures, pristine readonly /source copy at exact 2982f5a9, separatetarget/build paths, same originalclock; compile480+300persuite+240reserve required. If insufficient, HOLD/unattributed failure, never newclock/waiver. Malformed/absent abortedsuite XML is INCOMPLETE raw evidence, neverabsence.",
     "standard_fixture_staging": {
       "owner": "root shared stage before native/root suites",
       "archiveBytes": 123200074,
@@ -833,7 +896,21 @@
       "actualProducerRun": 43794926147,
       "readerReplayOnlyNotFreshProductTest": true
     },
-    "expectedRetainedReaderReplaysPerPhase": 1
+    "expectedRetainedReaderReplaysPerPhase": 1,
+    "feedback_early": {
+      "suite": "com.microsoft.azure.synapse.ml.causal.DoubleMLMultipleTreatmentsSuite",
+      "api_seconds": 60,
+      "fit_seconds": 420,
+      "api_cases": [
+        "Treatment metadata API accepts numeric types and rejects nominal binary and SynapseML categories"
+      ],
+      "fit_cases": [
+        "MLP nuisance layers remain caller-owned across parallel plural draws",
+        "Every plural statistic rejects an ambiguous fitted route including copied and reloaded models",
+        "Real GLR offset auxiliaries survive literal aliases in both nuisance roles without caller mutation"
+      ],
+      "baselineRun": false
+    }
   },
   "website_input_sha256": {
     "package.json": "9052bb2030b565db0202eaa2b2e2cd667bacbdf8cc0553d587e95ae687530f33",
@@ -859,13 +936,13 @@
     "controls_existing_retained": true,
     "admission_qualification": "Expanded36MiB and compressed24MiB are distinct from original raw24MiB; require actual wholeClaude/root interpretation of current user compression request and RQ1. This manifest is not authority."
   },
-  "source_tree": "20d1dd7de03f2b344bbe6f64ec76e8983e7f020c",
+  "source_tree": "9be1d37def77bd316d9b0f47d107174623f93b57",
   "common_clock": {
-    "origin": "Actual new website workflow.created_at including queue; no prior run time credit",
+    "origin": "Actual workflow.created_at, identical across all three jobs including queue",
     "active_stop_seconds": 3000,
     "cleanup_evidence_only_ceiling_seconds": 3600,
     "per_job_clock_reset_allowed": false,
-    "max_parallel": 1,
+    "max_parallel": 3,
     "no_other_workflow_concurrent": true
   },
   "retained_evidence_qualification": {
@@ -888,14 +965,39 @@
       "103 cases passed on current master",
       "old JAR/wheel reused as current-head artifact"
     ],
-    "sourceIntegration": "Local fetch/worktree deferred to results-accepted finalpublication packet; no local source acquisition in this validation.",
-    "d17NativeRun": 44006383230,
-    "d17NativeCommit": "f2ab80f0c9496068cd616d2147fd51678f58f041",
-    "d17NativeJobs": {
-      "candidate-legacy": 133782651808,
-      "candidate-installed": 133782652196,
-      "candidate-causal-dml": 133782652625
-    },
-    "d17NativeStatus": "Actual Actions SUCCESS; semantic evidence acceptance is separately root/results-review bound, not inferred by this proposed manifest."
+    "sourceIntegration": "Original local d17 integration completed with published dffcd; current source worktree has four privately repaired files. Runtime uses fresh ephemeral exactd17 source plus current ten postimages; no new local source acquisition authorized by this packet."
+  },
+  "candidate_feature_parent_patch_sha256": "e5a6704f193b343f59af2dfa2ba637548c85ce6bfb9c2c5e059e4f52b38ad3f0",
+  "candidate_patch_identity_qualification": "SHA identifies four-feedback repair diff relative to published dffcd; exact full ten-file overlay bound independently by candidate_files. Not a claim of a newly generated full d17 patch.",
+  "feedback_execution": {
+    "reviewPR": 2856,
+    "reviewID": 5933617593,
+    "publishedSourceParent": "dffcd50978506158580d7effd7a3401b234f4cb9",
+    "implementationSourceBase": "2982f5a9b198fc3c35e601187887e18b57634faa",
+    "newScalaTestNames": [
+      "MLP nuisance layers remain caller-owned across parallel plural draws",
+      "Every plural statistic rejects an ambiguous fitted route including copied and reloaded models",
+      "Real indexed treatment columns are rejected by public fit without rejecting categorical confounders",
+      "Treatment metadata API accepts numeric types and rejects nominal binary and SynapseML categories",
+      "Real GLR offset auxiliaries survive literal aliases in both nuisance roles without caller mutation",
+      "Auxiliary resolution preserves case empty and unset semantics and rejects missing or target inputs",
+      "Supported validation and initial-score inputs are remapped for a real delegated regression fit",
+      "Nuisance weight columns are remapped without enabling weighted plural estimation"
+    ],
+    "fullInstalledHandwrittenSeconds": 600,
+    "baselineRedRuntime": false,
+    "baselineOldCodeFailureEvidence": "Static recorded reasoning only, never a recorded red run",
+    "newNativeLightGBMFit": "NOT RUN; delegated real LR regression proves remapping only",
+    "censorCol": "Unsupported",
+    "all30DrawsSuccess": "UNESTABLISHED; preserve actual warnings/classification",
+    "websiteReuse": "Separate exact docs/site byte bridge required; never current repair website result",
+    "installedInvocation": "One full9 authored collection; actual first2 names mandatory, then2 generated constructors. No duplicate early invocation.",
+    "installedFirstTwo": [
+      "test_ambiguous_jvm_route_rejects_statistics_after_copy_and_reload",
+      "test_auxiliary_glr_offset_both_roles_preserve_caller_parameters"
+    ],
+    "privateSourceFreezeSHA256": "4b2808c432153a880322a3f3da8bd01647bcf08d52d68c0c9fd77ce85d0d6cba",
+    "pricingReceiptSHA256": "b466771323471b936a294d03689cdcf621bc6d1ae2365487bdc8a564fdf53f5a",
+    "pricingSourcePointerQualification": "Numeric receipt prior source pointers are historical authoring provenance; current final source identity is privateSourceFreezeSHA256 and candidate_files. Final source changes do not add tests/fits beyond priced8Scala+2Python."
   }
 }

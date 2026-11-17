@@ -3,11 +3,14 @@
 
 package com.microsoft.azure.synapse.ml.causal
 
+import com.microsoft.azure.synapse.ml.core.schema.SparkSchema
 import com.microsoft.azure.synapse.ml.train.{TrainClassifier, TrainRegressor}
 import org.apache.commons.math3.linear.{Array2DRowRealMatrix, EigenDecomposition}
 import org.apache.spark.ml.{Estimator, Model}
-import org.apache.spark.ml.classification.ProbabilisticClassifier
+import org.apache.spark.ml.attribute.{Attribute, BinaryAttribute, NominalAttribute}
+import org.apache.spark.ml.classification.{MultilayerPerceptronClassifier, ProbabilisticClassifier}
 import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.param.shared.{HasPredictionCol, HasProbabilityCol, HasRawPredictionCol}
 import org.apache.spark.ml.regression.{GeneralizedLinearRegression, Regressor}
 import org.apache.spark.ml.util.Identifiable
@@ -45,6 +48,10 @@ private[causal] object DoubleMLMultipleTreatmentTraining {
       require(dataset.columns.contains(name), s"Treatment column '$name' does not exist")
       require(Set[DataType](DoubleType, LongType, IntegerType).contains(dataset.schema(name).dataType),
         s"Treatment column '$name' must be DoubleType, LongType or IntegerType")
+      val attribute = Attribute.fromStructField(dataset.schema(name))
+      val sparkCategorical = attribute.isInstanceOf[NominalAttribute] || attribute.isInstanceOf[BinaryAttribute]
+      require(!sparkCategorical && !SparkSchema.isCategorical(dataset.toDF(), name),
+        s"Treatment column '$name' is categorical; multiple treatments must be continuous")
     }
     require(estimator.getSampleSplitRatio.forall(v => finite(v) && v > 0),
       "Plural sampleSplitRatio must contain two positive finite values")
@@ -85,6 +92,32 @@ private[causal] object DoubleMLMultipleTreatmentTraining {
     }
   }
 
+  /** Remap only supported auxiliary inputs, never caller parameters or learner outputs. */
+  private def copyNuisance(model: Estimator[_ <: Model[_]], mapping: Map[String, String],
+                           excluded: Set[String], caseSensitive: Boolean): Estimator[_ <: Model[_]] = {
+    val copied = model.copy(ParamMap.empty)
+    Seq("offsetCol", "weightCol", "validationIndicatorCol", "initScoreCol").foreach { name =>
+      if (model.hasParam(name) && copied.hasParam(name)) {
+        val parameter = model.getParam(name)
+        // Leave defaults, unset parameters and explicitly empty input names unchanged.
+        model.get(parameter).foreach {
+          case value: String if value.nonEmpty =>
+            val candidates = mapping.keys.filter { original =>
+              if (caseSensitive) original == value
+              else original.toLowerCase(Locale.ROOT) == value.toLowerCase(Locale.ROOT)
+            }.toSeq
+            require(candidates.size == 1, s"Auxiliary column '$value' from $name does not exist")
+            val original = candidates.head
+            require(!excluded.contains(original),
+              s"Auxiliary parameter '$name' must not reference outcome or treatment column '$original'")
+            copied.set(copied.getParam(name), mapping(original))
+          case _ =>
+        }
+      }
+    }
+    copied
+  }
+
   def fit(estimator: DoubleMLEstimator, dataset: Dataset[_]): Array[Array[Double]] = {
     validate(estimator, dataset)
     // Alias all columns positionally before any learner or Spark expression resolves a name.
@@ -92,9 +125,13 @@ private[causal] object DoubleMLMultipleTreatmentTraining {
     val safeNames = dataset.columns.indices.map(i => Identifiable.randomUID(s"dml_input_$i")).toArray
     val mapping = dataset.columns.zip(safeNames).toMap
     val safeData = dataset.toDF(safeNames: _*)
-    val internal = estimator.copy(org.apache.spark.ml.param.ParamMap.empty).asInstanceOf[DoubleMLEstimator]
+    val caseSensitive = dataset.sparkSession.conf.get("spark.sql.caseSensitive", "false").toBoolean
+    val excluded = (estimator.getTreatmentCols :+ estimator.getOutcomeCol).toSet
+    val internal = estimator.copy(ParamMap.empty).asInstanceOf[DoubleMLEstimator]
       .setTreatmentCols(estimator.getTreatmentCols.map(mapping))
       .setOutcomeCol(mapping(estimator.getOutcomeCol))
+      .setTreatmentModel(copyNuisance(estimator.getTreatmentModel, mapping, excluded, caseSensitive))
+      .setOutcomeModel(copyNuisance(estimator.getOutcomeModel, mapping, excluded, caseSensitive))
     try internal.validateMultipleOutcome(safeData) catch {
       case NonFatal(error) => throw new IllegalArgumentException(
         error.getMessage.replace(internal.getOutcomeCol, estimator.getOutcomeCol), error)
@@ -123,6 +160,11 @@ private[causal] object DoubleMLMultipleTreatmentTraining {
                          inputs: Array[String], train: DataFrame, test: DataFrame,
                          residual: String): DataFrame = {
     val copied = model.copy(model.extractParamMap())
+    copied match {
+      case classifier: MultilayerPerceptronClassifier if classifier.isDefined(classifier.layers) =>
+        classifier.setLayers(classifier.getLayers.clone())
+      case _ =>
+    }
     val prefix = Identifiable.randomUID("dml_nuisance")
     val predictionCol = prefix + "_prediction"
     val probabilityCol = prefix + "_probability"
